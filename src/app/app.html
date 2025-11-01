@@ -3,22 +3,37 @@
   <header>
     <h1>{{ title }}</h1>
 
-    <div class="user-info" *ngIf="isLoggedIn">
-      <p>Willkommen, <strong>{{ username }}</strong>!</p>
-      <p>Rollen: {{ userRoles.join(', ') }}</p>
+    @if (isLoggedIn) {
+      <div class="user-info">
+        <p>Willkommen, <strong>{{ username }}</strong>!</p>
+        <p>Rollen: {{ userRoles.join(', ') }}</p>
+
 
       <div class="role-badges">
-        <span class="badge admin" *ngIf="isAdmin()">Administrator</span>
-        <span class="badge verleiher" *ngIf="isVerleiher()">Verleiher</span>
+        @if (isAdmin()){
+          <span class="badge admin">Administrator</span>
+          <br>
+        }
+        @if (isLender()) {
+          <span class="badge lender">Verleiher</span>
+          <br>
+        }
+        @if (isUser()) {
+          <span class="badge user">Nutzer</span>
+          <br>
+        }
       </div>
 
       <button (click)="logout()" class="btn-logout">Logout</button>
     </div>
+    }
 
-    <div class="login-info" *ngIf="!isLoggedIn">
-      <p>Sie sind nicht angemeldet.</p>
-      <button (click)="login()" class="btn-login">Login</button>
-    </div>
+    @if (!isLoggedIn) {
+      <div class="login-info">
+        <p>Sie sind nicht angemeldet.</p>
+        <button (click)="login()" class="btn-login">Login</button>
+      </div>
+    }
   </header>
 
   <main>

@@ -1,82 +1,58 @@
 // src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
-import { KeycloakService } from 'keycloak-angular';
-import { KeycloakProfile } from 'keycloak-js';
+import { Injectable, inject } from '@angular/core';
+import Keycloak from 'keycloak-js';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly keycloak = inject(Keycloak);
 
-  constructor(private keycloak: KeycloakService) {}
-
-  /**
-   * Gibt den Benutzernamen des eingeloggten Users zurück
-   */
-  public getUsername(): string {
-    return this.keycloak.getUsername();
+  /** Prüft, ob der Benutzer eingeloggt ist */
+  async isLoggedIn(): Promise<boolean> {
+    return !!this.keycloak.authenticated;
   }
 
-  /**
-   * Lädt das vollständige User-Profil
-   */
-  public async getUserProfile(): Promise<KeycloakProfile> {
-    return await this.keycloak.loadUserProfile();
+  /** Login über Keycloak */
+  async login(redirectUri?: string) {
+    await this.keycloak.login({
+      redirectUri: redirectUri ?? window.location.origin,
+    });
   }
 
-  /**
-   * Prüft ob der User eingeloggt ist
-   */
-  public async isLoggedIn(): Promise<boolean> {
-    return await this.keycloak.isLoggedIn();
+  /** Logout über Keycloak */
+  async logout() {
+    await this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
-  /**
-   * Gibt alle Rollen des Users zurück
-   */
-  public getRoles(): string[] {
-    return this.keycloak.getUserRoles();
+  /** Gibt den Benutzernamen zurück */
+  getUsername(): string {
+    return (this.keycloak.tokenParsed?.['preferred_username'] as string) ?? 'Unbekannt';
   }
 
-  /**
-   * Prüft ob der User eine bestimmte Rolle hat
-   */
-  public hasRole(role: string): boolean {
-    return this.keycloak.isUserInRole(role);
+  getRoles(): string[] {
+    // Use clientId from Keycloak instance or fallback to token's 'azp' field
+    const clientId = this.keycloak.clientId ?? this.keycloak.tokenParsed?.['azp'];
+
+    if (!clientId) return [];
+
+    const clientRoles = this.keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'];
+
+    return Array.isArray(clientRoles) ? clientRoles : [];
   }
 
-  /**
-   * Prüft ob der User EINE der angegebenen Rollen hat
-   */
-  public hasAnyRole(roles: string[]): boolean {
-    return roles.some(role => this.hasRole(role));
+  /** Prüft, ob der Benutzer eine bestimmte Rolle hat */
+  hasRole(role: string): boolean {
+    return this.getRoles().includes(role);
   }
 
-  /**
-   * Prüft ob der User ALLE angegebenen Rollen hat
-   */
-  public hasAllRoles(roles: string[]): boolean {
-    return roles.every(role => this.hasRole(role));
+  /** Prüft, ob der Benutzer eine der angegebenen Rollen hat */
+  hasAnyRole(roles: string[]): boolean {
+    const userRoles = this.getRoles();
+    return roles.some((role) => userRoles.includes(role));
   }
 
-  /**
-   * Logout und Weiterleitung zur Keycloak Logout-Seite
-   */
-  public logout(): void {
-    this.keycloak.logout(window.location.origin);
-  }
-
-  /**
-   * Gibt das aktuelle Access Token zurück
-   */
-  public async getToken(): Promise<string> {
-    return await this.keycloak.getToken();
-  }
-
-  /**
-   * Login-Redirect zu Keycloak
-   */
-  public login(): void {
-    this.keycloak.login();
+  /** Prüft, ob der Benutzer alle angegebenen Rollen hat */
+  hasAllRoles(roles: string[]): boolean {
+    const userRoles = this.getRoles();
+    return roles.every((role) => userRoles.includes(role));
   }
 }

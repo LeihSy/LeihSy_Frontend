@@ -1,13 +1,15 @@
 // src/app/guards/auth.guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
+
 
 export const authGuard: CanActivateFn = async (route, state) => {
-  const keycloak = inject(KeycloakService);
+  const keycloak = inject(Keycloak);
   const router = inject(Router);
 
-  const isLoggedIn = await keycloak.isLoggedIn();
+ const isLoggedIn = keycloak.authenticated ?? false;
+
 
   if (!isLoggedIn) {
     await keycloak.login({
@@ -16,11 +18,18 @@ export const authGuard: CanActivateFn = async (route, state) => {
     return false;
   }
 
-  // Prüfe Rollen falls benötigt
-  const requiredRoles = route.data['roles'] as string[];
+  const requiredRoles = route.data['roles'] as string[] | undefined;
+
+  const clientId = 'leihsy-frontend-dev';
+  const clientRoles: string[] =
+    keycloak.tokenParsed?.resource_access?.[clientId]?.roles ?? [];
+
   if (requiredRoles && requiredRoles.length > 0) {
-    const userRoles = keycloak.getUserRoles();
-    const hasRole = requiredRoles.some(role => userRoles.includes(role));
+    const clientId = keycloak.clientId ?? keycloak.tokenParsed?.['azp'];
+    const clientRoles =
+      clientId ? keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? [] : [];
+
+    const hasRole = requiredRoles.some((role) => clientRoles.includes(role));
 
     if (!hasRole) {
       router.navigate(['/unauthorized']);

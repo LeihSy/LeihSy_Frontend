@@ -44,7 +44,11 @@ export class App implements OnInit {
     return this.authService.hasRole('admin');
   }
 
-  isVerleiher(): boolean {
-    return this.authService.hasAnyRole(['verleiher', 'admin']);
+  isLender(): boolean {
+    return this.authService.hasAnyRole(['lender', 'admin']);
+  }
+
+  isUser(): boolean {
+    return this.authService.hasAnyRole(['user', 'lender', 'admin']);
   }
 }

@@ -8,24 +8,40 @@
         <p>Willkommen, <strong>{{ username }}</strong>!</p>
         <p>Rollen: {{ userRoles.join(', ') }}</p>
 
+        <div class="role-badges">
+          @if (isAdmin()){
+            <span class="badge admin">Administrator</span>
+            <br>
+          }
+          @if (isLender()) {
+            <span class="badge lender">Verleiher</span>
+            <br>
+          }
+          @if (isUser()) {
+            <span class="badge user">Nutzer</span>
+            <br>
+          }
+        </div>
 
-      <div class="role-badges">
-        @if (isAdmin()){
-          <span class="badge admin">Administrator</span>
-          <br>
-        }
-        @if (isLender()) {
-          <span class="badge lender">Verleiher</span>
-          <br>
-        }
-        @if (isUser()) {
-          <span class="badge user">Nutzer</span>
-          <br>
-        }
+        <!-- Navigation -->
+        <nav class="nav-menu">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            Home
+          </a>
+          <a routerLink="/items" routerLinkActive="active">
+            Items
+          </a>
+
+          <!-- 🔒 Nur für Lender/Admin sichtbar -->
+          @if (isLender()) {
+            <a routerLink="/lender" routerLinkActive="active" class="lender-link">
+              Verleiher-Dashboard
+            </a>
+          }
+        </nav>
+
+        <button (click)="logout()" class="btn-logout">Logout</button>
       </div>
-
-      <button (click)="logout()" class="btn-logout">Logout</button>
-    </div>
     }
 
     @if (!isLoggedIn) {

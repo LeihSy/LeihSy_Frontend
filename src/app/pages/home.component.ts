@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div style="padding: 2rem; text-align: center;">
-      <h2>🏠 Home</h2>
+      <h2>Home</h2>
       <p>Keycloak Test läuft!</p>
     </div>
   `

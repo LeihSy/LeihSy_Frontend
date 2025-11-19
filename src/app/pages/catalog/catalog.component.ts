@@ -1,31 +1,42 @@
-import { Component, OnInit, inject, HostListener} from '@angular/core';
-
-import { CommonModule, DOCUMENT } from '@angular/common';
-
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { FormsModule } from '@angular/forms';
 
-// Import Device data
-import { Device } from '../../interfaces/device.model';
-import { DeviceService } from '../../services/device.service';
-import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
-
-// Import PrimeNG Modules
-import { InputTextModule } from 'primeng/inputtext';
+// PrimeNG
+import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { BadgeModule } from 'primeng/badge';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
+import { DatePickerModule } from 'primeng/datepicker';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { SelectModule } from 'primeng/select';
-import { DatePickerModule } from 'primeng/datepicker';
+import { BadgeModule } from 'primeng/badge';
 
-// Helper interface für PrimeNG Dropdowns
-interface SelectOption {
-  label: string;
-  value: string;
+// Services & Models
+import { ProductService } from '../../services/product.service';
+import { Product, ProductStatus } from '../../models/product.model';
+
+
+// Pipe
+import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
+
+// Device Interface (für Asinas Template)
+interface Device {
+  id: number;
+  name: string;
+  category: string;
+  description: string;
+  availability: {
+    available: number;
+    total: number;
+  };
+  loanConditions: {
+    loanPeriod: string;
+  };
+  location: string;
+  status: ProductStatus;
 }
 
 @Component({
@@ -34,162 +45,156 @@ interface SelectOption {
   imports: [
     CommonModule,
     FormsModule,
-    InputTextModule,
+    CardModule,
     ButtonModule,
-    BadgeModule,
+    SelectModule,
+    InputTextModule,
     TagModule,
+    DatePickerModule,
     IconFieldModule,
     InputIconModule,
-    SelectModule,
-    DatePickerModule,
-    DeviceIconPipe,
+    BadgeModule,
+    DeviceIconPipe
   ],
   templateUrl: './catalog.component.html',
 })
 export class CatalogPageComponent implements OnInit {
-  private deviceService = inject(DeviceService);
+  private productService = inject(ProductService);
   private router = inject(Router);
-  private document = inject(DOCUMENT);
 
-  // Vollständige Geräteliste
-  public allDevices: Device[] = [];
-  // Gefilterte Geräteliste
-  public filteredDevices: Device[] = [];
+  // State
+  products = signal<Product[]>([]);
+  devices = signal<Device[]>([]);
+  filteredDevices = signal<Device[]>([]);
+  isLoading = signal(true);
+  errorMessage = signal<string | null>(null);
 
-  // Such- und Filterzustände für die UI
-  public searchQuery: string = '';
-  public selectedCategory: string = 'all';
-  public selectedCampus: string = 'all';
-  public availabilityFilter: string = 'all';
-  // Datumsbereich aus dem DatePicker
-  public dateRange: (Date | undefined)[] = [undefined, undefined];
+  // Filters
+  searchQuery = '';
+  selectedCategory = '';
+  selectedCampus = '';
+  availabilityFilter = '';
+  dateRange: Date[] = [];
 
-  // Anzahl der im DatePicker angezeigten Monate (Responsiveness)
-  public monthsToShow: number = 2;
-
-  // Dropdown-Optionen für Kategorien, Campus und Verfügbarkeit
-  public categories: SelectOption[];
-  public campuses: SelectOption[];
-  public availabilityOptions: SelectOption[] = [
-    { label: 'Alle Medien', value: 'all' },
-    { label: 'Nur Verfügbare', value: 'available' },
+  // Filter Options
+  categories: string[] = [];
+  campuses = ['Campus Stadtmitte', 'Campus Flandernstraße', 'Campus Göppingen'];
+  availabilityOptions = [
+    { label: 'Verfügbar', value: 'available' },
+    { label: 'Ausgeliehen', value: 'borrowed' }
   ];
 
-  constructor() {
-    // Mögliche Gerätekategorien für den Filter
-    this.categories = [
-      { label: 'Alle Kategorien', value: 'all' },
-      { label: 'VR-Geräte', value: 'VR geräte' },
-      { label: 'Licht-Equipment', value: 'Lichtset equipment' },
-      { label: 'Audio-Equipment', value: 'Audio equipment' },
-      { label: 'Kameras', value: 'kameras' },
-      { label: 'Kamera-Zubehör', value: 'kamera zubehör' },
+  // DatePicker
+  tomorrow = new Date(Date.now() + 86400000);
+  monthsToShow = 1;
 
-    ];
+  // Computed
+  formattedDateRange = computed(() => {
+    if (!this.dateRange[0]) return '';
+    const start = this.dateRange[0].toLocaleDateString('de-DE');
+    const end = this.dateRange[1]?.toLocaleDateString('de-DE') || start;
+    return `${start} - ${end}`;
+  });
 
-    // Campus-Standorte für den Filter
-    this.campuses = [
-      { label: 'Alle Campus', value: 'all' },
-      { label: 'Campus Esslingen Flandernstraße', value: 'Campus Esslingen Flandernstraße' },
-      { label: 'Campus Esslingen Stadtmitte', value: 'Campus Esslingen Stadtmitte' },
-      { label: 'Campus Göppingen', value: 'Campus Göppingen' },
-    ];
+  ngOnInit() {
+    this.loadProducts();
+
+    // Responsive months
+    if (window.innerWidth >= 768) {
+      this.monthsToShow = 2;
+    }
   }
 
-  ngOnInit(): void {
-    // Alle Geräte beim Initialisieren aus dem Service laden
-    this.allDevices = this.deviceService.getDevices();
-    // Startfilter anwenden (zeigt initial alle Geräte)
-    this.applyFilters();
-    // Direkt beim Laden prüfen, wie viele Monate im DatePicker angezeigt werden sollen
-    this.checkScreenSize();
+  // Lade alle Produkte vom Backend
+  loadProducts() {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
-  }
+    this.productService.getAllProducts().subscribe({
+      next: (products) => {
+        console.log('Products loaded:', products);
+        this.products.set(products);
 
-  // Listener für Fenstergrößenänderung
-  @HostListener('window:resize')
-  onResize(): void {
-    this.checkScreenSize();
-  }
+        // Konvertiere Products → Devices
+        const devices = this.mapProductsToDevices(products);
+        this.devices.set(devices);
+        this.filteredDevices.set(devices);
 
-  // Responsive Verhalten für den DatePicker:
-  // auf großen Bildschirmen 2 Monate, auf kleineren nur 1 Monat anzeigen
-  private checkScreenSize(): void {
-    const width = this.document.defaultView?.innerWidth || 0;
-    this.monthsToShow = width >= 768 ? 2 : 1;
-  }
-
-  // Zentrale Filterlogik für Katalogliste
-  applyFilters(): void {
-    // Helper-Funktion: Strings in Kleinschreibung und ohne Bindestriche vergleichen
-    const normalize = (value: string | null | undefined): string =>
-      (value ?? '').toLowerCase().replace(/-/g, ' ');
-
-    const query = normalize(this.searchQuery.trim());
-    const [from, to] = this.dateRange;
-
-    this.filteredDevices = this.allDevices.filter(device => {
-      // Volltextsuche über mehrere Felder (Name, Inventarnummer, Kategorie, Beschreibung, Keywords)
-      const matchesSearch =
-        normalize(device.name).includes(query) ||
-        normalize(device.inventoryNumber).includes(query) ||
-        normalize(device.category).includes(query) ||
-        normalize(device.description).includes(query) ||
-        device.keywords.some(k => normalize(k).includes(query));
-
-      // Kategorie-Filter
-      const matchesCategory =
-        this.selectedCategory === 'all' ||
-        device.category === this.selectedCategory;
-
-      // Campus-Filter
-      const matchesCampus =
-        this.selectedCampus === 'all' ||
-        device.campusAvailability.some(
-          ca => ca.campus === this.selectedCampus && ca.available > 0
-        );
-
-      // Verfügbarkeitsfilter
-      const matchesAvailability =
-        this.availabilityFilter === 'all' ||
-        (this.availabilityFilter === 'available' &&
-          device.availability.available > 0);
-
-      const matchesDateRange = !from || device.availability.available > 0;
-
-      return (matchesSearch &&
-        matchesCategory &&
-        matchesCampus &&
-        matchesAvailability &&
-        matchesDateRange);
+        this.extractCategories(products);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+        this.errorMessage.set('Fehler beim Laden der Produkte.');
+        this.isLoading.set(false);
+      }
     });
   }
 
-  // Formatiert den gewählten Datumsbereich für die Anzeige im UI
-  get formattedDateRange(): string {
-    const [from, to] = this.dateRange;
-    if (from && to) {
-      return `📅 ${format(from, 'dd.MM.', { locale: de })} - ${format(to, 'dd.MM.yy', { locale: de })}`;
-    }
-    if (from) {
-      return `📅 Ab ${format(from, 'dd.MM.yy', { locale: de })}`;
-    }
-    return '';
+  // Konvertiere Backend Products zu Frontend Devices
+  private mapProductsToDevices(products: Product[]): Device[] {
+    return products.map(p => ({
+      id: p.id,
+      name: p.name,
+      category: p.categoryName,
+      description: p.description,
+      availability: {
+        available: p.status === 'AVAILABLE' ? 1 : 0,
+        total: 1
+      },
+      loanConditions: {
+        loanPeriod: '7 Tage'
+      },
+      location: p.location,
+      status: p.status
+    }));
   }
 
+  // Extrahiere eindeutige Kategorien
+  private extractCategories(products: Product[]) {
+    const uniqueCategories = [...new Set(products.map(p => p.categoryName))];
+    this.categories = uniqueCategories;
+  }
 
+  // Filter anwenden
+  applyFilters() {
+    let filtered = this.devices();
 
-  // Navigation zur Detailansicht eines Geräts
-  onViewDevice(deviceId: string): void {
+    // Suche
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(d =>
+        d.name.toLowerCase().includes(query) ||
+        d.description.toLowerCase().includes(query) ||
+        d.category.toLowerCase().includes(query)
+      );
+    }
+
+    // Kategorie
+    if (this.selectedCategory) {
+      filtered = filtered.filter(d => d.category === this.selectedCategory);
+    }
+
+    // Campus (aktuell kein Backend Field - könnte aus location gefiltert werden)
+    if (this.selectedCampus) {
+      // TODO: Filtern nach Campus wenn Backend das unterstützt
+    }
+
+    // Verfügbarkeit
+    if (this.availabilityFilter === 'available') {
+      filtered = filtered.filter(d => d.status === 'AVAILABLE');
+    } else if (this.availabilityFilter === 'borrowed') {
+      filtered = filtered.filter(d => d.status === 'BORROWED');
+    }
+
+    // Datumsbereich (aktuell keine Booking-Daten)
+    // TODO: Filter nach Verfügbarkeit im Zeitraum wenn Bookings implementiert sind
+
+    this.filteredDevices.set(filtered);
+  }
+
+  // Navigiere zu Detailseite
+  onViewDevice(deviceId: number) {
     this.router.navigate(['/device', deviceId]);
-  }
-
-// Berechnet das Datum von "morgen" (00:00 Uhr)
-  get tomorrow(): Date {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return tomorrow;
   }
 }

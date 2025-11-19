@@ -9,7 +9,7 @@
 
     <!-- Freitextsuche + Datumsbereich -->
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <!-- Suchfeld nach Stichworten (bindet an searchQuery und triggert applyFilters bei Änderung) -->
+      <!-- Suchfeld nach Stichworten -->
       <p-iconField iconPosition="left" class="flex-1">
         <p-inputIcon class="pi pi-search text-gray-400"></p-inputIcon>
         <input
@@ -35,7 +35,6 @@
         (onClear)="applyFilters()"
         styleClass="sm:min-w-[280px] w-full sm:w-auto"
         [inputStyleClass]="!dateRange[0] ? 'text-gray-500' : ''"
-
         [numberOfMonths]="monthsToShow"
       ></p-datePicker>
 
@@ -43,12 +42,11 @@
       <button pButton label="Suchen" class="w-full sm:w-auto bg-[#253359] hover:bg-[#1f2d56] border-[#253359]"></button>
     </div>
 
-    <!-- Filterbereich unterhalb der Suche -->
+    <!-- Filterbereich -->
     <div class="flex flex-col sm:flex-row items-center gap-3">
-      <!-- Icon als visueller Hinweis auf Filterfunktionen (nur auf größeren Screens sichtbar) -->
       <i class="pi pi-filter w-5 h-5 text-gray-500 shrink-0 hidden sm:block"></i>
 
-      <!-- Filter: Kategorie  -->
+      <!-- Filter: Kategorie -->
       <p-select
         [(ngModel)]="selectedCategory"
         (onChange)="applyFilters()"
@@ -80,39 +78,33 @@
     </div>
   </div>
 
-  <!-- Ergebniszusammenfassung (Anzahl Treffer + gewählter Zeitraum) -->
+  <!-- Ergebniszusammenfassung -->
   <div class="mb-6">
     <div class="flex items-center gap-3 flex-wrap">
-      <!-- Anzahl gefilterter Geräte -->
-      <p class="text-sm text-slate-800">{{ filteredDevices.length }} Ergebnisse gefunden</p>
-      <!-- Anzeige des aktuell ausgewählten Datumsbereichs -->
+      <p class="text-sm text-slate-800">{{ filteredDevices().length }} Ergebnisse gefunden</p>
       @if (dateRange[0]) {
         <p-badge
-          [value]="formattedDateRange"
+          [value]="formattedDateRange()"
           styleClass="bg-blue-50 text-blue-700 border-blue-200"
         ></p-badge>
       }
     </div>
   </div>
 
-  <!-- Ergebnisliste der gefilterten Geräte -->
+  <!-- Ergebnisliste -->
   <div class="space-y-4">
-    <!-- Schleife über alle gefilterten Geräte -->
-    @for (device of filteredDevices; track device.id) {
-      <!-- Einzelkarte für ein Gerät -->
+    @for (device of filteredDevices(); track device.id) {
       <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
         <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
           <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-2xl">
             {{ device.category | deviceIcon }}
           </div>
 
-          <!-- Basisinformationen zum Gerät: Name + Kategorie -->
           <div class="flex-1 min-w-0">
             <h3 class="text-lg font-semibold text-[#253359] mb-1">{{ device.name }}</h3>
             <p class="text-sm text-gray-600">{{ device.category }}</p>
           </div>
 
-          <!-- Button zum Öffnen der Detailansicht eines Geräts -->
           <button
             pButton
             (click)="onViewDevice(device.id)"
@@ -132,7 +124,6 @@
           <span class="text-gray-600">Max. {{ device.loanConditions.loanPeriod }}</span>
         </div>
 
-        <!-- Gerätebeschreibung -->
         <p class="text-sm text-gray-600 leading-relaxed">
           {{ device.description }}
         </p>
@@ -140,8 +131,8 @@
     }
   </div>
 
-  <!-- Leerer Zustand, wenn keine Geräte mit den aktuellen Filtern gefunden wurden -->
-  @if (filteredDevices.length === 0) {
+  <!-- Leerer Zustand -->
+  @if (filteredDevices().length === 0) {
     <div class="text-center py-16 bg-white border border-gray-200 rounded-lg">
       <i class="pi pi-inbox text-5xl text-gray-400"></i>
       <h3 class="text-xl font-semibold mt-4">Keine Geräte gefunden</h3>

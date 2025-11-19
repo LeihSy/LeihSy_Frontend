@@ -1,40 +1,65 @@
-// src/app/guards/auth.guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import Keycloak from 'keycloak-js';
+import { AuthService } from '../services/auth.service';
 
-
-export const authGuard: CanActivateFn = async (route, state) => {
-  const keycloak = inject(Keycloak);
+// Dieser Guard schützt Routen, die eine Anmeldung des Benutzers erfordern
+export const authGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
   const router = inject(Router);
 
- const isLoggedIn = keycloak.authenticated ?? false;
-
-
-  if (!isLoggedIn) {
-    await keycloak.login({
-      redirectUri: window.location.origin + state.url
-    });
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
     return false;
   }
 
-  const requiredRoles = route.data['roles'] as string[] | undefined;
+  return true;
+};
 
-  const clientId = 'leihsy-frontend-dev';
-  const clientRoles: string[] =
-    keycloak.tokenParsed?.resource_access?.[clientId]?.roles ?? [];
+// Dieser Guard schützt die Login-Seite
+export const loginGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  if (requiredRoles && requiredRoles.length > 0) {
-    const clientId = keycloak.clientId ?? keycloak.tokenParsed?.['azp'];
-    const clientRoles =
-      clientId ? keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? [] : [];
+  if (authService.isLoggedIn()) {
+    router.navigate(['/catalog']);
+    return false;
+  }
 
-    const hasRole = requiredRoles.some((role) => clientRoles.includes(role));
+  return true;
+};
 
-    if (!hasRole) {
-      router.navigate(['/unauthorized']);
-      return false;
-    }
+// Admin Guard (Staff)
+export const adminGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  if (authService.userRole() !== 'admin') {
+    router.navigate(['/unauthorized']);
+    return false;
+  }
+
+  return true;
+};
+
+// Lecturer Guard (Verleiher)
+export const lecturerGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isLoggedIn()) {
+    router.navigate(['/login']);
+    return false;
+  }
+
+  const role = authService.userRole();
+  if (role !== 'lender' && role !== 'admin') {
+    router.navigate(['/unauthorized']);
+    return false;
   }
 
   return true;

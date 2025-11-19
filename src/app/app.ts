@@ -1,53 +1,20 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { HeaderComponent } from './components/header/header.component';
+import { FooterComponent } from './components/footer/footer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  host: {
+    class: 'flex flex-col min-h-screen',
+  },
 })
-export class App implements OnInit {
-  title = 'LeihSy - Digitales Verleihsystem';
-  isLoggedIn = false;
-  username = '';
-  userRoles: string[] = [];
-
-  constructor(private authService: AuthService) {}
-
-  async ngOnInit() {
-    // Prüfe Login-Status
-    this.isLoggedIn = await this.authService.isLoggedIn();
-
-    if (this.isLoggedIn) {
-      this.username = this.authService.getUsername();
-      this.userRoles = this.authService.getRoles();
-
-      console.log('User eingeloggt:', this.username);
-      console.log('Rollen:', this.userRoles);
-    }
-  }
-
-  login() {
-    this.authService.login();
-  }
-
-  logout() {
-    this.authService.logout();
-  }
-
-  isAdmin(): boolean {
-    return this.authService.hasRole('admin');
-  }
-
-  isLender(): boolean {
-    return this.authService.hasAnyRole(['lender', 'admin']);
-  }
-
-  isUser(): boolean {
-    return this.authService.hasAnyRole(['user', 'lender', 'admin']);
-  }
+export class AppComponent {
+  authService = inject(AuthService);
+  cartCount = 0;
 }

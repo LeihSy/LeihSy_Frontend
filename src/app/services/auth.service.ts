@@ -1,58 +1,92 @@
-// src/app/services/auth.service.ts
-import { Injectable, inject } from '@angular/core';
-import Keycloak from 'keycloak-js';
+import { Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { KeycloakService } from 'keycloak-angular';
 
-@Injectable({ providedIn: 'root' })
+export type UserRole = 'user' | 'admin' | 'lender';
+
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
-  private readonly keycloak = inject(Keycloak);
+  // Signals für reaktive UI
+  isLoggedIn = signal(false);
+  userRole = signal<UserRole>('user');
 
-  /** Prüft, ob der Benutzer eingeloggt ist */
-  async isLoggedIn(): Promise<boolean> {
-    return !!this.keycloak.authenticated;
+  constructor(
+    private keycloakService: KeycloakService,
+    private router: Router
+  ) {
+    this.initializeAuth();
   }
 
-  /** Login über Keycloak */
-  async login(redirectUri?: string) {
-    await this.keycloak.login({
-      redirectUri: redirectUri ?? window.location.origin,
-    });
+  private async initializeAuth() {
+    try {
+      // Prüfe ob Keycloak verfügbar ist
+      const isLoggedIn = await this.keycloakService.isLoggedIn();
+      this.isLoggedIn.set(isLoggedIn);
+
+      if (isLoggedIn) {
+        // Hole User-Rolle aus Keycloak Token
+        const role = this.extractRoleFromToken();
+        this.userRole.set(role);
+      }
+    } catch (error) {
+      console.error('Keycloak initialization failed:', error);
+      // Fallback zu Mock-Auth (für Entwicklung ohne Keycloak)
+      this.isLoggedIn.set(true);
+      this.userRole.set('user');
+    }
   }
 
-  /** Logout über Keycloak */
+  private extractRoleFromToken(): UserRole {
+    try {
+      const token = this.keycloakService.getKeycloakInstance().tokenParsed;
+      const groups = (token?.['groups'] as string[]) || [];
+
+      // Map Keycloak groups zu User Roles
+      if (groups.includes('admin')) return 'admin';
+      if (groups.includes('lender')) return 'lender';
+      return 'user';
+    } catch (error) {
+      return 'user';
+    }
+  }
+
+  // Mock Login (für Entwicklung ohne Keycloak)
+  login(role: UserRole) {
+    this.isLoggedIn.set(true);
+    this.userRole.set(role);
+    this.router.navigate(['/catalog']);
+  }
+
   async logout() {
-    await this.keycloak.logout({ redirectUri: window.location.origin });
+    try {
+      await this.keycloakService.logout(window.location.origin);
+    } catch (error) {
+      // Fallback logout
+      this.isLoggedIn.set(false);
+      this.userRole.set('user');
+      this.router.navigate(['/login']);
+    }
   }
 
-  /** Gibt den Benutzernamen zurück */
   getUsername(): string {
-    return (this.keycloak.tokenParsed?.['preferred_username'] as string) ?? 'Unbekannt';
+    try {
+      return this.keycloakService.getUsername();
+    } catch {
+      return 'Test User';
+    }
+  }
+  isUser(): boolean {
+    return this.userRole() === 'user';
   }
 
-  getRoles(): string[] {
-    // Use clientId from Keycloak instance or fallback to token's 'azp' field
-    const clientId = this.keycloak.clientId ?? this.keycloak.tokenParsed?.['azp'];
-
-    if (!clientId) return [];
-
-    const clientRoles = this.keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'];
-
-    return Array.isArray(clientRoles) ? clientRoles : [];
+  isLender(): boolean {
+    return this.userRole() === 'lender';
   }
 
-  /** Prüft, ob der Benutzer eine bestimmte Rolle hat */
-  hasRole(role: string): boolean {
-    return this.getRoles().includes(role);
+  isAdmin(): boolean {
+    return this.userRole() === 'admin';
   }
 
-  /** Prüft, ob der Benutzer eine der angegebenen Rollen hat */
-  hasAnyRole(roles: string[]): boolean {
-    const userRoles = this.getRoles();
-    return roles.some((role) => userRoles.includes(role));
-  }
-
-  /** Prüft, ob der Benutzer alle angegebenen Rollen hat */
-  hasAllRoles(roles: string[]): boolean {
-    const userRoles = this.getRoles();
-    return roles.every((role) => userRoles.includes(role));
-  }
 }

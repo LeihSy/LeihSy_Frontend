@@ -1,0 +1,124 @@
+<header class="border-b bg-[#253359] text-white sticky top-0 z-50">
+  <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2 sm:gap-6">
+      <a routerLink="/catalog" class="flex items-center gap-2 hover:opacity-90 transition-opacity">
+        <img src="favicon.ico" alt="Logo" class="w-5 h-5 sm:w-6 sm:h-6">
+        <span class="text-base sm:text-xl">HS-Esslingen</span>
+      </a>
+    </div>
+
+    <div class="hidden lg:flex items-center gap-3">
+      <button pButton routerLink="/catalog" routerLinkActive="bg-white/20"
+              class="p-button-text text-white hover:bg-white/10 hover:text-white">
+        <i class="pi pi-search w-4 h-4 mr-2"></i>
+        <span>Katalog</span>
+      </button>
+
+      <button pButton routerLink="/user-dashboard" routerLinkActive="bg-white/20"
+              class="p-button-text text-white hover:bg-white/10 hover:text-white">
+        <i class="pi pi-user w-4 h-4 mr-2"></i>
+        <span>Mein Bereich</span>
+      </button>
+
+      <!-- Lecturer Dashboard - für lender UND admin -->
+      <button *ngIf="userRole() === 'lender' || userRole() === 'admin'"
+              pButton routerLink="/lecturer" routerLinkActive="bg-white/20"
+              class="p-button-text text-white hover:bg-white/10 hover:text-white">
+        <i class="pi pi-check-square w-4 h-4 mr-2"></i>
+        <span>Anfragen</span>
+      </button>
+
+      <!-- Admin Dashboard - nur für admin -->
+      <button *ngIf="userRole() === 'admin'"
+              pButton routerLink="/admin" routerLinkActive="bg-white/20"
+              class="p-button-text text-white hover:bg-white/10 hover:text-white">
+        <i class="pi pi-cog w-4 h-4 mr-2"></i>
+        <span>Verwaltung</span>
+      </button>
+
+      <a routerLink="/cart" class="relative hover:opacity-80 transition-opacity p-2 text-white">
+        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge *ngIf="cartCount > 0" [value]="cartCount"
+           severity="danger"></i>
+        <i *ngIf="cartCount === 0" class="pi pi-shopping-cart text-xl"></i>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <!-- User Info -->
+        <div class="flex flex-col items-end text-sm">
+          <span class="font-medium">{{ authService.getUsername() }}</span>
+          <span class="text-xs text-white/70">{{ getUserRoleLabel() }}</span>
+        </div>
+
+        <!-- Logout Button -->
+        <button pButton (click)="onLogout()"
+                class="p-button-text text-white hover:bg-red-500/20 hover:text-white"
+                pTooltip="Abmelden" tooltipPosition="bottom">
+          <i class="pi pi-sign-out text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation-->
+    <div class="flex lg:hidden items-center gap-3">
+      <a routerLink="/cart" class="relative hover:opacity-80 transition-opacity p-2 text-white">
+        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge *ngIf="cartCount > 0" [value]="cartCount"
+           severity="danger"></i>
+        <i *ngIf="cartCount === 0" class="pi pi-shopping-cart text-xl"></i>
+      </a>
+
+      <button pButton (click)="mobileMenuOpen = true"
+              class="p-button-text p-button-plain p-2 text-white hover:bg-white/10">
+        <i class="pi pi-bars w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Navigationsmenü-->
+<p-drawer [(visible)]="mobileMenuOpen" position="right" styleClass="w-[280px] sm:w-[320px]">
+  <ng-template pTemplate="header">
+    <h2 class="text-xl font-semibold">Navigation</h2>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div class="flex flex-col gap-3 mt-2">
+      <a pButton routerLink="/catalog" routerLinkActive="active" #rlaCatalog="routerLinkActive"
+         [ngClass]="rlaCatalog.isActive ? 'p-button' : 'p-button-outlined'" (click)="mobileMenuOpen = false"
+         class="w-full justify-start">
+        <i class="pi pi-search w-4 h-4 mr-2"></i>
+        <span>Katalog</span>
+      </a>
+
+      <a pButton routerLink="/user-dashboard" routerLinkActive="active" #rlaDash="routerLinkActive"
+         [ngClass]="rlaDash.isActive ? 'p-button' : 'p-button-outlined'" (click)="mobileMenuOpen = false"
+         class="w-full justify-start">
+        <i class="pi pi-user w-4 h-4 mr-2"></i>
+        <span>Mein Bereich</span>
+      </a>
+
+      <!-- Lecturer Dashboard - für lender UND admin -->
+      <a *ngIf="userRole() === 'lender' || userRole() === 'admin'"
+         pButton routerLink="/lecturer" routerLinkActive="active"
+         #rlaLecturer="routerLinkActive" [ngClass]="rlaLecturer.isActive ? 'p-button' : 'p-button-outlined'"
+         (click)="mobileMenuOpen = false" class="w-full justify-start">
+        <i class="pi pi-check-square w-4 h-4 mr-2"></i>
+        <span>Anfragen</span>
+      </a>
+
+      <!-- Admin Dashboard - nur für admin -->
+      <a *ngIf="userRole() === 'admin'"
+         pButton routerLink="/admin" routerLinkActive="active"
+         #rlaAdmin="routerLinkActive" [ngClass]="rlaAdmin.isActive ? 'p-button' : 'p-button-outlined'"
+         (click)="mobileMenuOpen = false" class="w-full justify-start">
+        <i class="pi pi-cog w-4 h-4 mr-2"></i>
+        <span>Verwaltung</span>
+      </a>
+
+      <button pButton (click)="onLogout(); mobileMenuOpen = false"
+              class="p-button-outlined p-button-danger w-full justify-start mt-4">
+        <i class="pi pi-sign-out w-4 h-4 mr-2"></i>
+        <span>Abmelden</span>
+      </button>
+    </div>
+  </ng-template>
+</p-drawer>

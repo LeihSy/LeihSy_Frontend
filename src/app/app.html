@@ -1,58 +1,13 @@
-<!DOCTYPE html>
-<div class="container">
-  <header>
-    <h1>{{ title }}</h1>
+@if (authService.isLoggedIn()) {
+  <app-header [cartCount]="cartCount"></app-header>
+}
 
-    @if (isLoggedIn) {
-      <div class="user-info">
-        <p>Willkommen, <strong>{{ username }}</strong>!</p>
-        <p>Rollen: {{ userRoles.join(', ') }}</p>
 
-        <div class="role-badges">
-          @if (isAdmin()){
-            <span class="badge admin">Administrator</span>
-            <br>
-          }
-          @if (isLender()) {
-            <span class="badge lender">Verleiher</span>
-            <br>
-          }
-          @if (isUser()) {
-            <span class="badge user">Nutzer</span>
-            <br>
-          }
-        </div>
+<main class="grow">
+  <router-outlet></router-outlet>
+</main>
 
-        <!-- Navigation -->
-        <nav class="nav-menu">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-            Home
-          </a>
-          <a routerLink="/items" routerLinkActive="active">
-            Items
-          </a>
 
-          <!-- 🔒 Nur für Lender/Admin sichtbar -->
-          @if (isLender()) {
-            <a routerLink="/lender" routerLinkActive="active" class="lender-link">
-              Verleiher-Dashboard
-            </a>
-          }
-        </nav>
-
-        <button (click)="logout()" class="btn-logout">Logout</button>
-      </div>
-    }
-
-    @if (!isLoggedIn) {
-      <div class="login-info">
-        <p>Sie sind nicht angemeldet.</p>
-        <button (click)="login()" class="btn-login">Login</button>
-      </div>
-    }
-  </header>
-
-  <main>
-    <router-outlet></router-outlet>
-  </main>
-</div>
+@if (authService.isLoggedIn()) {
+  <app-footer></app-footer>
+}

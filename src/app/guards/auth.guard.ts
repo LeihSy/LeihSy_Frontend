@@ -19,13 +19,22 @@ export const authGuard: CanActivateFn = async (route, state) => {
 
   if (requiredRoles && requiredRoles.length > 0) {
     const clientId = keycloak.clientId ?? keycloak.tokenParsed?.['azp'];
-    const clientRoles =
-      clientId ? keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? [] : [];
 
-    const hasRole = requiredRoles.some((role) => clientRoles.includes(role));
+    // Client Roles
+    const clientRoles = clientId
+      ? keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? []
+      : [];
+
+    // Realm Roles (z.B. admin)
+    const realmRoles = keycloak.tokenParsed?.['realm_access']?.['roles'] ?? [];
+
+    // Kombiniere beide
+    const allRoles = [...clientRoles, ...realmRoles];
+
+    const hasRole = requiredRoles.some((role) => allRoles.includes(role));
 
     if (!hasRole) {
-      console.log('Access denied. Required:', requiredRoles, 'User has:', clientRoles);
+      console.log('Access denied. Required:', requiredRoles, 'User has:', allRoles);
       router.navigate(['/unauthorized']);
       return false;
     }

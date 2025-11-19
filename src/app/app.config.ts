@@ -9,24 +9,39 @@ import { provideHttpClient } from '@angular/common/http';
 import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { routes } from './app.routes';
 
+// Keycloak Instance erstellen
+const keycloak = new Keycloak({
+  url: 'https://auth.insy.hs-esslingen.com',
+  realm: 'insy',
+  clientId: 'leihsy-frontend-dev'
+});
+
 // Keycloak Initializer
-function initializeKeycloak(keycloak: KeycloakService) {
-  return () =>
-    keycloak.init({
-      config: {
-        url: 'https://auth.insy.hs-esslingen.com',
-        realm: 'insy',
-        clientId: 'leihsy-frontend-dev'
-      },
-      initOptions: {
-        onLoad: 'check-sso',
-        silentCheckSsoRedirectUri:
-          window.location.origin + '/silent-check-sso.html'
+function initializeKeycloak() {
+  return () => {
+    console.log('Initializing Keycloak...');
+
+    return keycloak.init({
+      onLoad: 'check-sso',
+      checkLoginIframe: true,
+      silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+    }).then((authenticated) => {
+      console.log('Keycloak initialized. Authenticated:', authenticated);
+      if (authenticated) {
+        console.log('👤 User:', keycloak.tokenParsed?.['preferred_username']);
+        const clientId = keycloak.clientId ?? keycloak.tokenParsed?.['azp'];
+        if (clientId) {
+          const roles = keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? [];
+          console.log('Roles:', roles);
+        }
       }
+    }).catch(error => {
+      console.error('Keycloak initialization failed:', error);
     });
+  };
 }
 
 export const appConfig: ApplicationConfig = {
@@ -48,12 +63,13 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
-    KeycloakService,
+    // Keycloak als Provider
+    { provide: Keycloak, useValue: keycloak },
     {
       provide: APP_INITIALIZER,
       useFactory: initializeKeycloak,
       multi: true,
-      deps: [KeycloakService]
+      deps: []
     }
   ],
 };

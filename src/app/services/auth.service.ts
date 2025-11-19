@@ -1,92 +1,86 @@
-import { Injectable, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import { Injectable, inject, signal } from '@angular/core';
+import Keycloak from 'keycloak-js';
 
-export type UserRole = 'user' | 'admin' | 'lender';
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly keycloak = inject(Keycloak);
+
   // Signals für reaktive UI
   isLoggedIn = signal(false);
-  userRole = signal<UserRole>('user');
 
-  constructor(
-    private keycloakService: KeycloakService,
-    private router: Router
-  ) {
-    this.initializeAuth();
+  constructor() {
+    // Initialisiere Signal
+    this.updateLoginStatus();
   }
 
-  private async initializeAuth() {
-    try {
-      // Prüfe ob Keycloak verfügbar ist
-      const isLoggedIn = await this.keycloakService.isLoggedIn();
-      this.isLoggedIn.set(isLoggedIn);
-
-      if (isLoggedIn) {
-        // Hole User-Rolle aus Keycloak Token
-        const role = this.extractRoleFromToken();
-        this.userRole.set(role);
-      }
-    } catch (error) {
-      console.error('Keycloak initialization failed:', error);
-      // Fallback zu Mock-Auth (für Entwicklung ohne Keycloak)
-      this.isLoggedIn.set(true);
-      this.userRole.set('user');
-    }
+  private updateLoginStatus() {
+    this.isLoggedIn.set(!!this.keycloak.authenticated);
   }
 
-  private extractRoleFromToken(): UserRole {
-    try {
-      const token = this.keycloakService.getKeycloakInstance().tokenParsed;
-      const groups = (token?.['groups'] as string[]) || [];
-
-      // Map Keycloak groups zu User Roles
-      if (groups.includes('admin')) return 'admin';
-      if (groups.includes('lender')) return 'lender';
-      return 'user';
-    } catch (error) {
-      return 'user';
-    }
+  /** Login über Keycloak */
+  async login(redirectUri?: string) {
+    await this.keycloak.login({
+      redirectUri: redirectUri ?? window.location.origin,
+    });
   }
 
-  // Mock Login (für Entwicklung ohne Keycloak)
-  login(role: UserRole) {
-    this.isLoggedIn.set(true);
-    this.userRole.set(role);
-    this.router.navigate(['/catalog']);
-  }
-
+  /** Logout über Keycloak */
   async logout() {
-    try {
-      await this.keycloakService.logout(window.location.origin);
-    } catch (error) {
-      // Fallback logout
-      this.isLoggedIn.set(false);
-      this.userRole.set('user');
-      this.router.navigate(['/login']);
-    }
+    await this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
+  /** Gibt den Benutzernamen zurück */
   getUsername(): string {
-    try {
-      return this.keycloakService.getUsername();
-    } catch {
-      return 'Test User';
-    }
+    return (this.keycloak.tokenParsed?.['preferred_username'] as string) ?? 'Unbekannt';
   }
+
+  /** Gibt alle Rollen des Benutzers zurück */
+  getRoles(): string[] {
+    const clientId = this.keycloak.clientId ?? this.keycloak.tokenParsed?.['azp'];
+
+    // Client Roles (z.B. lender, user)
+    const clientRoles = clientId
+      ? this.keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? []
+      : [];
+    // Realm Roles (z.B. admin)
+    const realmRoles = this.keycloak.tokenParsed?.['realm_access']?.['roles'] ?? [];
+    return [...new Set([...clientRoles, ...realmRoles])];
+  }
+  /** Prüft, ob der Benutzer eine bestimmte Rolle hat */
+  hasRole(role: string): boolean {
+    return this.getRoles().includes(role);
+  }
+
+  /** Prüft, ob der Benutzer eine der angegebenen Rollen hat */
+  hasAnyRole(roles: string[]): boolean {
+    const userRoles = this.getRoles();
+    return roles.some((role) => userRoles.includes(role));
+  }
+
+  /** Prüft, ob der Benutzer alle angegebenen Rollen hat */
+  hasAllRoles(roles: string[]): boolean {
+    const userRoles = this.getRoles();
+    return roles.every((role) => userRoles.includes(role));
+  }
+
+  // Helper für UI
   isUser(): boolean {
-    return this.userRole() === 'user';
+    const roles = this.getRoles();
+    return !roles.includes('admin') && !roles.includes('lender');
   }
 
   isLender(): boolean {
-    return this.userRole() === 'lender';
+    return this.hasRole('lender');
   }
 
   isAdmin(): boolean {
-    return this.userRole() === 'admin';
+    return this.hasRole('admin');
   }
 
+  // Für backwards compatibility mit altem Code
+  userRole(): 'user' | 'lender' | 'admin' {
+    if (this.isAdmin()) return 'admin';
+    if (this.isLender()) return 'lender';
+    return 'user';
+  }
 }

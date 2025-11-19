@@ -34,17 +34,13 @@ export class HeaderComponent {
 
   // Get user-friendly role label
   getUserRoleLabel(): string {
-    const role = this.authService.userRole();
-    switch (role) {
-      case 'admin':
-        return 'Administrator';
-      case 'lender':
-        return 'Verleiher';
-      case 'user':
-        return 'Student';
-      default:
-        return 'Nutzer';
+    if (this.authService.isAdmin()) {
+      return 'Administrator';
     }
+    if (this.authService.isLender()) {
+      return 'Verleiher';
+    }
+    return 'Student';
   }
 
   onLogout() {

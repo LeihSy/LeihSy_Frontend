@@ -1,98 +1,171 @@
-<div class="p-8 max-w-3xl mx-auto">
-  <h1 class="text-3xl font-bold mb-4">Admin Dashboard</h1>
-  <p class="text-muted-foreground mb-6">Erstelle oder verwalte Gegenstände</p>
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
 
-  <p-card header="Neues Produkt anlegen">
+  <h1 class="text-3xl font-bold mb-4">Produktgruppen verwalten</h1>
+  <p class="text-muted-foreground mb-6">Erstelle, bearbeite oder lösche Produktgruppen</p>
 
+  <!-- Formular für Erstellen/Bearbeiten -->
+  <p-card [header]="isEditMode() ? 'Produkt bearbeiten' : 'Neues Produkt anlegen'" class="mb-6">
     <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
 
-      <div>
-        <label>Name *
-        <input pInputText formControlName="name" class="w-full" />
-        </label>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label>Inventarnummer *
+            <input pInputText formControlName="inventoryNumber" class="w-full" placeholder="z.B. CAM-001" />
+          </label>
+        </div>
+
+        <div>
+          <label>Name *
+            <input pInputText formControlName="name" class="w-full" placeholder="z.B. Canon EOS R5" />
+          </label>
+        </div>
       </div>
 
       <div>
         <label>Beschreibung
-        <textarea rows="4" formControlName="description" class="w-full" style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+          <textarea rows="3" formControlName="description" class="w-full"
+                    placeholder="Detaillierte Beschreibung des Produkts..."
+                    style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
         </label>
       </div>
 
-      <div>
-        <label>Ablaufdatum (Max. Ausleihdauer in Tagen)
-        <input type="number" pInputText formControlName="expiryDate" class="w-full" />
-        </label>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label>Kategorie *
+            <p-select
+              [options]="categories"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Kategorie wählen"
+              formControlName="categoryId"
+              class="w-full">
+            </p-select>
+          </label>
+        </div>
+
+        <div>
+          <label>Standort
+            <input pInputText formControlName="location"
+                   class="w-full" placeholder="z.B. F01.204" />
+          </label>
+        </div>
+
+        <div>
+          <label>Status *
+            <p-select
+              [options]="statusOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Status wählen"
+              formControlName="status"
+              class="w-full">
+            </p-select>
+          </label>
+        </div>
       </div>
 
-      <div>
-        <label>Preis (Tagessatz)
-        <input type="number" pInputText formControlName="price" class="w-full" />
-        </label>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label>Bild URL
+            <input pInputText formControlName="imageUrl"
+                   class="w-full" placeholder="https://..." />
+          </label>
+        </div>
+
+        <div>
+          <label>Zubehör (JSON-String)
+            <input pInputText formControlName="accessories" class="w-full"
+                   placeholder='["Controller", "Kabel"]' />
+          </label>
+        </div>
       </div>
 
-      <div>
-        <label>Kategorien * </label>
-        <p-multiSelect
-          [options]="categories"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Kategorien wählen"
-          formControlName="categoryId"
-          [showClear]="true"
-          class="w-full">
-        </p-multiSelect>
+      <div class="flex gap-2">
+        <button pButton type="submit"
+                [label]="isEditMode() ? 'Aktualisieren' : 'Erstellen'"
+                [disabled]="itemForm.invalid"></button>
+        @if (isEditMode()) {
+          <button pButton type="button" label="Abbrechen"
+                  class="p-button-secondary" (click)="resetForm()"></button>
+        }
       </div>
-
-      <div>
-        <label>Standort ID
-        <input type="number" pInputText formControlName="locationId" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Raumnummer
-        <input pInputText formControlName="locationRoomNr" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Verleiher ID
-        <input type="number" pInputText formControlName="lenderId" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Verleiher Name
-        <input pInputText formControlName="lenderName" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Bild URL
-        <input pInputText formControlName="imageUrl" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Zubehör (JSON-String)
-        <input pInputText formControlName="accessories" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Verfügbare Stück
-        <input type="number" pInputText formControlName="availableItems" class="w-full" />
-        </label>
-      </div>
-
-      <div>
-        <label>Gesamtstückzahl
-        <input type="number" pInputText formControlName="totalItems" class="w-full" />
-        </label>
-      </div>
-
-      <button pButton type="submit" label="Produkt speichern" [disabled]="itemForm.invalid"></button>
     </form>
+  </p-card>
 
+  <!-- Produktliste mit Suche -->
+  <p-card header="Vorhandene Produkte">
+    <!-- Suchfeld -->
+    <div class="mb-4">
+      <p-iconfield iconPosition="left">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input type="text" pInputText placeholder="Suche nach Name, Beschreibung, Kategorie..."
+               (input)="onSearchChange($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <!-- Tabelle -->
+    <p-table [value]="filteredProducts()" [loading]="isLoading()"
+             styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+             [scrollable]="true" scrollHeight="600px">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Inventarnummer</th>
+          <th>Name</th>
+          <th>Kategorie</th>
+          <th>Standort</th>
+          <th>Status</th>
+          <th>Aktionen</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td>{{ product.id }}</td>
+          <td>{{ product.inventoryNumber }}</td>
+          <td>
+            <strong>{{ product.name }}</strong>
+            <br>
+            <small class="text-gray-500">{{ product.description | slice:0:50 }}{{ product.description.length > 50 ? '...' : '' }}</small>
+          </td>
+          <td>{{ product.categoryName }}</td>
+          <td>{{ product.location || '-' }}</td>
+          <td>
+            <span [class]="'badge badge-' + product.status.toLowerCase()">
+              {{ product.status }}
+            </span>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <button pButton icon="pi pi-pencil"
+                      class="p-button-sm p-button-warning"
+                      (click)="editProduct(product)"
+                      pTooltip="Bearbeiten"></button>
+              <button pButton icon="pi pi-trash"
+                      class="p-button-sm p-button-danger"
+                      (click)="deleteProduct(product)"
+                      pTooltip="Löschen"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center text-gray-500 py-4">
+            @if (searchQuery()) {
+              Keine Produkte gefunden für "{{ searchQuery() }}"
+            } @else {
+              Keine Produkte vorhanden
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   </p-card>
 </div>
+

@@ -24,6 +24,37 @@
     }
   }
 
+  .p-button-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+
+    &:hover {
+      background-color: #5a6268 !important;
+      border-color: #5a6268 !important;
+    }
+  }
+
+  .p-button-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #000 !important;
+
+    &:hover {
+      background-color: #e0a800 !important;
+      border-color: #e0a800 !important;
+    }
+  }
+
+  .p-button-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+
+    &:hover {
+      background-color: #c82333 !important;
+      border-color: #c82333 !important;
+    }
+  }
+
   /* Status Badges */
   .badge {
     padding: 0.25rem 0.5rem;

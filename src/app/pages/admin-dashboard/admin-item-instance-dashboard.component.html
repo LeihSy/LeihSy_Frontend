@@ -1,76 +1,130 @@
-<div class="p-8 max-w-4xl mx-auto">
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
 
-  <h1 class="text-3xl font-bold mb-4">Physische Gegenstände</h1>
+  <h1 class="text-3xl font-bold mb-4">Einzelne Gegenstände verwalten</h1>
   <p class="text-muted-foreground mb-6">
-    Verwalte einzelne Instanzen eines Produkts
+    Erstelle, bearbeite oder lösche einzelne physische Gegenstände
   </p>
 
-  <p-card header="Neue Instanz anlegen">
-
+  <!-- Formular für Erstellen/Bearbeiten -->
+  <p-card [header]="isEditMode() ? 'Gegenstand bearbeiten' : 'Neuen Gegenstand anlegen'" class="mb-6">
     <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
 
-      <div>
-        <label>Inventarnummer *</label>
-        <input pInputText formControlName="invNumber" class="w-full" />
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label>Inventarnummer *
+            <input pInputText formControlName="inventoryNumber" class="w-full" />
+          </label>
+        </div>
+
+        <div>
+          <label>Name *
+            <input pInputText formControlName="name" class="w-full" />
+          </label>
+        </div>
       </div>
 
       <div>
-        <label>Besitzer *</label>
-        <input pInputText formControlName="owner" class="w-full" />
+        <label>Beschreibung
+          <textarea rows="3" formControlName="description" class="w-full"
+                    style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+        </label>
       </div>
 
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label>Kategorie ID *
+            <input type="number" pInputText formControlName="categoryId" class="w-full" />
+          </label>
+        </div>
+
+        <div>
+          <label>Standort
+            <input pInputText formControlName="location" class="w-full" />
+          </label>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label>Bild URL
+            <input pInputText formControlName="imageUrl" class="w-full" />
+          </label>
+        </div>
+
+        <div>
+          <label>Zubehör (JSON)
+            <input pInputText formControlName="accessories" class="w-full" />
+          </label>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button pButton type="submit"
+                [label]="isEditMode() ? 'Aktualisieren' : 'Erstellen'"
+                [disabled]="itemForm.invalid"></button>
+        @if (isEditMode()) {
+          <button pButton type="button" label="Abbrechen"
+                  class="p-button-secondary" (click)="resetForm()"></button>
+        }
+      </div>
+    </form>
+  </p-card>
+
+  <!-- Liste mit Suche und Filter -->
+  <p-card header="Vorhandene Gegenstände">
+
+    <!-- Suchfeld und Produktfilter -->
+    <div class="grid md:grid-cols-2 gap-4 mb-4">
       <div>
-        <label>Produkt *</label>
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input type="text" pInputText placeholder="Suche nach Name, Inventarnummer, Kategorie..."
+                 (input)="onSearchChange($any($event.target).value)"
+                 class="w-full" />
+        </p-iconfield>
+      </div>
+
+      <div class="flex items-center gap-2">
         <p-select
-          formControlName="productId"
           [options]="products()"
           optionLabel="label"
           optionValue="value"
-          placeholder="Produkt wählen">
+          placeholder="Nach Produkt filtern"
+          [(ngModel)]="selectedProductId"
+          [ngModelOptions]="{standalone: true}"
+          class="flex-1">
         </p-select>
-      </div>
-
-      <div>
-        <label>Verfügbar?</label>
-        <p-togglebutton formControlName="available"
-                        onLabel="Ja"
-                        offLabel="Nein">
-        </p-togglebutton>
-      </div>
-
-      <button pButton label="Instanz speichern" type="submit"
-              [disabled]="itemForm.invalid"></button>
-    </form>
-
-  </p-card>
-
-  <p-card header="Vorhandene Gegenstände" class="mt-6">
-
-    <!-- Filter Info und Reset -->
-    <div class="mb-4 flex items-center justify-between">
-      <div>
         @if (selectedProductId()) {
-          <span class="text-sm text-gray-600">
-            Gefiltert nach Produkt: <strong>{{ selectedProductName() }}</strong>
-          </span>
-        } @else {
-          <span class="text-sm text-gray-600">
-            Alle Gegenstände ({{ allItems().length }})
-          </span>
+          <button pButton icon="pi pi-times"
+                  class="p-button-sm p-button-outlined"
+                  (click)="resetFilter()"
+                  pTooltip="Filter zurücksetzen"></button>
         }
       </div>
+    </div>
+
+    <!-- Info -->
+    <div class="mb-4">
       @if (selectedProductId()) {
-        <button pButton
-                label="Filter zurücksetzen"
-                icon="pi pi-times"
-                class="p-button-sm p-button-outlined"
-                (click)="resetFilter()">
-        </button>
+        <span class="text-sm text-gray-600">
+          Gefiltert nach Produkt: <strong>{{ selectedProductName() }}</strong>
+        </span>
+      } @else if (searchQuery()) {
+        <span class="text-sm text-gray-600">
+          Suche: <strong>"{{ searchQuery() }}"</strong>
+        </span>
+      } @else {
+        <span class="text-sm text-gray-600">
+          Alle Gegenstände ({{ allItems().length }})
+        </span>
       }
     </div>
 
-    <!-- Tabelle mit gefilterten Items -->
-    <p-table [value]="filteredItems()" class="w-full">
+    <!-- Tabelle -->
+    <p-table [value]="filteredItems()" [loading]="isLoading()"
+             styleClass="p-datatable-sm" [paginator]="true" [rows]="10">
 
       <ng-template pTemplate="header">
         <tr>
@@ -78,8 +132,9 @@
           <th>Inventarnummer</th>
           <th>Name</th>
           <th>Kategorie</th>
-          <th>Status</th>
           <th>Standort</th>
+          <th>Status</th>
+          <th>Aktionen</th>
         </tr>
       </ng-template>
 
@@ -89,31 +144,41 @@
           <td>{{ item.inventoryNumber }}</td>
           <td>{{ item.name }}</td>
           <td>{{ item.categoryName }}</td>
+          <td>{{ item.location }}</td>
           <td>
             <span [class]="'badge badge-' + item.status.toLowerCase()">
               {{ item.status }}
             </span>
           </td>
-          <td>{{ item.location }}</td>
+          <td>
+            <div class="flex gap-2">
+              <button pButton icon="pi pi-pencil"
+                      class="p-button-sm p-button-warning"
+                      (click)="editItem(item)"
+                      pTooltip="Bearbeiten"></button>
+              <button pButton icon="pi pi-trash"
+                      class="p-button-sm p-button-danger"
+                      (click)="deleteItem(item)"
+                      pTooltip="Löschen"></button>
+            </div>
+          </td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center text-gray-500 py-4">
+          <td colspan="7" class="text-center text-gray-500 py-4">
             @if (isLoading()) {
               Lade Gegenstände...
-            } @else if (selectedProductId()) {
-              Keine Gegenstände für das ausgewählte Produkt gefunden.
+            } @else if (searchQuery() || selectedProductId()) {
+              Keine Gegenstände gefunden.
             } @else {
               Keine Gegenstände vorhanden.
             }
           </td>
         </tr>
       </ng-template>
-
     </p-table>
-
   </p-card>
-
 </div>
+

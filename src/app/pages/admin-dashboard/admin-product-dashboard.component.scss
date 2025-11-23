@@ -1,0 +1,39 @@
+:host ::ng-deep {
+  button,
+  .p-button {
+    background-color: #000080 !important;
+    border-color: #000080 !important;
+    color: white !important;
+
+    &:hover {
+      background-color: #000066 !important;
+      border-color: #000066 !important;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 0.2rem rgba(0, 0, 128, 0.5) !important;
+    }
+
+    &:disabled {
+      background-color: #000080 !important;
+      border-color: #000080 !important;
+      opacity: 0.6;
+    }
+  }
+
+  textarea,
+  .p-inputtextarea {
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px;
+
+    &:hover {
+      border-color: #9ca3af !important;
+    }
+
+    &:focus {
+      border-color: #000080 !important;
+      box-shadow: 0 0 0 0.2rem rgba(0, 0, 128, 0.1) !important;
+    }
+  }
+}
+

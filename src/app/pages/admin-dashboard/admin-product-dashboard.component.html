@@ -1,0 +1,98 @@
+<div class="p-8 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-bold mb-4">Admin Dashboard</h1>
+  <p class="text-muted-foreground mb-6">Erstelle oder verwalte Gegenstände</p>
+
+  <p-card header="Neues Produkt anlegen">
+
+    <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
+
+      <div>
+        <label>Name *
+        <input pInputText formControlName="name" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Beschreibung
+        <textarea rows="4" formControlName="description" class="w-full" style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+        </label>
+      </div>
+
+      <div>
+        <label>Ablaufdatum (Max. Ausleihdauer in Tagen)
+        <input type="number" pInputText formControlName="expiryDate" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Preis (Tagessatz)
+        <input type="number" pInputText formControlName="price" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Kategorien * </label>
+        <p-multiSelect
+          [options]="categories"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Kategorien wählen"
+          formControlName="categoryId"
+          [showClear]="true"
+          class="w-full">
+        </p-multiSelect>
+      </div>
+
+      <div>
+        <label>Standort ID
+        <input type="number" pInputText formControlName="locationId" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Raumnummer
+        <input pInputText formControlName="locationRoomNr" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Verleiher ID
+        <input type="number" pInputText formControlName="lenderId" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Verleiher Name
+        <input pInputText formControlName="lenderName" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Bild URL
+        <input pInputText formControlName="imageUrl" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Zubehör (JSON-String)
+        <input pInputText formControlName="accessories" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Verfügbare Stück
+        <input type="number" pInputText formControlName="availableItems" class="w-full" />
+        </label>
+      </div>
+
+      <div>
+        <label>Gesamtstückzahl
+        <input type="number" pInputText formControlName="totalItems" class="w-full" />
+        </label>
+      </div>
+
+      <button pButton type="submit" label="Produkt speichern" [disabled]="itemForm.invalid"></button>
+    </form>
+
+  </p-card>
+</div>

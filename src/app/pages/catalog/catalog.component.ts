@@ -16,13 +16,12 @@ import { BadgeModule } from 'primeng/badge';
 
 // Services & Models
 import { ProductService } from '../../services/product.service';
-import { Product, ProductStatus } from '../../models/product.model';
-
+import { Product } from '../../models/product.model';
 
 // Pipe
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 
-// Device Interface (für Asinas Template)
+// Device Interface (für UI)
 interface Device {
   id: number;
   name: string;
@@ -36,7 +35,7 @@ interface Device {
     loanPeriod: string;
   };
   location: string;
-  status: ProductStatus;
+  availableItems: number;
 }
 
 @Component({
@@ -58,7 +57,7 @@ interface Device {
   ],
   templateUrl: './catalog.component.html',
 })
-export class CatalogPageComponent implements OnInit {
+export class CatalogComponent implements OnInit {
   private productService = inject(ProductService);
   private router = inject(Router);
 
@@ -110,8 +109,8 @@ export class CatalogPageComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.productService.getAllProducts().subscribe({
-      next: (products) => {
+    this.productService.getProducts().subscribe({
+      next: (products: Product[]) => {
         console.log('Products loaded:', products);
         this.products.set(products);
 
@@ -123,7 +122,7 @@ export class CatalogPageComponent implements OnInit {
         this.extractCategories(products);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading products:', error);
         this.errorMessage.set('Fehler beim Laden der Produkte.');
         this.isLoading.set(false);
@@ -139,14 +138,14 @@ export class CatalogPageComponent implements OnInit {
       category: p.categoryName,
       description: p.description,
       availability: {
-        available: p.status === 'AVAILABLE' ? 1 : 0,
-        total: 1
+        available: p.availableItems,
+        total: p.totalItems
       },
       loanConditions: {
-        loanPeriod: '7 Tage'
+        loanPeriod: `${p.expiryDate} Tage`
       },
-      location: p.location,
-      status: p.status
+      location: p.locationRoomNr,
+      availableItems: p.availableItems
     }));
   }
 
@@ -175,20 +174,26 @@ export class CatalogPageComponent implements OnInit {
       filtered = filtered.filter(d => d.category === this.selectedCategory);
     }
 
-    // Campus (aktuell kein Backend Field - könnte aus location gefiltert werden)
+    // Campus
     if (this.selectedCampus) {
-      // TODO: Filtern nach Campus wenn Backend das unterstützt
+      filtered = filtered.filter(d => {
+        const location = d.location.toLowerCase();
+        if (this.selectedCampus.includes('Flandernstraße')) {
+          return location.includes('flandernstra') || location.startsWith('f');
+        }
+        if (this.selectedCampus.includes('Stadtmitte')) {
+          return location.includes('stadtmitte') || location.startsWith('s');
+        }
+        return true;
+      });
     }
 
     // Verfügbarkeit
     if (this.availabilityFilter === 'available') {
-      filtered = filtered.filter(d => d.status === 'AVAILABLE');
+      filtered = filtered.filter(d => d.availableItems > 0);
     } else if (this.availabilityFilter === 'borrowed') {
-      filtered = filtered.filter(d => d.status === 'BORROWED');
+      filtered = filtered.filter(d => d.availableItems === 0);
     }
-
-    // Datumsbereich (aktuell keine Booking-Daten)
-    // TODO: Filter nach Verfügbarkeit im Zeitraum wenn Bookings implementiert sind
 
     this.filteredDevices.set(filtered);
   }

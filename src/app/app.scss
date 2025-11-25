@@ -1,0 +1,156 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+header {
+  background: linear-gradient(135deg, #012E58 0%, #32424A 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0 0 1rem 0;
+    font-size: 2rem;
+  }
+}
+
+.user-info {
+  p {
+    margin: 0.5rem 0;
+  }
+
+  strong {
+    color: #00A63E;
+  }
+}
+
+.role-badges {
+  margin: 1rem 0;
+
+  .badge {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    &.admin {
+      background: #C10007;
+      color: white;
+    }
+
+    &.lender {
+      background: #00A63E;
+      color: white;
+    }
+
+    &.user {
+      background: #253359;
+      color: white;
+    }
+  }
+}
+
+// Navigation Menu
+.nav-menu {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  flex-wrap: wrap;
+
+  a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      background: #00A63E;
+      color: white;
+    }
+
+    // Spezial-Style für Lender-Link
+    &.lender-link {
+      background: rgba(255, 215, 0, 0.15);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+
+      &:hover {
+        background: rgba(255, 215, 0, 0.25);
+        border-color: rgba(255, 215, 0, 0.5);
+      }
+
+      &.active {
+        background: #FFD700;
+        color: #012E58;
+        border-color: #FFD700;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Buttons
+.btn-logout,
+.btn-login {
+  background: #C10007;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #a00006;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.btn-login {
+  background: #00A63E;
+
+  &:hover {
+    background: #008c34;
+  }
+}
+
+.login-info {
+  p {
+    margin: 0 0 1rem 0;
+  }
+}
+
+main {
+  min-height: 60vh;
+}
+
+.error {
+  color: #C10007;
+  background: #fff0f0;
+  padding: 1rem;
+  border-radius: 4px;
+  border-left: 4px solid #C10007;
+}

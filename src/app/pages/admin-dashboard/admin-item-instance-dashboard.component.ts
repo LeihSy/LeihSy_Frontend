@@ -134,7 +134,7 @@ export class AdminItemInstanceComponent implements OnInit {
 
   loadProducts() {
     this.isLoading.set(true);
-    this.productService.getAllProducts().subscribe({
+    this.productService.getProducts().subscribe({
       next: (products) => {
         console.log('Products loaded:', products);
         this.allProducts.set(products);

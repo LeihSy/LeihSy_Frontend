@@ -12,19 +12,14 @@ import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { TabsModule } from 'primeng/tabs';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { CommonModule } from '@angular/common';
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
-
-// Temporäres Category Interface für Mock-Daten
-interface MockCategory {
-  id: number;
-  name: string;
-  description?: string;
-}
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -42,7 +37,9 @@ interface MockCategory {
     InputIconModule,
     ConfirmDialogModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    TabsModule,
+    InputNumberModule
   ],
   templateUrl: './admin-product-dashboard.component.html',
   styleUrls: ['./admin-product-dashboard.component.scss'],
@@ -59,24 +56,17 @@ export class AdminProductDashboardComponent {
   editingProductId = signal<number | null>(null);
   searchQuery = signal('');
 
-  // Mock-Kategorien bis Backend fertig ist
-  categories: MockCategory[] = [
-    { id: 1, name: 'Kamera', description: 'Foto- und Videokameras' },
-    { id: 2, name: 'Audio', description: 'Mikrofone und Audio-Equipment' },
-    { id: 3, name: 'Licht', description: 'Beleuchtung und Lichttechnik' },
-    { id: 4, name: 'Stativ', description: 'Kamera- und Lichtstative' },
-    { id: 5, name: 'Objektiv', description: 'Wechselobjektive' },
-    { id: 6, name: 'Zubehör', description: 'Diverses Zubehör' }
+  // Temporary frontend category list
+  categories = [
+    { id: 1, name: 'Kamera' },
+    { id: 2, name: 'Audio' },
+    { id: 3, name: 'Licht' },
+    { id: 4, name: 'Stativ' },
+    { id: 5, name: 'Objektiv' },
+    { id: 6, name: 'Zubehör' }
   ];
 
-  // Status-Optionen
-  statusOptions = [
-    { label: 'Verfügbar', value: 'AVAILABLE' },
-    { label: 'Ausgeliehen', value: 'BORROWED' },
-    { label: 'Wartung', value: 'MAINTENANCE' }
-  ];
-
-  // Gefilterte Produkte basierend auf Suche
+  // Filtered list
   filteredProducts = computed(() => {
     const products = this.allProducts();
     const query = this.searchQuery().toLowerCase().trim();
@@ -86,9 +76,7 @@ export class AdminProductDashboardComponent {
     return products.filter(p =>
       p.name.toLowerCase().includes(query) ||
       p.description.toLowerCase().includes(query) ||
-      p.categoryName.toLowerCase().includes(query) ||
-      p.inventoryNumber.toLowerCase().includes(query) ||
-      p.location.toLowerCase().includes(query)
+      p.categoryName.toLowerCase().includes(query)
     );
   });
 
@@ -99,6 +87,7 @@ export class AdminProductDashboardComponent {
     private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
   ) {
+
     this.itemForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
@@ -107,26 +96,26 @@ export class AdminProductDashboardComponent {
       imageUrl: [''],
       accessories: [''],
       categoryId: [null, Validators.required],
-      locationId: [null],
-      locationRoomNr: [''],
+      locationId: [null, Validators.required],
+      locationRoomNr: ['', Validators.required],
       lenderId: [null],
       lenderName: [''],
       availableItems: [0, Validators.min(0)],
-      totalItems: [0, Validators.min(0)]
+      totalItems: [0, Validators.min(1)]
     });
 
     this.loadProducts();
   }
 
-  // Lade alle Produkte
+  // Load all products
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getAllProducts().subscribe({
-      next: (products) => {
+    this.productService.getProducts().subscribe({
+      next: (products: Product[]) => {
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Fehler beim Laden der Produkte:', err);
         this.messageService.add({
           severity: 'error',
@@ -138,16 +127,16 @@ export class AdminProductDashboardComponent {
     });
   }
 
-  // Produkt erstellen oder aktualisieren
-  submitForm() {
+  // Create or update
+  submitForm(): void {
     if (!this.itemForm.valid) return;
 
-    const product = this.itemForm.value;
+    const dto = this.itemForm.value;
     const editId = this.editingProductId();
 
     if (editId !== null) {
       // Update
-      this.productService.updateProduct(editId, product).subscribe({
+      this.productService.updateProduct(editId, dto).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -157,7 +146,7 @@ export class AdminProductDashboardComponent {
           this.resetForm();
           this.loadProducts();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error(err);
           this.messageService.add({
             severity: 'error',
@@ -166,9 +155,10 @@ export class AdminProductDashboardComponent {
           });
         }
       });
+
     } else {
       // Create
-      this.productService.createProduct(product).subscribe({
+      this.productService.createProduct(dto).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -178,7 +168,7 @@ export class AdminProductDashboardComponent {
           this.resetForm();
           this.loadProducts();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error(err);
           this.messageService.add({
             severity: 'error',
@@ -190,27 +180,29 @@ export class AdminProductDashboardComponent {
     }
   }
 
-  // Produkt zum Bearbeiten auswählen
   editProduct(product: Product): void {
     this.isEditMode.set(true);
     this.editingProductId.set(product.id);
 
     this.itemForm.patchValue({
-      inventoryNumber: product.inventoryNumber,
       name: product.name,
       description: product.description,
-      categoryId: product.categoryId,
-      location: product.location,
+      expiryDate: product.expiryDate,
+      price: product.price,
       imageUrl: product.imageUrl,
       accessories: product.accessories,
-      status: product.status
+      categoryId: product.categoryId,
+      locationId: product.locationId,
+      locationRoomNr: product.locationRoomNr,
+      lenderId: product.lenderId,
+      lenderName: product.lenderName,
+      availableItems: product.availableItems,
+      totalItems: product.totalItems
     });
 
-    // Scroll zum Formular
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Produkt löschen mit Bestätigung
   deleteProduct(product: Product): void {
     this.confirmationService.confirm({
       message: `Möchten Sie das Produkt "${product.name}" wirklich löschen?`,
@@ -228,7 +220,7 @@ export class AdminProductDashboardComponent {
             });
             this.loadProducts();
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error(err);
             this.messageService.add({
               severity: 'error',
@@ -241,18 +233,13 @@ export class AdminProductDashboardComponent {
     });
   }
 
-  // Formular zurücksetzen
   resetForm(): void {
-    this.itemForm.reset({
-      status: 'AVAILABLE'
-    });
+    this.itemForm.reset();
     this.isEditMode.set(false);
     this.editingProductId.set(null);
   }
 
-  // Suche aktualisieren
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
   }
 }
-

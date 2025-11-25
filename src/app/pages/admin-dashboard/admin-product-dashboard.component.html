@@ -5,7 +5,6 @@
   <h1 class="text-3xl font-bold mb-4">Produktgruppen verwalten</h1>
   <p class="text-muted-foreground mb-6">Erstelle, bearbeite oder lösche Produktgruppen</p>
 
-  <!-- Formular für Erstellen/Bearbeiten -->
   <p-card [header]="isEditMode() ? 'Produkt bearbeiten' : 'Neues Produkt anlegen'" class="mb-6">
     <form [formGroup]="itemForm" (ngSubmit)="submitForm()">
 
@@ -16,7 +15,6 @@
         </p-tablist>
 
         <p-tabpanels>
-          <!-- Tab 1: Allgemeine Informationen -->
           <p-tabpanel value="0">
             <div class="grid gap-4 mt-4">
 
@@ -63,7 +61,6 @@
           </div>
           </p-tabpanel>
 
-          <!-- Tab 2: Produkt Details -->
           <p-tabpanel value="1">
             <div class="grid gap-4 mt-4">
 
@@ -170,7 +167,6 @@
     </form>
   </p-card>
 
-  <!-- Produktliste mit Suche -->
   <p-card header="Vorhandene Produkte">
 
     <div class="mb-4">

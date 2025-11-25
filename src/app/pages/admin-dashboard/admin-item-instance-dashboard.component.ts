@@ -47,53 +47,38 @@ export class AdminItemInstanceComponent implements OnInit {
 
   itemForm!: FormGroup;
 
-  // Signals für State Management
+
   allItems = signal<Item[]>([]);
   allProducts = signal<Product[]>([]);
-  selectedProductId = signal<number | null>(null);
+  selectedProductForNewItem = signal<Product | null>(null);
   isLoading = signal(true);
-  errorMessage = signal<string | null>(null);
   isEditMode = signal(false);
   editingItemId = signal<number | null>(null);
   searchQuery = signal('');
+  showItemForm = signal(false);
+  expandedProductIds = signal<Set<number>>(new Set());
 
-  // Computed Properties
-  products = computed(() => {
-    return this.allProducts().map(p => ({
-      label: p.name,
-      value: p.id
-    }));
-  });
 
-  selectedProductName = computed(() => {
-    const productId = this.selectedProductId();
-    if (!productId) return '';
-    const product = this.allProducts().find(p => p.id === productId);
-    return product?.name || '';
-  });
-
-  filteredItems = computed(() => {
+  productsWithItems = computed(() => {
+    const products = this.allProducts();
     const items = this.allItems();
-    const productId = this.selectedProductId();
     const query = this.searchQuery().toLowerCase().trim();
 
-    let filtered = items;
+    let filtered = products.map(product => {
+      const productItems = items.filter(item => item.productId === product.id);
+      return {
+        product,
+        items: productItems,
+        availableCount: productItems.filter(i => i.available).length,
+        totalCount: productItems.length
+      };
+    });
 
-    // Filter nach Produktname
-    if (productId) {
-      const selectedProduct = this.allProducts().find(p => p.id === productId);
-      if (selectedProduct) {
-        filtered = filtered.filter(item => item.name === selectedProduct.name);
-      }
-    }
 
-    // Filter nach Suchbegriff
     if (query) {
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(query) ||
-        item.inventoryNumber.toLowerCase().includes(query) ||
-        item.categoryName.toLowerCase().includes(query) ||
-        item.location.toLowerCase().includes(query)
+      filtered = filtered.filter(p =>
+        p.product.name.toLowerCase().includes(query) ||
+        p.product.categoryName.toLowerCase().includes(query)
       );
     }
 
@@ -110,22 +95,10 @@ export class AdminItemInstanceComponent implements OnInit {
 
   ngOnInit(): void {
     this.itemForm = this.fb.group({
-      inventoryNumber: ['', Validators.required],
-      name: ['', Validators.required],
-      description: [''],
-      categoryId: [null, Validators.required],
-      location: [''],
-      imageUrl: [''],
-      accessories: [''],
-      status: ['AVAILABLE']
-    });
-
-    this.itemForm.get('name')?.valueChanges.subscribe(value => {
-      // Wenn ein Name eingegeben wird, versuche das entsprechende Produkt zu finden
-      const product = this.allProducts().find(p => p.name === value);
-      if (product) {
-        this.selectedProductId.set(product.id);
-      }
+      invNumber: ['', Validators.required],
+      owner: ['', Validators.required],
+      productId: [null, Validators.required],
+      available: [true]
     });
 
     this.loadProducts();
@@ -223,36 +196,27 @@ export class AdminItemInstanceComponent implements OnInit {
     }
   }
 
-  // Item zum Bearbeiten auswählen
+
   editItem(item: Item): void {
     this.isEditMode.set(true);
     this.editingItemId.set(item.id);
+    this.showItemForm.set(true);
 
     this.itemForm.patchValue({
-      inventoryNumber: item.inventoryNumber,
-      name: item.name,
-      description: item.description,
-      categoryId: item.categoryId,
-      location: item.location,
-      imageUrl: item.imageUrl,
-      accessories: item.accessories,
-      status: item.status
+      invNumber: item.invNumber,
+      owner: item.owner,
+      productId: item.productId,
+      available: item.available
     });
 
-    // Setze das ausgewählte Produkt
-    const product = this.allProducts().find(p => p.name === item.name);
-    if (product) {
-      this.selectedProductId.set(product.id);
-    }
 
-    // Scroll zum Formular
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Item löschen mit Bestätigung
+
   deleteItem(item: Item): void {
     this.confirmationService.confirm({
-      message: `Möchten Sie den Gegenstand "${item.name}" (${item.inventoryNumber}) wirklich löschen?`,
+      message: `Möchten Sie den Gegenstand "${item.productName}" (${item.invNumber}) wirklich löschen?`,
       header: 'Löschen bestätigen',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Ja, löschen',
@@ -280,20 +244,46 @@ export class AdminItemInstanceComponent implements OnInit {
     });
   }
 
-  // Formular zurücksetzen
   resetForm(): void {
-    this.itemForm.reset({ status: 'AVAILABLE' });
+    this.itemForm.reset({ available: true });
     this.isEditMode.set(false);
     this.editingItemId.set(null);
+    this.showItemForm.set(false);
+    this.selectedProductForNewItem.set(null);
   }
 
-  // Filter zurücksetzen (nur Produktfilter)
-  resetFilter() {
-    this.selectedProductId.set(null);
+  addItemForProduct(product: Product): void {
+    this.selectedProductForNewItem.set(product);
+    this.showItemForm.set(true);
+    this.isEditMode.set(false);
+    this.editingItemId.set(null);
+
+    this.itemForm.reset({
+      productId: product.id,
+      available: true
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Suche aktualisieren
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
+  }
+
+  toggleProductExpansion(productId: number): void {
+    const expanded = this.expandedProductIds();
+    const newExpanded = new Set(expanded);
+
+    if (newExpanded.has(productId)) {
+      newExpanded.delete(productId);
+    } else {
+      newExpanded.add(productId);
+    }
+
+    this.expandedProductIds.set(newExpanded);
+  }
+
+  isProductExpanded(productId: number): boolean {
+    return this.expandedProductIds().has(productId);
   }
 }

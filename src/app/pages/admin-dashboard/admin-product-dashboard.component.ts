@@ -56,7 +56,6 @@ export class AdminProductDashboardComponent {
   editingProductId = signal<number | null>(null);
   searchQuery = signal('');
 
-  // Temporary frontend category list
   categories = [
     { id: 1, name: 'Kamera' },
     { id: 2, name: 'Audio' },
@@ -66,7 +65,6 @@ export class AdminProductDashboardComponent {
     { id: 6, name: 'Zubehör' }
   ];
 
-  // Filtered list
   filteredProducts = computed(() => {
     const products = this.allProducts();
     const query = this.searchQuery().toLowerCase().trim();
@@ -107,7 +105,6 @@ export class AdminProductDashboardComponent {
     this.loadProducts();
   }
 
-  // Load all products
   loadProducts(): void {
     this.isLoading.set(true);
     this.productService.getProducts().subscribe({
@@ -127,7 +124,6 @@ export class AdminProductDashboardComponent {
     });
   }
 
-  // Create or update
   submitForm(): void {
     if (!this.itemForm.valid) return;
 
@@ -135,7 +131,6 @@ export class AdminProductDashboardComponent {
     const editId = this.editingProductId();
 
     if (editId !== null) {
-      // Update
       this.productService.updateProduct(editId, dto).subscribe({
         next: () => {
           this.messageService.add({
@@ -157,7 +152,6 @@ export class AdminProductDashboardComponent {
       });
 
     } else {
-      // Create
       this.productService.createProduct(dto).subscribe({
         next: () => {
           this.messageService.add({

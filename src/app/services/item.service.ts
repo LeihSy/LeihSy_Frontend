@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Item, ItemCreate, ItemStatus } from '../models/item.model';
+import { Item, ItemCreate } from '../models/item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -43,8 +43,8 @@ export class ItemService {
     });
   }
 
-  // GET /api/items/status/{status}
-  getItemsByStatus(status: ItemStatus): Observable<Item[]> {
-    return this.http.get<Item[]>(`${this.apiUrl}/status/${status}`);
+  // GET /api/items/available - Gibt nur verfügbare Items zurück
+  getAvailableItems(): Observable<Item[]> {
+    return this.http.get<Item[]>(`${this.apiUrl}/available`);
   }
 }

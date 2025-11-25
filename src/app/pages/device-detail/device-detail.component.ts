@@ -7,9 +7,6 @@ import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
-// Import Device Interface (für Template Kompatibilität)
-import { Device } from '../../interfaces/device.model';
-
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
 
@@ -20,6 +17,39 @@ import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { PrimeNG } from 'primeng/config';
+
+// Device Interface (für UI-Kompatibilität)
+interface Device {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  inventoryNumber?: string;
+  availability: {
+    available: number;
+    total: number;
+    borrowed: number;
+  };
+  campusAvailability: Array<{
+    campus: string;
+    location: string;
+    available: number;
+    total: number;
+  }>;
+  technicalSpecs?: {
+    storage?: string;
+    sensor?: string;
+    accessories?: string[];
+  };
+  loanConditions: {
+    loanPeriod: string;
+    extensions: string;
+    notes: string;
+  };
+  keywords: string[];
+  price?: number;
+  expiryDate?: number;
+}
 
 @Component({
   selector: 'app-device-detail-page',
@@ -82,18 +112,18 @@ export class DeviceDetailPageComponent implements OnInit {
     this.errorMessage.set(null);
 
     this.productService.getProductById(id).subscribe({
-      next: (product) => {
+      next: (product: Product) => {
         console.log('Product loaded:', product);
         this.device = this.mapProductToDevice(product);
 
-        // Finde Campus Daten (aktuell Mock - später aus Backend)
+        // Finde Campus Daten
         this.flandernstrasseData = this.device.campusAvailability.find(
           (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
         );
 
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading product:', error);
         this.errorMessage.set('Produkt konnte nicht geladen werden.');
         this.isLoading.set(false);
@@ -103,38 +133,41 @@ export class DeviceDetailPageComponent implements OnInit {
 
   // Konvertiere Backend Product zu Frontend Device
   private mapProductToDevice(product: Product): Device {
+    const accessories = this.parseAccessories(product.accessories);
+
     return {
       id: product.id.toString(),
       name: product.name,
       category: product.categoryName,
       description: product.description,
-      inventoryNumber: product.inventoryNumber,
+      price: product.price,
+      expiryDate: product.expiryDate,
 
       // Verfügbarkeit
       availability: {
-        available: product.status === 'AVAILABLE' ? 1 : 0,
-        total: 1,
-        borrowed: product.status === 'BORROWED' ? 1 : 0
+        available: product.availableItems,
+        total: product.totalItems,
+        borrowed: product.totalItems - product.availableItems
       },
 
       // Campus Verfügbarkeit
       campusAvailability: [
         {
           campus: 'Campus Esslingen Flandernstraße',
-          location: product.location,
-          available: product.status === 'AVAILABLE' ? 1 : 0,
-          total: 1,
+          location: product.locationRoomNr,
+          available: product.availableItems,
+          total: product.totalItems,
         }
       ],
 
       // Technische Specs
       technicalSpecs: {
-        accessories: product.accessories ? product.accessories.split(',').map(a => a.trim()) : []
+        accessories: accessories
       },
 
       // Ausleihbedingungen
       loanConditions: {
-        loanPeriod: '7 Tage',
+        loanPeriod: `${product.expiryDate} Tage`,
         extensions: 'Maximal 2 Verlängerungen möglich',
         notes: 'Rechtzeitige Rückgabe erforderlich'
       },
@@ -144,9 +177,14 @@ export class DeviceDetailPageComponent implements OnInit {
     };
   }
 
-  // Gibt das gesamte Datenobjekt für den aktuell ausgewählten Campus zurück
-  get selectedCampusData(): Device['campusAvailability'][0] | undefined {
-    return this.device?.campusAvailability.find((ca) => ca.campus === this.selectedCampus);
+  // Parse Accessories JSON
+  private parseAccessories(accessories: string | null): string[] {
+    if (!accessories) return [];
+    try {
+      return JSON.parse(accessories);
+    } catch {
+      return [];
+    }
   }
 
   // Navigiert zur vorherigen Seite zurück

@@ -1,29 +1,37 @@
-export enum ProductStatus {
-  AVAILABLE = 'AVAILABLE',
-  BORROWED = 'BORROWED',
-  MAINTENANCE = 'MAINTENANCE'
-}
-
 export interface Product {
   id: number;
-  inventoryNumber: string;
   name: string;
   description: string;
+  expiryDate: number;
+  price: number;
+  imageUrl: string | null;
+  accessories: string | null; // JSON-String
+
+  // Relations
   categoryId: number;
   categoryName: string;
-  location: string;
-  imageUrl: string | null;
-  status: ProductStatus;
-  accessories: string;
+  locationId: number;
+  locationRoomNr: string;
+  lenderId: number;
+  lenderName: string;
+
+  // Availability
+  availableItems: number;
+  totalItems: number;
+
+  // Timestamps
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductCreateDTO {
-  inventoryNumber: string;
   name: string;
   description: string;
   categoryId: number;
-  location: string;
+  locationId: number;
+  lenderId: number;
+  expiryDate: number;
+  price: number;
   imageUrl?: string;
-  status: ProductStatus;
   accessories?: string;
 }

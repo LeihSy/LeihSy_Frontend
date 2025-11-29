@@ -36,6 +36,7 @@ interface Device {
   };
   location: string;
   availableItems: number;
+  imageUrl: string | null;  // NEU: Bild-URL
 }
 
 @Component({
@@ -67,6 +68,9 @@ export class CatalogComponent implements OnInit {
   filteredDevices = signal<Device[]>([]);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+
+  // Image Error Tracking (um Endlos-Reload zu vermeiden)
+  private imageErrorMap = new Map<number, boolean>();
 
   // Filters
   searchQuery = '';
@@ -145,7 +149,8 @@ export class CatalogComponent implements OnInit {
         loanPeriod: `${p.expiryDate} Tage`
       },
       location: p.locationRoomNr,
-      availableItems: p.availableItems
+      availableItems: p.availableItems,
+      imageUrl: p.imageUrl  // NEU: Bild-URL übernehmen
     }));
   }
 
@@ -202,4 +207,55 @@ export class CatalogComponent implements OnInit {
   onViewDevice(deviceId: number) {
     this.router.navigate(['/device', deviceId]);
   }
+
+  /**
+   * Gibt die vollständige Bild-URL zurück
+   */
+  getImageUrl(deviceId: number): string | null {
+    const device = this.devices().find(d => d.id === deviceId);
+    if (!device || !device.imageUrl) {
+      return null;
+    }
+
+    if (this.imageErrorMap.get(deviceId)) {
+      return null;
+    }
+
+    const imageUrl = device.imageUrl;
+
+    // Fall 1: Absolute URL
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+
+    // Fall 2: Backend API Pfad (/api/images/...)
+    if (imageUrl.startsWith('/api/images/')) {
+      return `http://localhost:8080${imageUrl}`;
+    }
+
+    // Fall 3: Legacy Assets (/assets/...) → Backend
+    if (imageUrl.startsWith('/assets/images/')) {
+      const filename = imageUrl.replace('/assets/images/', '');
+      return `http://localhost:8080/api/images/${filename}`;
+    }
+
+    // Fall 4: Nur Filename
+    return `http://localhost:8080/api/images/${imageUrl}`;
+  }
+
+  /**
+   * Error-Handler wenn Bild nicht geladen werden kann
+   * Setzt Fallback auf Icon und verhindert Endlos-Reload
+   */
+  onImageError(event: Event, device: Device): void {
+    console.warn(`Image load error for device ${device.id}:`, device.imageUrl);
+
+    // Markiere als fehlerhaft → Template zeigt Icon
+    this.imageErrorMap.set(device.id, true);
+
+    // Verhindere weiteren Reload-Versuch
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
+
 }

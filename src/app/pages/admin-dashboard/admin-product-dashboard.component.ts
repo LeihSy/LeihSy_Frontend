@@ -55,6 +55,8 @@ export class AdminProductDashboardComponent {
   isEditMode = signal(false);
   editingProductId = signal<number | null>(null);
   searchQuery = signal('');
+  selectedFile = signal<File | null>(null);
+  imagePreview = signal<string | null>(null);
 
   categories = [
     { id: 1, name: 'Kamera' },
@@ -129,9 +131,10 @@ export class AdminProductDashboardComponent {
 
     const dto = this.itemForm.value;
     const editId = this.editingProductId();
+    const imageFile = this.selectedFile();
 
     if (editId !== null) {
-      this.productService.updateProduct(editId, dto).subscribe({
+      this.productService.updateProduct(editId, dto, imageFile).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -152,7 +155,7 @@ export class AdminProductDashboardComponent {
       });
 
     } else {
-      this.productService.createProduct(dto).subscribe({
+      this.productService.createProduct(dto, imageFile).subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -175,6 +178,9 @@ export class AdminProductDashboardComponent {
   }
 
   editProduct(product: Product): void {
+    this.selectedFile.set(null);
+    this.imagePreview.set(null);
+
     this.isEditMode.set(true);
     this.editingProductId.set(product.id);
 
@@ -193,6 +199,10 @@ export class AdminProductDashboardComponent {
       availableItems: product.availableItems,
       totalItems: product.totalItems
     });
+
+    if (product.imageUrl) {
+      this.imagePreview.set('http://localhost:8080' + product.imageUrl);
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -231,9 +241,51 @@ export class AdminProductDashboardComponent {
     this.itemForm.reset();
     this.isEditMode.set(false);
     this.editingProductId.set(null);
+    this.selectedFile.set(null);
+    this.imagePreview.set(null);
   }
 
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Nur JPG, PNG und WebP Dateien erlaubt'
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Datei zu groß (max. 5MB)'
+        });
+        return;
+      }
+
+      this.selectedFile.set(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(): void {
+    this.selectedFile.set(null);
+    this.imagePreview.set(null);
+    this.itemForm.patchValue({ imageUrl: null });
   }
 }

@@ -1,32 +1,17 @@
-export enum ItemStatus {
-  AVAILABLE = 'AVAILABLE',
-  RESERVED = 'RESERVED',
-  BORROWED = 'BORROWED',
-  MAINTENANCE = 'MAINTENANCE',
-  UNAVAILABLE = 'UNAVAILABLE'
-}
-
 export interface Item {
   id: number;
-  inventoryNumber: string;
-  name: string;
-  description: string;
-  categoryId: number;
-  categoryName: string;
-  location: string;
-  imageUrl?: string;
-  status: ItemStatus;
-  accessories?: string;
+  invNumber: string;            // Inventarnummer z.B. "VR-001"
+  owner: string;                // Besitzer
+  productId: number;
+  productName: string;
+  available: boolean;
 }
 
 export interface ItemCreate {
-  inventoryNumber: string;
-  name: string;
-  description?: string;
-  categoryId: number;
-  location?: string;
-  imageUrl?: string;
-  accessories?: string;
+  invNumber: string;
+  owner: string;
+  productId: number;
+  available?: boolean;
 }
 
 export interface Category {

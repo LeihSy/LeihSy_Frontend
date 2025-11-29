@@ -1,0 +1,243 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <h1 class="text-3xl font-bold mb-4">Produktgruppen verwalten</h1>
+  <p class="text-muted-foreground mb-6">Erstelle, bearbeite oder lösche Produktgruppen</p>
+
+  <p-card [header]="isEditMode() ? 'Produkt bearbeiten' : 'Neues Produkt anlegen'" class="mb-6">
+    <form [formGroup]="itemForm" (ngSubmit)="submitForm()">
+
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0">Allgemeine Informationen</p-tab>
+          <p-tab value="1">Produkt Details</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <p-tabpanel value="0">
+            <div class="grid gap-4 mt-4">
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 font-semibold">Name *</label>
+                <input pInputText formControlName="name" class="w-full"
+                       placeholder="z.B. Canon EOS R5" />
+              </div>
+
+              <div>
+                <label class="block mb-2 font-semibold">Kategorie *</label>
+                <p-select
+                  [options]="categories"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Kategorie wählen"
+                  formControlName="categoryId"
+                  class="w-full">
+                </p-select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block mb-2 font-semibold">Beschreibung</label>
+              <textarea rows="4" formControlName="description" class="w-full"
+                        placeholder="Detaillierte Beschreibung des Produkts..."
+                        style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+            </div>
+
+            <div>
+              <label class="block mb-2 font-semibold">Bild URL</label>
+              <input pInputText formControlName="imageUrl" class="w-full"
+                     placeholder="https://example.com/bild.jpg" />
+            </div>
+
+            <div>
+              <label class="block mb-2 font-semibold">Zubehör (JSON-String)</label>
+              <input pInputText formControlName="accessories" class="w-full"
+                     placeholder='["Controller", "Kabel", "Netzteil"]' />
+              <small class="text-gray-500">Format: JSON-Array als String</small>
+            </div>
+
+          </div>
+          </p-tabpanel>
+
+          <p-tabpanel value="1">
+            <div class="grid gap-4 mt-4">
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 font-semibold">Max. Ausleihdauer (Tage) *</label>
+                <p-inputNumber formControlName="expiryDate"
+                               [min]="1"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 7">
+                </p-inputNumber>
+              </div>
+
+              <div>
+                <label class="block mb-2 font-semibold">Preis / Tagessatz (€) *</label>
+                <p-inputNumber formControlName="price"
+                               [min]="0"
+                               [minFractionDigits]="2"
+                               [maxFractionDigits]="2"
+                               mode="currency"
+                               currency="EUR"
+                               [showButtons]="true"
+                               class="w-full">
+                </p-inputNumber>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 font-semibold">Standort ID *</label>
+                <p-inputNumber formControlName="locationId"
+                               [min]="1"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 1">
+                </p-inputNumber>
+              </div>
+
+              <div>
+                <label class="block mb-2 font-semibold">Raum / Standort *</label>
+                <input pInputText formControlName="locationRoomNr"
+                       class="w-full" placeholder="z.B. F01.204" />
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 font-semibold">Verleiher ID</label>
+                <p-inputNumber formControlName="lenderId"
+                               [min]="1"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 1">
+                </p-inputNumber>
+              </div>
+
+              <div>
+                <label class="block mb-2 font-semibold">Verleiher Name</label>
+                <input pInputText formControlName="lenderName"
+                       class="w-full" placeholder="Name des Verleihers" />
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block mb-2 font-semibold">Verfügbare Exemplare</label>
+                <p-inputNumber formControlName="availableItems"
+                               [min]="0"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 5">
+                </p-inputNumber>
+              </div>
+
+              <div>
+                <label class="block mb-2 font-semibold">Gesamt Exemplare *</label>
+                <p-inputNumber formControlName="totalItems"
+                               [min]="1"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 10">
+                </p-inputNumber>
+              </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+              <button pButton type="submit"
+                      [label]="isEditMode() ? 'Aktualisieren' : 'Erstellen'"
+                      [disabled]="itemForm.invalid"></button>
+
+              @if (isEditMode()) {
+                <button pButton type="button" label="Abbrechen"
+                        class="p-button-secondary" (click)="resetForm()"></button>
+              }
+            </div>
+
+          </div>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+
+    </form>
+  </p-card>
+
+  <p-card header="Vorhandene Produkte">
+
+    <div class="mb-4">
+      <p-iconfield iconPosition="left">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input type="text" pInputText placeholder="Suche nach Name, Beschreibung, Kategorie..."
+               (input)="onSearchChange($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <p-table [value]="filteredProducts()" [loading]="isLoading()"
+             styleClass="p-datatable-sm" [paginator]="true" [rows]="10"
+             [scrollable]="true" scrollHeight="600px">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Kategorie</th>
+          <th>Standort</th>
+          <th>Preis/Tag</th>
+          <th>Verfügbar/Gesamt</th>
+          <th style="width: 150px;">Aktionen</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-product>
+        <tr>
+          <td>{{ product.id }}</td>
+          <td>
+            <strong>{{ product.name }}</strong>
+            <br>
+            <small class="text-gray-500">{{ product.description | slice:0:50 }}{{ product.description.length > 50 ? '...' : '' }}</small>
+          </td>
+          <td>{{ product.categoryName }}</td>
+          <td>{{ product.locationRoomNr || '-' }}</td>
+          <td>{{ product.price | number:'1.2-2' }} €</td>
+          <td>
+            <span class="badge badge-info">
+              {{ product.availableItems }} / {{ product.totalItems }}
+            </span>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <button pButton icon="pi pi-pencil"
+                      class="p-button-sm p-button-warning"
+                      (click)="editProduct(product)"
+                      pTooltip="Bearbeiten"></button>
+              <button pButton icon="pi pi-trash"
+                      class="p-button-sm p-button-danger"
+                      (click)="deleteProduct(product)"
+                      pTooltip="Löschen"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center text-gray-500 py-4">
+            @if (searchQuery()) {
+              Keine Produkte gefunden für "{{ searchQuery() }}"
+            } @else {
+              Keine Produkte vorhanden
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+
+  </p-card>
+</div>

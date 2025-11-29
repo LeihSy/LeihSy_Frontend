@@ -1,0 +1,204 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <h1 class="text-3xl font-bold mb-4">Einzelne Gegenstände verwalten</h1>
+  <p class="text-muted-foreground mb-6">
+    Erstelle, bearbeite oder lösche einzelne physische Gegenstände zu jedem Produkt
+  </p>
+
+  @if (showItemForm()) {
+    <p-card [header]="isEditMode() ? 'Gegenstand bearbeiten' : 'Neuen Gegenstand anlegen'" class="mb-6">
+      <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
+
+        @if (selectedProductForNewItem() && !isEditMode()) {
+          <div class="bg-blue-50 p-3 rounded border border-blue-200">
+            <p class="text-sm">
+              <strong>Produkt:</strong> {{ selectedProductForNewItem()!.name }}
+              <br>
+              <strong>Kategorie:</strong> {{ selectedProductForNewItem()!.categoryName }}
+            </p>
+          </div>
+        }
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-2 font-semibold">Inventarnummer *</label>
+            <input pInputText formControlName="invNumber" class="w-full"
+                   placeholder="z.B. VR-001" />
+          </div>
+
+          <div>
+            <label class="block mb-2 font-semibold">Besitzer *</label>
+            <input pInputText formControlName="owner" class="w-full"
+                   placeholder="z.B. Hochschule Esslingen" />
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-2 font-semibold">Produkt *</label>
+            <p-select
+              [options]="allProducts()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Produkt wählen"
+              formControlName="productId"
+              class="w-full"
+              [disabled]="isEditMode()">
+            </p-select>
+          </div>
+
+          <div>
+            <label class="block mb-2 font-semibold">Verfügbar</label>
+            <p-toggleButton
+              formControlName="available"
+              onLabel="Verfügbar"
+              offLabel="Nicht verfügbar"
+              onIcon="pi pi-check"
+              offIcon="pi pi-times"
+              class="w-full">
+            </p-toggleButton>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button pButton type="submit"
+                  [label]="isEditMode() ? 'Aktualisieren' : 'Erstellen'"
+                  [disabled]="itemForm.invalid"></button>
+          <button pButton type="button" label="Abbrechen"
+                  class="p-button-secondary" (click)="resetForm()"></button>
+        </div>
+      </form>
+    </p-card>
+  }
+
+  <p-card header="Produkte und ihre Gegenstände">
+
+    <!-- Suchfeld -->
+    <div class="mb-4">
+      <p-iconfield iconPosition="left">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input type="text" pInputText placeholder="Suche nach Produktname, Kategorie..."
+               (input)="onSearchChange($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <!-- Produkte mit Items -->
+    <div class="space-y-4">
+      @for (productData of productsWithItems(); track productData.product.id) {
+        <div class="border rounded-lg overflow-hidden bg-white">
+
+          <!-- Produkt Header (klickbar zum Auf-/Zuklappen) -->
+          <div
+            class="product-header flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            (click)="toggleProductExpansion(productData.product.id)">
+
+            <div class="flex items-center gap-3 flex-1">
+              <!-- Expand/Collapse Icon -->
+              <i [class]="isProductExpanded(productData.product.id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                 class="text-gray-500"></i>
+
+              <div>
+                <h3 class="text-lg font-bold">{{ productData.product.name }}</h3>
+                <p class="text-xs text-gray-600">
+                  <strong>Kategorie:</strong> {{ productData.product.categoryName }} |
+                  <strong>Standort:</strong> {{ productData.product.locationRoomNr || 'N/A' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="badge badge-info">
+                {{ productData.availableCount }} / {{ productData.totalCount }} verfügbar
+              </span>
+              <button pButton icon="pi pi-plus"
+                      class="p-button-sm p-button-rounded"
+                      (click)="addItemForProduct(productData.product); $event.stopPropagation()"
+                      pTooltip="Neue Instanz hinzufügen"></button>
+            </div>
+          </div>
+
+          <!-- Content: Items Tabelle (nur sichtbar wenn aufgeklappt) -->
+          @if (isProductExpanded(productData.product.id)) {
+            <div class="border-t p-4 bg-gray-50">
+              @if (productData.product.description) {
+                <p class="text-sm text-gray-500 mb-3">{{ productData.product.description }}</p>
+              }
+
+              @if (productData.items.length > 0) {
+                <p-table [value]="productData.items"
+                         styleClass="p-datatable-sm"
+                         [scrollable]="true">
+
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>ID</th>
+                      <th>Inventarnummer</th>
+                      <th>Besitzer</th>
+                      <th>Status</th>
+                      <th style="width: 150px;">Aktionen</th>
+                    </tr>
+                  </ng-template>
+
+                  <ng-template pTemplate="body" let-item>
+                    <tr>
+                      <td>{{ item.id }}</td>
+                      <td>{{ item.invNumber }}</td>
+                      <td>{{ item.owner }}</td>
+                      <td>
+                        <span [class]="item.available ? 'badge badge-available' : 'badge badge-unavailable'">
+                          {{ item.available ? 'Verfügbar' : 'Nicht verfügbar' }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="flex gap-2">
+                          <button pButton icon="pi pi-pencil"
+                                  class="p-button-sm p-button-warning"
+                                  (click)="editItem(item)"
+                                  pTooltip="Bearbeiten"></button>
+                          <button pButton icon="pi pi-trash"
+                                  class="p-button-sm p-button-danger"
+                                  (click)="deleteItem(item)"
+                                  pTooltip="Löschen"></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="5" class="text-center text-gray-500 py-2">
+                        Keine Instanzen vorhanden
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              } @else {
+                <div class="text-center text-gray-500 py-4 bg-white rounded border">
+                  <p class="text-sm">Noch keine Instanzen für dieses Produkt angelegt.</p>
+                  <p class="text-xs mt-1">Klicken Sie auf das Plus-Symbol, um die erste Instanz zu erstellen.</p>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+
+    @if (productsWithItems().length === 0) {
+      <div class="text-center text-gray-500 py-8">
+        @if (isLoading()) {
+          Lade Produkte...
+        } @else if (searchQuery()) {
+          Keine Produkte gefunden für "{{ searchQuery() }}"
+        } @else {
+          Keine Produkte vorhanden
+        }
+      </div>
+    }
+
+  </p-card>
+</div>

@@ -40,9 +40,27 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./pages/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-home-dashboard.component')
+        .then(m => m.AdminHomeDashboardComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] } // Nur für Admin
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/products',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-dashboard.component')
+        .then(m => m.AdminProductDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-item-instance-dashboard.component')
+        .then(m => m.AdminItemInstanceComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
   },
   {
     path: 'unauthorized',

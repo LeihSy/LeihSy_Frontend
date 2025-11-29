@@ -41,13 +41,33 @@ export class ProductService {
   }
 
   // Neues Product erstellen (für Admins)
-  createProduct(product: ProductCreateDTO): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, product);
+  createProduct(product: ProductCreateDTO, image: File | null = null): Observable<Product> {
+    const formData = new FormData();
+
+    formData.append('product', new Blob([JSON.stringify(product)], {
+      type: 'application/json'
+    }));
+
+    if (image) {
+      formData.append('image', image);
+    }
+
+    return this.http.post<Product>(this.apiUrl, formData);
   }
 
   // Product aktualisieren (für Admins)
-  updateProduct(id: number, product: ProductCreateDTO): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
+  updateProduct(id: number, product: ProductCreateDTO, image: File | null = null): Observable<Product> {
+    const formData = new FormData();
+
+    formData.append('product', new Blob([JSON.stringify(product)], {
+      type: 'application/json'
+    }));
+
+    if (image) {
+      formData.append('image', image);
+    }
+
+    return this.http.put<Product>(`${this.apiUrl}/${id}`, formData);
   }
 
   // Product löschen (für Admins)

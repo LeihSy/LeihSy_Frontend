@@ -94,39 +94,58 @@
   <!-- Ergebnisliste -->
   <div class="space-y-4">
     @for (device of filteredDevices(); track device.id) {
-      <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-        <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
-          <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-2xl">
-            {{ device.category | deviceIcon }}
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+        <div class="flex flex-col sm:flex-row">
+          <!-- Bild-Container (Links) -->
+          <div class="sm:w-48 sm:h-48 w-full h-40 bg-gray-50 flex items-center justify-center shrink-0 relative overflow-hidden">
+            @if (getImageUrl(device.id)) {
+              <img
+                [src]="getImageUrl(device.id)"
+                [alt]="device.name"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                (error)="onImageError($event, device)"
+              />
+            } @else {
+              <!-- Fallback: Icon -->
+              <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl">
+                {{ device.category | deviceIcon }}
+              </div>
+            }
           </div>
 
-          <div class="flex-1 min-w-0">
-            <h3 class="text-lg font-semibold text-[#253359] mb-1">{{ device.name }}</h3>
-            <p class="text-sm text-gray-600">{{ device.category }}</p>
+          <!-- Content (Rechts) -->
+          <div class="flex-1 p-6">
+            <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-[#253359] mb-1">{{ device.name }}</h3>
+                <p class="text-sm text-gray-600">{{ device.category }}</p>
+              </div>
+
+              <button
+                pButton
+                (click)="onViewDevice(device.id)"
+                label="Details ansehen"
+                icon="pi pi-chevron-right"
+                iconPos="right"
+                class="p-button-text p-button-plain text-[#253359] hover:text-[#1f2d56] shrink-0 sm:ml-auto"
+              ></button>
+            </div>
+
+            <div class="flex items-center gap-2 text-sm mb-3">
+              <span class="text-slate-800">Verfügbarkeit gesamt:</span>
+              <p-tag
+                [value]="device.availability.available + ' Verfügbar'"
+                styleClass="bg-[#253359] text-white font-normal"
+              ></p-tag>
+              <span class="text-gray-600">Max. {{ device.loanConditions.loanPeriod }}</span>
+            </div>
+
+            <p class="text-sm text-gray-600 leading-relaxed line-clamp-2">
+              {{ device.description }}
+            </p>
           </div>
-
-          <button
-            pButton
-            (click)="onViewDevice(device.id)"
-            label="Details ansehen"
-            icon="pi pi-chevron-right"
-            iconPos="right"
-            class="p-button-text p-button-plain text-[#253359] hover:text-[#1f2d56] shrink-0 sm:ml-auto"
-          ></button>
         </div>
-
-        <div class="flex items-center gap-2 text-sm mb-3">
-          <span class="text-slate-800">Verfügbarkeit gesamt:</span>
-          <p-tag
-            [value]="device.availability.available + ' Verfügbar'"
-            styleClass="bg-[#253359] text-white font-normal"
-          ></p-tag>
-          <span class="text-gray-600">Max. {{ device.loanConditions.loanPeriod }}</span>
-        </div>
-
-        <p class="text-sm text-gray-600 leading-relaxed">
-          {{ device.description }}
-        </p>
       </div>
     }
   </div>

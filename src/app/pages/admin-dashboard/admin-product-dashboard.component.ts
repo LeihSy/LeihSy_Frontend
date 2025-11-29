@@ -178,6 +178,9 @@ export class AdminProductDashboardComponent {
   }
 
   editProduct(product: Product): void {
+    this.selectedFile.set(null);
+    this.imagePreview.set(null);
+
     this.isEditMode.set(true);
     this.editingProductId.set(product.id);
 
@@ -283,5 +286,6 @@ export class AdminProductDashboardComponent {
   removeImage(): void {
     this.selectedFile.set(null);
     this.imagePreview.set(null);
+    this.itemForm.patchValue({ imageUrl: null });
   }
 }

@@ -1,0 +1,29 @@
+.dashboard-card {
+  transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+}
+
+::ng-deep .dashboard-card .p-card {
+  height: 100%;
+  border: 1px solid #e5e7eb;
+}
+
+::ng-deep .dashboard-card .p-card-header {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+}
+
+::ng-deep .dashboard-card button {
+  background-color: #000080;
+  border-color: #000080;
+}
+
+::ng-deep .dashboard-card button:hover:not(:disabled) {
+  background-color: #000066;
+  border-color: #000066;
+}
+

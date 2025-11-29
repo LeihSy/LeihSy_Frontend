@@ -33,10 +33,22 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'lecturer',
-    loadComponent: () => import('./pages/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
+    path: 'lender',
+    loadComponent: () => import('./pages/lender-dashboard/lender-dashboard.component').then(m => m.LenderDashboardComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] } // Nur für Lender & Admin
+  },
+  {
+    path: 'lender/items',
+    loadComponent: () => import('./pages/lender-dashboard/lender-items.component').then(m => m.LenderItemsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/items/:id',
+    loadComponent: () => import('./pages/lender-dashboard/item-detail.component').then(m => m.ItemDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'admin',

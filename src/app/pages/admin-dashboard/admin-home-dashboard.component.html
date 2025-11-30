@@ -1,40 +1,45 @@
-<div class="p-10 max-w-4xl mx-auto">
+<div class="grid md:grid-cols-3 gap-6">
 
-  <h1 class="text-4xl font-bold mb-4">Admin Dashboard</h1>
-  <p class="text-muted-foreground mb-8">
-    Verwaltung von Produkten und physischen Gegenständen
-  </p>
+  <!-- Produktgruppen -->
+  <div class="dashboard-card">
+    <p-card header="Produktgruppen verwalten">
+      <p>Erstelle neue Produktgruppen oder bearbeite bestehende.</p>
 
-  <div class="grid md:grid-cols-2 gap-6">
+      <button
+        pButton
+        label="Zu den Produkten"
+        class="mt-4"
+        routerLink="/admin/products">
+      </button>
+    </p-card>
+  </div>
 
-    <!-- Produktgruppen -->
-    <div class="dashboard-card">
-      <p-card header="Produktgruppen verwalten">
-        <p>Erstelle neue Produktgruppen oder bearbeite bestehende.</p>
+  <!-- Gegenstände -->
+  <div class="dashboard-card">
+    <p-card header="Einzelne Gegenstände verwalten">
+      <p>Verwalte einzelne physische Gegenstände.</p>
 
-        <button
-          pButton
-          label="Zu den Produkten"
-          class="mt-4"
-          routerLink="/admin/products">
-        </button>
-      </p-card>
-    </div>
+      <button
+        pButton
+        label="Zu den einzelnen Gegenständen"
+        class="mt-4"
+        routerLink="/admin/items">
+      </button>
+    </p-card>
+  </div>
 
-    <!-- Gegenstände -->
-    <div class="dashboard-card">
-      <p-card header="Einzelne Gegenstände verwalten">
-        <p>Verwalte einzelne physische Gegenstände.</p>
+  <!-- Kategorien -->
+  <div class="dashboard-card">
+    <p-card header="Kategorien verwalten">
+      <p>Erstelle, bearbeite oder lösche Gerätekategorien.</p>
 
-        <button
-          pButton
-          label="Zu den einzelnen Gegenständen"
-          class="mt-4"
-          routerLink="/admin/items">
-        </button>
-      </p-card>
-    </div>
-
+      <button
+        pButton
+        label="Zu den Kategorien"
+        class="mt-4"
+        routerLink="/admin/categories">
+      </button>
+    </p-card>
   </div>
 
 </div>

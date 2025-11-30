@@ -9,34 +9,40 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () =>
+      import('./pages/login/login.component').then(m => m.LoginComponent),
     canActivate: [loginGuard]
   },
   {
     path: 'catalog',
-    loadComponent: () => import('./pages/catalog/catalog.component').then(m => m.CatalogPageComponent),
+    loadComponent: () =>
+      import('./pages/catalog/catalog.component').then(m => m.CatalogPageComponent),
     canActivate: [authGuard]
   },
   {
     path: 'device/:id',
-    loadComponent: () => import('./pages/device-detail/device-detail.component').then(m => m.DeviceDetailPageComponent),
+    loadComponent: () =>
+      import('./pages/device-detail/device-detail.component').then(m => m.DeviceDetailPageComponent),
     canActivate: [authGuard]
   },
   {
     path: 'cart',
-    loadComponent: () => import('./pages/cart/cart.component').then(m => m.CartPageComponent),
+    loadComponent: () =>
+      import('./pages/cart/cart.component').then(m => m.CartPageComponent),
     canActivate: [authGuard]
   },
   {
     path: 'user-dashboard',
-    loadComponent: () => import('./pages/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent),
+    loadComponent: () =>
+      import('./pages/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent),
     canActivate: [authGuard]
   },
   {
     path: 'lecturer',
-    loadComponent: () => import('./pages/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
+    loadComponent: () =>
+      import('./pages/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
     canActivate: [authGuard],
-    data: { roles: ['lender', 'admin'] } // Nur für Lender & Admin
+    data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'admin',
@@ -63,8 +69,17 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/categories',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-category-dashboard.component')
+        .then(m => m.AdminCategoryDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
-    loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
+    loadComponent: () =>
+      import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },
   {
     path: '**',

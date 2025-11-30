@@ -10,16 +10,9 @@ import { MultiSelectModule } from 'primeng/multiselect';
 
 import { CommonModule } from '@angular/common';
 import { ItemService } from '../../services/item.service';
+import { Category } from '../../models/item.model';
 // TODO: Category Feature - wird von anderer Person implementiert
 // import { CategoryService } from '../../services/category.service';
-// import { Category } from '../../models/category.model';
-
-// Temporäres Category Interface für Mock-Daten
-interface MockCategory {
-  id: number;
-  name: string;
-  description?: string;
-}
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -39,10 +32,10 @@ interface MockCategory {
 })
 export class AdminProductDashboardComponent {
 
-  itemForm: FormGroup;
+  itemForm!: FormGroup;
 
   // Mock-Kategorien bis Backend fertig ist
-  categories: MockCategory[] = [
+  categories: Category[] = [
     { id: 1, name: 'Kamera', description: 'Foto- und Videokameras' },
     { id: 2, name: 'Audio', description: 'Mikrofone und Audio-Equipment' },
     { id: 3, name: 'Licht', description: 'Beleuchtung und Lichttechnik' },
@@ -81,24 +74,6 @@ export class AdminProductDashboardComponent {
     });
   }
 
-  // TODO: Später aktivieren wenn CategoryService fertig ist
-  /*
-  ngOnInit(): void {
-    this.loadCategories();
-  }
-
-  loadCategories(): void {
-    this.categoryService.getAllCategories().subscribe({
-      next: (categories: MockCategory[]) => {
-        this.categories = categories;
-      },
-      error: (err: any) => {
-        console.error('Fehler beim Laden der Kategorien:', err);
-      }
-    });
-  }
-  */
-
   submitForm() {
     if (!this.itemForm.valid) return;
 
@@ -116,3 +91,4 @@ export class AdminProductDashboardComponent {
     });
   }
 }
+        

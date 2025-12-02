@@ -1,23 +1,38 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { AppComponent } from './app';
+import Keycloak from 'keycloak-js';
 
-describe('App', () => {
+describe('AppComponent', () => {
+  let mockKeycloak: jasmine.SpyObj<Keycloak>;
+
   beforeEach(async () => {
+    mockKeycloak = jasmine.createSpyObj('Keycloak', ['login', 'logout'], {
+      authenticated: false
+    });
+
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [AppComponent],
+      providers: [
+        { provide: Keycloak, useValue: mockKeycloak }
+      ]
     }).compileComponents();
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
+    const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+  it('should have authService injected', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app.authService).toBeDefined();
+  });
+
+  it('should initialize with cartCount of 0', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app.cartCount).toBe(0);
   });
 });

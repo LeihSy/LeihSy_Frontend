@@ -13,6 +13,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ItemService } from '../../services/item.service';
@@ -37,7 +38,8 @@ import { Product } from '../../models/product.model';
     InputIconModule,
     ConfirmDialogModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    InputNumberModule
   ],
   templateUrl: './admin-item-instance-dashboard.component.html',
   styleUrls: ['./admin-item-instance-dashboard.component.scss'],
@@ -57,6 +59,7 @@ export class AdminItemInstanceComponent implements OnInit {
   searchQuery = signal('');
   showItemForm = signal(false);
   expandedProductIds = signal<Set<number>>(new Set());
+  generatedInventoryNumbers = signal<string[]>([]);
 
 
   productsWithItems = computed(() => {
@@ -98,7 +101,8 @@ export class AdminItemInstanceComponent implements OnInit {
       invNumber: ['', Validators.required],
       owner: ['', Validators.required],
       productId: [null, Validators.required],
-      available: [true]
+      available: [true],
+      quantity: [1, [Validators.required, Validators.min(1), Validators.max(100)]]
     });
 
     this.loadProducts();
@@ -148,11 +152,18 @@ export class AdminItemInstanceComponent implements OnInit {
   submitForm() {
     if (!this.itemForm.valid) return;
 
-    const payload = this.itemForm.value;
+    const formValue = this.itemForm.value;
     const editId = this.editingItemId();
 
     if (editId !== null) {
-      // Update
+      // Update - nur eine Instanz
+      const payload = {
+        invNumber: formValue.invNumber,
+        owner: formValue.owner,
+        productId: formValue.productId,
+        available: formValue.available
+      };
+
       this.itemService.updateItem(editId, payload).subscribe({
         next: () => {
           this.messageService.add({
@@ -173,26 +184,57 @@ export class AdminItemInstanceComponent implements OnInit {
         }
       });
     } else {
-      // Create
-      this.itemService.createItem(payload).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Erfolg',
-            detail: 'Gegenstand wurde erstellt!'
-          });
-          this.resetForm();
-          this.loadItems();
-        },
-        error: err => {
-          console.error('Error creating item:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fehler',
-            detail: 'Fehler beim Erstellen des Gegenstands.'
-          });
+      // Create - möglicherweise mehrere Instanzen
+      const quantity = formValue.quantity || 1;
+      const invNumbers = this.generateInventoryNumbers(formValue.invNumber, quantity);
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Erstelle alle Instanzen nacheinander
+      const createNextItem = (index: number) => {
+        if (index >= invNumbers.length) {
+          // Alle Instanzen erstellt
+          if (successCount > 0) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Erfolg',
+              detail: `${successCount} Gegenstand/Gegenstände wurde(n) erstellt!`
+            });
+            this.resetForm();
+            this.loadItems();
+          }
+          if (errorCount > 0) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warnung',
+              detail: `${errorCount} Gegenstand/Gegenstände konnte(n) nicht erstellt werden.`
+            });
+          }
+          return;
         }
-      });
+
+        const payload = {
+          invNumber: invNumbers[index],
+          owner: formValue.owner,
+          productId: formValue.productId,
+          available: formValue.available
+        };
+
+        this.itemService.createItem(payload).subscribe({
+          next: () => {
+            successCount++;
+            createNextItem(index + 1);
+          },
+          error: err => {
+            console.error('Error creating item:', err);
+            errorCount++;
+            createNextItem(index + 1);
+          }
+        });
+      };
+
+      createNextItem(0);
     }
   }
 
@@ -285,5 +327,71 @@ export class AdminItemInstanceComponent implements OnInit {
 
   isProductExpanded(productId: number): boolean {
     return this.expandedProductIds().has(productId);
+  }
+
+  /**
+   * Generiert Inventarnummern basierend auf dem Präfix und der Anzahl
+   * Beispiel: VR-PRO -> VR-PRO-001, VR-PRO-002, VR-PRO-003
+   */
+  generateInventoryNumbers(prefix: string, quantity: number): string[] {
+    if (!prefix || quantity < 1) return [];
+
+    const allItems = this.allItems();
+
+    // Finde die höchste existierende Nummer mit diesem Präfix
+    const existingNumbers = allItems
+      .filter(item => item.invNumber.startsWith(prefix))
+      .map(item => {
+        // Extrahiere die Nummer am Ende (z.B. "VR-PRO-005" -> 5)
+        const match = item.invNumber.match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter(num => !isNaN(num));
+
+    // Bestimme die Start-Nummer
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    let nextNumber = maxNumber + 1;
+
+    // Generiere die Inventarnummern
+    const inventoryNumbers: string[] = [];
+    for (let i = 0; i < quantity; i++) {
+      const paddedNumber = String(nextNumber).padStart(3, '0');
+      inventoryNumbers.push(`${prefix}-${paddedNumber}`);
+      nextNumber++;
+    }
+
+    return inventoryNumbers;
+  }
+
+  /**
+   * Event-Handler für Änderungen am Inventarnummer-Präfix
+   */
+  onInventoryPrefixChange(): void {
+    if (this.isEditMode()) return;
+
+    const prefix = this.itemForm.get('invNumber')?.value || '';
+    const quantity = this.itemForm.get('quantity')?.value || 1;
+
+    if (prefix) {
+      const numbers = this.generateInventoryNumbers(prefix, quantity);
+      this.generatedInventoryNumbers.set(numbers);
+    } else {
+      this.generatedInventoryNumbers.set([]);
+    }
+  }
+
+  /**
+   * Event-Handler für Änderungen an der Anzahl
+   */
+  onQuantityChange(): void {
+    if (this.isEditMode()) return;
+
+    const prefix = this.itemForm.get('invNumber')?.value || '';
+    const quantity = this.itemForm.get('quantity')?.value || 1;
+
+    if (prefix) {
+      const numbers = this.generateInventoryNumbers(prefix, quantity);
+      this.generatedInventoryNumbers.set(numbers);
+    }
   }
 }

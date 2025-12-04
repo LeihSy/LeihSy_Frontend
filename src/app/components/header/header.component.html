@@ -20,9 +20,9 @@
         <span>Mein Bereich</span>
       </button>
 
-      <!-- Lender Dashboard - für lender UND admin -->
+      <!-- Lecturer Dashboard - für lender UND admin -->
       <button *ngIf="userRole() === 'lender' || userRole() === 'admin'"
-              pButton routerLink="/lender" routerLinkActive="bg-white/20"
+              pButton routerLink="/lecturer" routerLinkActive="bg-white/20"
               class="p-button-text text-white hover:bg-white/10 hover:text-white">
         <i class="pi pi-check-square w-4 h-4 mr-2"></i>
         <span>Anfragen</span>
@@ -96,10 +96,10 @@
         <span>Mein Bereich</span>
       </a>
 
-      <!-- Lender Dashboard - für lender UND admin -->
+      <!-- Lecturer Dashboard - für lender UND admin -->
       <a *ngIf="userRole() === 'lender' || userRole() === 'admin'"
-         pButton routerLink="/lender" routerLinkActive="active"
-         #rlaLender="routerLinkActive" [ngClass]="rlaLender.isActive ? 'p-button' : 'p-button-outlined'"
+         pButton routerLink="/lecturer" routerLinkActive="active"
+         #rlaLecturer="routerLinkActive" [ngClass]="rlaLecturer.isActive ? 'p-button' : 'p-button-outlined'"
          (click)="mobileMenuOpen = false" class="w-full justify-start">
         <i class="pi pi-check-square w-4 h-4 mr-2"></i>
         <span>Anfragen</span>

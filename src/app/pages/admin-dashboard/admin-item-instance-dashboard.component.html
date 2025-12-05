@@ -1,0 +1,119 @@
+<div class="p-8 max-w-4xl mx-auto">
+
+  <h1 class="text-3xl font-bold mb-4">Physische Gegenstände</h1>
+  <p class="text-muted-foreground mb-6">
+    Verwalte einzelne Instanzen eines Produkts
+  </p>
+
+  <p-card header="Neue Instanz anlegen">
+
+    <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
+
+      <div>
+        <label>Inventarnummer *</label>
+        <input pInputText formControlName="invNumber" class="w-full" />
+      </div>
+
+      <div>
+        <label>Besitzer *</label>
+        <input pInputText formControlName="owner" class="w-full" />
+      </div>
+
+      <div>
+        <label>Produkt *</label>
+        <p-select
+          formControlName="productId"
+          [options]="products()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Produkt wählen">
+        </p-select>
+      </div>
+
+      <div>
+        <label>Verfügbar?</label>
+        <p-togglebutton formControlName="available"
+                        onLabel="Ja"
+                        offLabel="Nein">
+        </p-togglebutton>
+      </div>
+
+      <button pButton label="Instanz speichern" type="submit"
+              [disabled]="itemForm.invalid"></button>
+    </form>
+
+  </p-card>
+
+  <p-card header="Vorhandene Gegenstände" class="mt-6">
+
+    <!-- Filter Info und Reset -->
+    <div class="mb-4 flex items-center justify-between">
+      <div>
+        @if (selectedProductId()) {
+          <span class="text-sm text-gray-600">
+            Gefiltert nach Produkt: <strong>{{ selectedProductName() }}</strong>
+          </span>
+        } @else {
+          <span class="text-sm text-gray-600">
+            Alle Gegenstände ({{ allItems().length }})
+          </span>
+        }
+      </div>
+      @if (selectedProductId()) {
+        <button pButton
+                label="Filter zurücksetzen"
+                icon="pi pi-times"
+                class="p-button-sm p-button-outlined"
+                (click)="resetFilter()">
+        </button>
+      }
+    </div>
+
+    <!-- Tabelle mit gefilterten Items -->
+    <p-table [value]="filteredItems()" class="w-full">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>ID</th>
+          <th>Inventarnummer</th>
+          <th>Name</th>
+          <th>Kategorie</th>
+          <th>Status</th>
+          <th>Standort</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.inventoryNumber }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.categoryName }}</td>
+          <td>
+            <span [class]="'badge badge-' + item.status.toLowerCase()">
+              {{ item.status }}
+            </span>
+          </td>
+          <td>{{ item.location }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center text-gray-500 py-4">
+            @if (isLoading()) {
+              Lade Gegenstände...
+            } @else if (selectedProductId()) {
+              Keine Gegenstände für das ausgewählte Produkt gefunden.
+            } @else {
+              Keine Gegenstände vorhanden.
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+
+  </p-card>
+
+</div>

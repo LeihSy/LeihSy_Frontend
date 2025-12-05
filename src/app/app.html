@@ -1,0 +1,13 @@
+@if (authService.isLoggedIn()) {
+  <app-header [cartCount]="cartCount"></app-header>
+}
+
+
+<main class="grow">
+  <router-outlet></router-outlet>
+</main>
+
+
+@if (authService.isLoggedIn()) {
+  <app-footer></app-footer>
+}

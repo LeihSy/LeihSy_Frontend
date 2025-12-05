@@ -1,0 +1,375 @@
+<p-toast></p-toast>
+
+<div class="p-8 max-w-6xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="mb-2 text-3xl font-bold text-[#253359]">
+      Kategorien verwalten
+    </h1>
+    <p class="text-sm text-gray-600 mb-6">
+      Erstellen, bearbeiten und löschen Sie Gerätekategorien
+    </p>
+
+    <!-- Suche + Button -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <!-- Suche -->
+      <div class="flex-1 relative">
+        <i
+          class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+        ></i>
+        <input
+          type="text"
+          pInputText
+          placeholder="Kategorie suchen..."
+          class="pl-10 bg-white border border-gray-300 w-full"
+          [(ngModel)]="searchQuery"
+        />
+      </div>
+
+      <!-- Neue Kategorie -->
+      <button
+        pButton
+        type="button"
+        (click)="openAddDialog()"
+        class="admin-dashboard-btn w-full sm:w-auto px-8"
+      >
+        <span class="flex items-center justify-center gap-2">
+          <i class="pi pi-plus w-4 h-4"></i>
+          <span>Neue Kategorie</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Anzahl -->
+  <div class="mb-6">
+    <p class="text-sm text-gray-700">
+      {{ filteredCategories.length }}
+      {{ filteredCategories.length === 1 ? 'Kategorie' : 'Kategorien' }}
+      gefunden
+    </p>
+  </div>
+
+  <!-- Liste -->
+  <div class="space-y-4">
+    <div
+      *ngFor="let category of filteredCategories"
+      class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+    >
+      <div class="flex flex-col sm:flex-row items-start gap-4">
+        <!-- Icon -->
+        <div
+          class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 text-2xl"
+        >
+          {{ category.icon }}
+        </div>
+
+        <!-- Name + Anzahl -->
+        <div class="flex-1 min-w-0">
+          <h3 class="text-lg mb-1 text-[#253359]">
+            {{ category.name }}
+          </h3>
+          <div class="flex items-center gap-2 text-sm">
+            <p-tag
+              [value]="
+                category.deviceCount +
+                ' ' +
+                (category.deviceCount === 1 ? 'Gerät' : 'Geräte')
+              "
+              styleClass="bg-[#253359] text-white text-xs font-normal px-2 py-1 rounded"
+            ></p-tag>
+          </div>
+        </div>
+
+        <!-- Aktionen -->
+        <div class="flex gap-2 flex-shrink-0 mt-4 sm:mt-0">
+          <button
+            pButton
+            type="button"
+            (click)="openEditDialog(category)"
+            class="p-button-text text-[#2c3e7a] hover:text-[#1f2d56] hover:bg-blue-50"
+          >
+            <span class="flex items-center gap-1 text-sm">
+              <i class="pi pi-pencil w-4 h-4"></i>
+              <span>Bearbeiten</span>
+            </span>
+          </button>
+
+          <button
+            pButton
+            type="button"
+            (click)="openDeleteDialog(category)"
+            class="p-button-text text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <span class="flex items-center gap-1 text-sm">
+              <i class="pi pi-trash w-4 h-4"></i>
+              <span>Löschen</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div
+      *ngIf="filteredCategories.length === 0"
+      class="bg-white border border-gray-200 rounded-lg p-12 text-center"
+    >
+      <p class="text-gray-500">Keine Kategorien gefunden</p>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog: Neue Kategorie -->
+<p-dialog
+  [(visible)]="isAddDialogOpen"
+  [modal]="true"
+  [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Neue Kategorie hinzufügen"
+  [closable]="true"
+>
+  <p class="text-sm text-gray-500 mb-4">
+    Erstellen Sie eine neue Gerätekategorie für den Katalog.
+  </p>
+
+  <div class="space-y-4 py-2">
+    <!-- Name -->
+    <div class="space-y-2">
+      <label for="category-name" class="block text-sm font-medium"
+        >Kategoriename</label
+      >
+      <input
+        id="category-name"
+        type="text"
+        pInputText
+        placeholder="z.B. 3D-Drucker"
+        [(ngModel)]="newCategoryName"
+        class="bg-white border border-gray-300 w-full"
+      />
+    </div>
+
+    <!-- Icon Auswahl -->
+    <div class="space-y-2">
+      <label class="block text-sm font-medium">Icon auswählen</label>
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-2xl border-2 border-gray-200"
+        >
+          {{ newCategoryIcon }}
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            *ngFor="let icon of commonIconOptions"
+            type="button"
+            (click)="newCategoryIcon = icon"
+            [ngClass]="[
+              'w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors',
+              newCategoryIcon === icon
+                ? 'bg-[#2c3e7a] text-white'
+                : 'bg-gray-100 hover:bg-gray-200'
+            ]"
+          >
+            {{ icon }}
+          </button>
+        </div>
+      </div>
+
+      <p class="text-xs text-gray-500 mt-1">
+        Oder geben Sie ein eigenes Emoji ein:
+      </p>
+      <input
+        type="text"
+        pInputText
+        placeholder="Emoji eingeben"
+        [(ngModel)]="newCategoryIcon"
+        maxlength="2"
+        class="bg-white border border-gray-300 w-full"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        class="p-button-text"
+        (click)="isAddDialogOpen = false"
+      >
+        Abbrechen
+      </button>
+      <button
+        pButton
+        type="button"
+        class="admin-dashboard-btn"
+        (click)="handleAddCategory()"
+      >
+        Kategorie erstellen
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Bearbeiten -->
+<p-dialog
+  [(visible)]="isEditDialogOpen"
+  [modal]="true"
+  [style]="{ width: '500px', maxWidth: '95vw' }"
+  header="Kategorie bearbeiten"
+  [closable]="true"
+>
+  <p class="text-sm text-gray-500 mb-4">
+    Aktualisieren Sie die Details der Kategorie.
+  </p>
+
+  <div class="space-y-4 py-2">
+    <!-- Name -->
+    <div class="space-y-2">
+      <label for="edit-category-name" class="block text-sm font-medium"
+        >Kategoriename</label
+      >
+      <input
+        id="edit-category-name"
+        type="text"
+        pInputText
+        placeholder="z.B. 3D-Drucker"
+        [(ngModel)]="newCategoryName"
+        class="bg-white border border-gray-300 w-full"
+      />
+    </div>
+
+    <!-- Icon -->
+    <div class="space-y-2">
+      <label class="block text-sm font-medium">Icon auswählen</label>
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-2xl border-2 border-gray-200"
+        >
+          {{ newCategoryIcon }}
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            *ngFor="let icon of commonIconOptions"
+            type="button"
+            (click)="newCategoryIcon = icon"
+            [ngClass]="[
+              'w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-colors',
+              newCategoryIcon === icon
+                ? 'bg-[#2c3e7a] text-white'
+                : 'bg-gray-100 hover:bg-gray-200'
+            ]"
+          >
+            {{ icon }}
+          </button>
+        </div>
+      </div>
+
+      <p class="text-xs text-gray-500 mt-1">
+        Oder geben Sie ein eigenes Emoji ein:
+      </p>
+      <input
+        type="text"
+        pInputText
+        placeholder="Emoji eingeben"
+        [(ngModel)]="newCategoryIcon"
+        maxlength="2"
+        class="bg-white border border-gray-300 w-full"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        class="p-button-text"
+        (click)="isEditDialogOpen = false"
+      >
+        Abbrechen
+      </button>
+      <button
+        pButton
+        type="button"
+        class="admin-dashboard-btn"
+        (click)="handleEditCategory()"
+      >
+        Änderungen speichern
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog: Löschen -->
+<p-dialog
+  [(visible)]="isDeleteDialogOpen"
+  [modal]="true"
+  [style]="{ width: '425px', maxWidth: '95vw' }"
+  header="Kategorie löschen"
+  [closable]="true"
+>
+  <p class="text-sm text-gray-500 mb-4">
+    Sind Sie sicher, dass Sie diese Kategorie löschen möchten?
+  </p>
+
+  <div *ngIf="selectedCategory" class="py-2">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-2xl"
+        >
+          {{ selectedCategory.icon }}
+        </div>
+        <div>
+          <p class="font-medium">{{ selectedCategory.name }}</p>
+          <p class="text-sm text-gray-600">
+            {{ selectedCategory.deviceCount }}
+            {{
+              selectedCategory.deviceCount === 1 ? 'Gerät' : 'Geräte'
+            }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="selectedCategory.deviceCount > 0"
+      class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4"
+    >
+      <p class="text-sm text-red-800">
+        <strong>Warnung:</strong> Diese Kategorie kann nicht gelöscht werden,
+        da sie noch {{ selectedCategory.deviceCount }}
+        {{
+          selectedCategory.deviceCount === 1
+            ? 'Gerät enthält'
+            : 'Geräte enthält'
+        }}.
+        Bitte verschieben oder löschen Sie zuerst alle Geräte.
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        type="button"
+        class="p-button-text"
+        (click)="isDeleteDialogOpen = false"
+      >
+        Abbrechen
+      </button>
+      <button
+        pButton
+        type="button"
+        class="admin-dashboard-btn bg-red-600 hover:bg-red-700"
+        (click)="handleDeleteCategory()"
+        [disabled]="isDeleteDisabled()"
+      >
+        Kategorie löschen
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

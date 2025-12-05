@@ -1,0 +1,236 @@
+<main
+  *ngIf="device; else notFound"
+  class="flex-1 container mx-auto px-4 py-4 sm:py-6 bg-[#f8f8f9]"
+>
+  <button
+    (click)="onBack()"
+    class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 sm:mb-6"
+  >
+    <i class="pi pi-arrow-left w-4 h-4"></i>
+    Zurück zur Suche
+  </button>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+    <!-- linke Spalte ---------------------------------------------------------->
+    <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+      <!-- Device info card -->
+      <div class="bg-white border border-gray-200 rounded-lg">
+        <div class="p-4 sm:p-6">
+          <div class="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div
+              class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded flex items-center justify-center text-xl sm:text-2xl shrink-0"
+            >
+              {{ device?.category | deviceIcon }}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <h1 class="text-lg font-semibold text-[#253359] mb-1">
+                {{ device?.name }}
+              </h1>
+              <p class="text-sm sm:text-base text-gray-600 text-muted-foreground">
+                {{ device?.category }}
+              </p>
+            </div>
+
+            <div class="hidden sm:flex gap-2 shrink-0"></div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4 sm:mb-6">
+            <p-tag
+              [value]="device?.availability?.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
+              [styleClass]="
+                (device?.availability?.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
+                ' text-white text-xs sm:text-sm font-normal'
+              "
+            ></p-tag>
+          </div>
+
+          <!-- Beschreibung -->
+          <div>
+            <h2 class="mb-2 sm:mb-3 text-base text-[#253359] sm:text-lg">
+              Beschreibung
+            </h2>
+            <p
+              class="text-xs sm:text-sm text-muted-foreground text-slate-800 leading-relaxed"
+            >
+              {{ device?.description }}
+            </p>
+          </div>
+
+          <!-- Technical Specs -->
+          <div class="mt-4 sm:mt-6">
+            <h2 class="mb-2 sm:mb-3 text-base text-[#253359] sm:text-lg">
+              Technische Spezifikationen
+            </h2>
+            <div
+              class="bg-gray-100 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm"
+            >
+              <div *ngIf="device?.technicalSpecs?.storage" class="flex">
+                <span class="w-32 text-muted-foreground text-slate-800">
+                  Speicher:
+                </span>
+                <span class="text-slate-800">
+                  {{ device?.technicalSpecs?.storage }}
+                </span>
+              </div>
+              <div *ngIf="device?.technicalSpecs?.sensor" class="flex">
+                <span class="w-32 text-muted-foreground text-slate-800">
+                  Sensor:
+                </span>
+                <span class="text-slate-800">
+                  {{ device?.technicalSpecs?.sensor }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zubehör -->
+          <div class="mt-4 sm:mt-6">
+            <h2 class="mb-2 sm:mb-3 text-base text-[#253359] sm:text-lg">
+              Enthaltenes Zubehör
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              <p-tag
+                *ngFor="let acc of device?.technicalSpecs?.accessories"
+                [value]="acc"
+                styleClass="text-slate-800 bg-gray-300 font-normal"
+              ></p-tag>
+            </div>
+          </div>
+
+          <!-- Keywords -->
+          <div class="mt-4 sm:mt-6">
+            <h2 class="mb-2 sm:mb-3 text-base text-[#253359] sm:text-lg">
+              Schlagwörter
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              <p-tag
+                *ngFor="let keyword of device?.keywords"
+                [value]="keyword"
+                styleClass="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
+              ></p-tag>
+            </div>
+          </div>
+
+          <!-- Inventar nummer -->
+          <div class="mt-4 sm:mt-6 pt-4 sm:pt-6">
+            <div class="flex items-start gap-2 text-xs sm:text-sm">
+              <span class="shrink-0">📋</span>
+              <p class="text-muted-foreground text-[#253359]">
+                <strong>Nummer:</strong> {{ device?.inventoryNumber }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ausleihbedingungen Card -->
+      <div class="bg-white border border-gray-200 rounded-lg">
+        <div class="p-4 sm:p-6">
+          <h3 class="text-base sm:text-lg text-[#253359]">Ausleihbedingungen</h3>
+        </div>
+        <div class="space-y-3 text-xs sm:text-sm p-4 sm:p-6 text-slate-800">
+          <div>
+            <p class="text-muted-foreground text-[#253359]">Ausleihzeit:</p>
+            <p>{{ device?.loanConditions?.loanPeriod }}</p>
+          </div>
+          <div>
+            <p class="text-muted-foreground text-[#253359]">Verlängerungen:</p>
+            <p>{{ device?.loanConditions?.extensions }}</p>
+          </div>
+          <div>
+            <p class="text-muted-foreground text-[#253359]">Hinweis:</p>
+            <p>{{ device?.loanConditions?.notes }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechte Spalte --------------------------------------------------------->
+    <div class="space-y-4 sm:space-y-6">
+      <!-- Verfügbarkeit + Datum Card -->
+      <div class="bg-white border border-gray-200 rounded-lg">
+        <!-- Header -->
+        <div class="p-4 sm:p-6">
+          <h3 class="text-base sm:text-lg text-[#253359]">Verfügbarkeit</h3>
+        </div>
+
+        <!-- Verfügbarkeit / Campus / Standort -->
+        <div class="space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
+          <div>
+            <p class="text-xs sm:text-sm mb-2 text-slate-800">Gesamt:</p>
+            <div class="flex items-center gap-2">
+              <p-tag
+                [value]="(device?.availability?.available || 0) + ' Exemplare'"
+                styleClass="bg-[#253359] text-white text-xs sm:text-sm font-normal"
+              ></p-tag>
+              <span class="text-xs sm:text-sm text-muted-foreground text-slate-800">
+                verfügbar
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs sm:text-sm mb-2 block text-slate-800">
+              Campus:
+            </label>
+            <p class="text-sm font-medium text-slate-800">
+              Campus Esslingen Flandernstraße
+            </p>
+          </div>
+
+          <app-campus-info
+            *ngIf="flandernstrasseData"
+            [campusData]="flandernstrasseData"
+          ></app-campus-info>
+        </div>
+
+        <!-- Date + Button -->
+        <div
+          class="border-t border-gray-100 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-5 space-y-3"
+        >
+          <div>
+            <label
+              for="pickupDate"
+              class="text-xs sm:text-sm mb-2 block text-slate-800"
+            >
+              Abholdatum
+            </label>
+
+            <p-datepicker
+              [(ngModel)]="pickupDate"
+              [minDate]="minDate"
+              [showIcon]="true"
+              inputId="pickupDate"
+              styleClass="w-full"
+              dateFormat="dd.mm.yy"
+            ></p-datepicker>
+          </div>
+
+          <button
+            pButton
+            label="In den Warenkorb"
+            class="w-full bg-[#253359] border-0 hover:bg-rose-700 text-xs sm:text-sm"
+          ></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Nicht gefunden Template ------------------------------------------------------->
+<ng-template #notFound>
+  <div class="flex-1 container mx-auto px-4 py-8 text-center">
+    <i class="pi pi-exclamation-triangle text-6xl text-gray-400"></i>
+    <h1 class="mt-4 text-2xl font-semibold">Gerät nicht gefunden</h1>
+    <p class="text-muted-foreground">
+      Das angeforderte Gerät konnte nicht gefunden werden.
+    </p>
+    <button
+      pButton
+      (click)="onBack()"
+      label="Zurück zur Suche"
+      class="mt-6"
+    ></button>
+  </div>
+</ng-template>

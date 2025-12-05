@@ -1,0 +1,40 @@
+export type BookingStatus =
+  | 'PENDING'      // Wartet auf Bestätigung
+  | 'CONFIRMED'    // Bestätigt, wartet auf Abholung
+  | 'PICKED_UP'    // Ausgeliehen
+  | 'RETURNED'     // Zurückgegeben
+  | 'REJECTED'     // Abgelehnt
+  | 'EXPIRED'      // Nicht abgeholt (24h nach Bestätigung)
+  | 'CANCELLED';   // Storniert
+
+export interface Booking {
+  id: number;
+  userId: number;
+  userName: string;
+  receiverId: number;
+  receiverName: string;
+  itemId: number;
+  itemInvNumber: string;
+  productId: number;
+  productName: string;
+  message: string;
+  status: BookingStatus;
+  startDate: string;            // ISO DateTime
+  endDate: string;
+  proposalPickup: string;
+  confirmedPickup: string;
+  distributionDate: string;
+  returnDate: string;
+  createdAt: string;
+}
+
+export interface BookingCreate {
+  userId: number;
+  receiverId: number;
+  itemId: number;
+  message: string;
+  startDate: string;
+  endDate: string;
+  proposalPickup: string;
+}
+

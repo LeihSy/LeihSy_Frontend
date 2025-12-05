@@ -33,6 +33,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/bookings',
+    loadComponent: () => import('./pages/user-dashboard/user-bookings.component').then(m => m.UserBookingsComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'lender',
     loadComponent: () => import('./pages/lender-dashboard/lender-dashboard.component').then(m => m.LenderDashboardComponent),
     canActivate: [authGuard],

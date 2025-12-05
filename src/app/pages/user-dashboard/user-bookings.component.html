@@ -1,0 +1,93 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <h1 class="text-3xl font-bold mb-4">Meine Buchungen</h1>
+  <p class="text-muted-foreground mb-6">
+    Übersicht über alle Ihre Buchungen
+  </p>
+
+  <p-card class="mb-6">
+    <div class="flex gap-4">
+      <p-iconfield iconPosition="left" class="flex-1">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Suche nach Produkt, Inventarnummer, Empfänger oder Status..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full" />
+      </p-iconfield>
+    </div>
+  </p-card>
+
+  <p-card>
+    @if (isLoading()) {
+      <div class="text-center py-8">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+        <p class="mt-4 text-muted-foreground">Lade Buchungen...</p>
+      </div>
+    } @else {
+      @if (filteredBookings().length === 0) {
+        <div class="text-center py-8">
+          <i class="pi pi-inbox text-4xl text-muted-foreground"></i>
+          <p class="mt-4 text-muted-foreground">
+            @if (searchQuery()) {
+              Keine Buchungen gefunden, die der Suche entsprechen.
+            } @else {
+              Sie haben noch keine Buchungen.
+            }
+          </p>
+        </div>
+      } @else {
+        <p-table
+          [value]="filteredBookings()"
+          [paginator]="true"
+          [rows]="10"
+          [rowsPerPageOptions]="[10, 25, 50]"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Buchungen"
+          [tableStyle]="{ 'min-width': '60rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th scope="col">Produkt</th>
+              <th scope="col">Inventarnummer</th>
+              <th scope="col">Empfänger</th>
+              <th scope="col">Status</th>
+              <th scope="col">Abholung</th>
+              <th scope="col">Rückgabe</th>
+              <th scope="col" style="width: 150px;">Aktionen</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-booking>
+            <tr>
+              <td>{{ booking.productName }}</td>
+              <td>{{ booking.itemInvNumber }}</td>
+              <td>{{ booking.receiverName }}</td>
+              <td>
+                <p-tag [severity]="getStatusSeverity(booking.status)" [value]="getStatusLabel(booking.status)"></p-tag>
+              </td>
+              <td>{{ formatDateShort(booking.startDate) }}</td>
+              <td>{{ formatDateShort(booking.endDate) }}</td>
+              <td>
+                <div class="flex gap-2">
+                  @if (canCancelBooking(booking)) {
+                    <button
+                      pButton
+                      icon="pi pi-times"
+                      class="p-button-danger p-button-sm"
+                      pTooltip="Stornieren"
+                      (click)="cancelBooking(booking)">
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    }
+  </p-card>
+</div>
+

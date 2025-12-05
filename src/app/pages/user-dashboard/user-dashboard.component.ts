@@ -1,14 +1,20 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  template: `
-    <div class="p-8">
-      <h1 class="text-3xl font-bold">User Dashboard</h1>
-      <p class="text-muted-foreground">This page will show the user's dashboard.</p>
-    </div>
-  `,
+  imports: [
+    CommonModule,
+    RouterModule,
+    CardModule,
+    ButtonModule
+  ],
+  templateUrl: './user-dashboard.component.html',
+  styleUrls: ['./user-dashboard.component.scss']
 })
 export class UserDashboardComponent {
   // user dashboard logik hier einfügen

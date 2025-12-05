@@ -34,6 +34,11 @@ export class AuthService {
     return (this.keycloak.tokenParsed?.['preferred_username'] as string) ?? 'Unbekannt';
   }
 
+  /** Gibt die Keycloak-ID (uniqueId/sub) zurück */
+  getKeycloakId(): string | undefined {
+    return this.keycloak.tokenParsed?.['sub'];
+  }
+
   /** Gibt alle Rollen des Benutzers zurück */
   getRoles(): string[] {
     const clientId = this.keycloak.clientId ?? this.keycloak.tokenParsed?.['azp'];

@@ -1,0 +1,60 @@
+name: SonarQube Frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Build and analyze Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # -----------------------------------------------------
+      # Unit Tests + Coverage
+      # -----------------------------------------------------
+      - name: Run Angular Unit Tests with coverage
+        run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      # -----------------------------------------------------
+      # Angular Build
+      # -----------------------------------------------------
+      - name: Build Angular frontend
+        run: npm run build --if-present
+
+      # -----------------------------------------------------
+      # SonarQube Scan
+      # -----------------------------------------------------
+      - name: SonarQube Scan Frontend
+        uses: SonarSource/sonarqube-scan-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts

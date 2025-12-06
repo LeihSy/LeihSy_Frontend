@@ -38,13 +38,45 @@ jobs:
         run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
 
       # -----------------------------------------------------
+      # Upload Coverage Report als Artefakt
+      # -----------------------------------------------------
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      # -----------------------------------------------------
+      # Coverage Summary anzeigen
+      # -----------------------------------------------------
+      - name: Display Coverage Summary
+        if: always()
+        run: |
+          echo "## Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f coverage/frontend/index.html ]; then
+            echo "Coverage Report generiert!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Coverage-Details:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -n 5 coverage/frontend/lcov.info | head -n 3 || echo "Coverage-Daten verfügbar" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Download: [Coverage Report Artefakt](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Kein Coverage Report gefunden" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # -----------------------------------------------------
       # Angular Build
       # -----------------------------------------------------
       - name: Build Angular frontend
         run: npm run build --if-present
 
       # -----------------------------------------------------
-      # SonarCloud Scan
+      # SonarCloud Scan (mit Coverage-Daten)
       # -----------------------------------------------------
       - name: SonarCloud Scan Frontend
         uses: SonarSource/sonarqube-scan-action@v6

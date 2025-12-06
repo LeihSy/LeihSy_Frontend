@@ -44,17 +44,11 @@ jobs:
         run: npm run build --if-present
 
       # -----------------------------------------------------
-      # SonarQube Scan
+      # SonarCloud Scan
       # -----------------------------------------------------
-      - name: SonarQube Scan Frontend
-        uses: SonarSource/sonarqube-scan-action@v1
+      - name: SonarCloud Scan Frontend
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           projectBaseDir: .
-          args: >
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.spec.ts
-            -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts

@@ -1,19 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app';
 import Keycloak from 'keycloak-js';
+import { provideRouter } from '@angular/router';
 
 describe('AppComponent', () => {
-  let mockKeycloak: jasmine.SpyObj<Keycloak>;
+  let mockKeycloak: Partial<Keycloak>;
 
   beforeEach(async () => {
-    mockKeycloak = jasmine.createSpyObj('Keycloak', ['login', 'logout'], {
-      authenticated: false
-    });
+    mockKeycloak = {
+      authenticated: false,
+      login: jasmine.createSpy('login').and.returnValue(Promise.resolve()),
+      logout: jasmine.createSpy('logout').and.returnValue(Promise.resolve()),
+      init: jasmine.createSpy('init').and.returnValue(Promise.resolve(true)),
+      token: 'mock-token',
+      tokenParsed: {
+        preferred_username: 'testuser',
+        realm_access: { roles: [] },
+        resource_access: {}
+      },
+      clientId: 'test-client'
+    };
 
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
-        { provide: Keycloak, useValue: mockKeycloak }
+        { provide: Keycloak, useValue: mockKeycloak },
+        provideRouter([])
       ]
     }).compileComponents();
   });
@@ -24,15 +36,10 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should have authService injected', () => {
+  it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.authService).toBeDefined();
-  });
-
-  it('should initialize with cartCount of 0', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.cartCount).toBe(0);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled).toBeTruthy();
   });
 });

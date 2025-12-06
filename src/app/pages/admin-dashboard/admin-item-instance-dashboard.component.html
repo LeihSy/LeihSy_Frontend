@@ -23,11 +23,13 @@
 
         <div class="grid md:grid-cols-2 gap-4">
           <div>
-            <label class="block mb-2 font-semibold">Inventarnummer Präfix *</label>
-            <input pInputText formControlName="invNumber" class="w-full"
-                   placeholder="z.B. VR-PRO"
-                   (input)="onInventoryPrefixChange()"
-                   pTooltip="Basisname für die Inventarnummer (Zahl wird automatisch hinzugefügt)" />
+            <label class="block font-semibold">
+              <span class="block mb-2">Inventarnummer Präfix *</span>
+              <input pInputText formControlName="invNumber" class="w-full"
+                     placeholder="z.B. VR-PRO"
+                     (input)="onInventoryPrefixChange()"
+                     pTooltip="Basisname für die Inventarnummer (Zahl wird automatisch hinzugefügt)" />
+            </label>
             @if (generatedInventoryNumbers().length > 0 && !isEditMode()) {
               <small class="text-gray-600 mt-1 block">
                 Vorschau: {{ generatedInventoryNumbers()[0] }}
@@ -39,24 +41,28 @@
           </div>
 
           <div>
-            <label class="block mb-2 font-semibold">Besitzer *</label>
-            <input pInputText formControlName="owner" class="w-full"
-                   placeholder="z.B. Hochschule Esslingen" />
+            <label class="block font-semibold">
+              <span class="block mb-2">Besitzer *</span>
+              <input pInputText formControlName="owner" class="w-full"
+                     placeholder="z.B. Hochschule Esslingen" />
+            </label>
           </div>
         </div>
 
         @if (!isEditMode()) {
           <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label class="block mb-2 font-semibold">Anzahl zu erstellender Instanzen</label>
-              <p-inputNumber formControlName="quantity"
-                             [min]="1"
-                             [max]="100"
-                             [showButtons]="true"
-                             class="w-full"
-                             placeholder="1"
-                             (onInput)="onQuantityChange()">
-              </p-inputNumber>
+              <label class="block font-semibold">
+                <span class="block mb-2">Anzahl zu erstellender Instanzen</span>
+                <p-inputNumber formControlName="quantity"
+                               [min]="1"
+                               [max]="100"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="1"
+                               (onInput)="onQuantityChange()">
+                </p-inputNumber>
+              </label>
               <small class="text-gray-600 mt-1 block">
                 Es werden {{ itemForm.get('quantity')?.value || 1 }} Instanzen erstellt
               </small>
@@ -105,28 +111,26 @@
 
   <p-card header="Produkte und ihre Gegenstände">
 
-    <!-- Suchfeld -->
     <div class="mb-4">
       <p-iconfield iconPosition="left">
-        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <p-inputicon class="pi pi-search"></p-inputicon>
         <input type="text" pInputText placeholder="Suche nach Produktname, Kategorie..."
                (input)="onSearchChange($any($event.target).value)"
                class="w-full" />
       </p-iconfield>
     </div>
 
-    <!-- Produkte mit Items -->
     <div class="space-y-4">
       @for (productData of productsWithItems(); track productData.product.id) {
         <div class="border rounded-lg overflow-hidden bg-white">
 
-          <!-- Produkt Header (klickbar zum Auf-/Zuklappen) -->
-          <div
-            class="product-header flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+          <button
+            type="button"
+            class="product-header flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors w-full text-left"
             (click)="toggleProductExpansion(productData.product.id)">
 
             <div class="flex items-center gap-3 flex-1">
-              <!-- Expand/Collapse Icon -->
+
               <i [class]="isProductExpanded(productData.product.id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                  class="text-gray-500"></i>
 
@@ -144,13 +148,13 @@
                 {{ productData.availableCount }} / {{ productData.totalCount }} verfügbar
               </span>
               <button pButton icon="pi pi-plus"
+                      type="button"
                       class="p-button-sm p-button-rounded"
                       (click)="addItemForProduct(productData.product); $event.stopPropagation()"
                       pTooltip="Neue Instanz hinzufügen"></button>
             </div>
-          </div>
+          </button>
 
-          <!-- Content: Items Tabelle (nur sichtbar wenn aufgeklappt) -->
           @if (isProductExpanded(productData.product.id)) {
             <div class="border-t p-4 bg-gray-50">
               @if (productData.product.description) {
@@ -159,16 +163,16 @@
 
               @if (productData.items.length > 0) {
                 <p-table [value]="productData.items"
-                         styleClass="p-datatable-sm"
+                         class="p-datatable-sm"
                          [scrollable]="true">
 
                   <ng-template pTemplate="header">
                     <tr>
-                      <th>ID</th>
-                      <th>Inventarnummer</th>
-                      <th>Besitzer</th>
-                      <th>Status</th>
-                      <th style="width: 150px;">Aktionen</th>
+                      <th scope="col">ID</th>
+                      <th scope="col">Inventarnummer</th>
+                      <th scope="col">Besitzer</th>
+                      <th scope="col">Status</th>
+                      <th style="width: 150px;" scope="col">Aktionen</th>
                     </tr>
                   </ng-template>
 
@@ -232,3 +236,4 @@
 
   </p-card>
 </div>
+

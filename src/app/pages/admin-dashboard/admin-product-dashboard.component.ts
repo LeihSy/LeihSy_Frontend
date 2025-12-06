@@ -133,28 +133,7 @@ export class AdminProductDashboardComponent {
     const editId = this.editingProductId();
     const imageFile = this.selectedFile();
 
-    if (editId !== null) {
-      this.productService.updateProduct(editId, dto, imageFile).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Erfolg',
-            detail: 'Produkt wurde aktualisiert!'
-          });
-          this.resetForm();
-          this.loadProducts();
-        },
-        error: (err: any) => {
-          console.error(err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fehler',
-            detail: 'Produkt konnte nicht aktualisiert werden.'
-          });
-        }
-      });
-
-    } else {
+    if (editId === null) {
       this.productService.createProduct(dto, imageFile).subscribe({
         next: () => {
           this.messageService.add({
@@ -171,6 +150,26 @@ export class AdminProductDashboardComponent {
             severity: 'error',
             summary: 'Fehler',
             detail: 'Produkt konnte nicht erstellt werden.'
+          });
+        }
+      });
+    } else {
+      this.productService.updateProduct(editId, dto, imageFile).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Erfolg',
+            detail: 'Produkt wurde aktualisiert!'
+          });
+          this.resetForm();
+          this.loadProducts();
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fehler',
+            detail: 'Produkt konnte nicht aktualisiert werden.'
           });
         }
       });
@@ -251,8 +250,8 @@ export class AdminProductDashboardComponent {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
+    const file = input.files?.[0];
+    if (file) {
 
       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {

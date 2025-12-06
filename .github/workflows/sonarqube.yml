@@ -25,25 +25,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm
 
-      - name: Install frontend dependencies
-        working-directory: ./frontend
+      - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
       # -----------------------------------------------------
       # Unit Tests + Coverage
       # -----------------------------------------------------
       - name: Run Angular Unit Tests with coverage
-        working-directory: ./frontend
         run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
 
       # -----------------------------------------------------
       # Angular Build
       # -----------------------------------------------------
       - name: Build Angular frontend
-        working-directory: ./frontend
         run: npm run build --if-present
 
       # -----------------------------------------------------
@@ -54,11 +51,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: frontend
+          projectBaseDir: .
           args: >
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.sources=src
             -Dsonar.tests=src
             -Dsonar.test.inclusions=**/*.spec.ts
             -Dsonar.exclusions=**/node_modules/**,**/*.spec.ts
-

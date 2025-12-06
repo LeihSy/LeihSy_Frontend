@@ -1,6 +1,5 @@
 :host ::ng-deep {
 
-  /* PrimeNG Button überschreiben */
   .p-button {
     color: white !important;
     background-color: #000080 !important; /* Navy */
@@ -55,7 +54,6 @@
     }
   }
 
-  /* Status Badges */
   .badge {
     padding: 0.25rem 0.5rem;
     border-radius: 0.375rem;
@@ -94,7 +92,6 @@
     }
   }
 
-  /* Product Header Styling */
   .product-header {
     border-bottom: 1px solid transparent;
 
@@ -103,7 +100,6 @@
     }
   }
 
-  /* Rounded Button für Plus */
   .p-button-rounded {
     border-radius: 50%;
     width: 2.5rem;
@@ -114,17 +110,14 @@
     justify-content: center;
   }
 
-  /* Space-y utility */
   .space-y-4 > * + * {
     margin-top: 1rem;
   }
 
-  /* Cursor pointer */
   .cursor-pointer {
     cursor: pointer;
   }
 
-  /* Transition */
   .transition-colors {
     transition: background-color 0.15s ease-in-out;
   }

@@ -155,46 +155,15 @@ export class AdminItemInstanceComponent implements OnInit {
     const formValue = this.itemForm.value;
     const editId = this.editingItemId();
 
-    if (editId !== null) {
-      // Update - nur eine Instanz
-      const payload = {
-        invNumber: formValue.invNumber,
-        owner: formValue.owner,
-        productId: formValue.productId,
-        available: formValue.available
-      };
-
-      this.itemService.updateItem(editId, payload).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Erfolg',
-            detail: 'Gegenstand wurde aktualisiert!'
-          });
-          this.resetForm();
-          this.loadItems();
-        },
-        error: err => {
-          console.error('Error updating item:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fehler',
-            detail: 'Fehler beim Aktualisieren des Gegenstands.'
-          });
-        }
-      });
-    } else {
-      // Create - möglicherweise mehrere Instanzen
+    if (editId === null) {
       const quantity = formValue.quantity || 1;
       const invNumbers = this.generateInventoryNumbers(formValue.invNumber, quantity);
 
       let successCount = 0;
       let errorCount = 0;
 
-      // Erstelle alle Instanzen nacheinander
       const createNextItem = (index: number) => {
         if (index >= invNumbers.length) {
-          // Alle Instanzen erstellt
           if (successCount > 0) {
             this.messageService.add({
               severity: 'success',
@@ -235,6 +204,34 @@ export class AdminItemInstanceComponent implements OnInit {
       };
 
       createNextItem(0);
+    } else {
+      // Update existing item
+      const payload = {
+        invNumber: formValue.invNumber,
+        owner: formValue.owner,
+        productId: formValue.productId,
+        available: formValue.available
+      };
+
+      this.itemService.updateItem(editId, payload).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Erfolg',
+            detail: 'Gegenstand wurde aktualisiert!'
+          });
+          this.resetForm();
+          this.loadItems();
+        },
+        error: err => {
+          console.error('Error updating item:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Fehler',
+            detail: 'Fehler beim Aktualisieren des Gegenstands.'
+          });
+        }
+      });
     }
   }
 
@@ -329,30 +326,25 @@ export class AdminItemInstanceComponent implements OnInit {
     return this.expandedProductIds().has(productId);
   }
 
-  /**
-   * Generiert Inventarnummern basierend auf dem Präfix und der Anzahl
-   * Beispiel: VR-PRO -> VR-PRO-001, VR-PRO-002, VR-PRO-003
-   */
+
   generateInventoryNumbers(prefix: string, quantity: number): string[] {
     if (!prefix || quantity < 1) return [];
 
     const allItems = this.allItems();
 
-    // Finde die höchste existierende Nummer mit diesem Präfix
+
     const existingNumbers = allItems
       .filter(item => item.invNumber.startsWith(prefix))
       .map(item => {
-        // Extrahiere die Nummer am Ende (z.B. "VR-PRO-005" -> 5)
-        const match = item.invNumber.match(/(\d+)$/);
-        return match ? parseInt(match[1], 10) : 0;
+        const match = /(\d+)$/.exec(item.invNumber);
+        return match ? Number.parseInt(match[1], 10) : 0;
       })
-      .filter(num => !isNaN(num));
+      .filter(num => !Number.isNaN(num));
 
-    // Bestimme die Start-Nummer
     const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
     let nextNumber = maxNumber + 1;
 
-    // Generiere die Inventarnummern
+
     const inventoryNumbers: string[] = [];
     for (let i = 0; i < quantity; i++) {
       const paddedNumber = String(nextNumber).padStart(3, '0');
@@ -363,9 +355,7 @@ export class AdminItemInstanceComponent implements OnInit {
     return inventoryNumbers;
   }
 
-  /**
-   * Event-Handler für Änderungen am Inventarnummer-Präfix
-   */
+
   onInventoryPrefixChange(): void {
     if (this.isEditMode()) return;
 
@@ -380,9 +370,7 @@ export class AdminItemInstanceComponent implements OnInit {
     }
   }
 
-  /**
-   * Event-Handler für Änderungen an der Anzahl
-   */
+
   onQuantityChange(): void {
     if (this.isEditMode()) return;
 

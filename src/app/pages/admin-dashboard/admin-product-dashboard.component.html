@@ -20,63 +20,73 @@
 
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block mb-2 font-semibold">Name *</label>
-                <input pInputText formControlName="name" class="w-full"
-                       placeholder="z.B. Canon EOS R5" />
+                <label class="block font-semibold">
+                  <span class="block mb-2">Name *</span>
+                  <input pInputText formControlName="name" class="w-full"
+                         placeholder="z.B. Canon EOS R5" />
+                </label>
               </div>
 
               <div>
-                <label class="block mb-2 font-semibold">Kategorie *</label>
-                <p-select
-                  [options]="categories"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Kategorie wählen"
-                  formControlName="categoryId"
-                  class="w-full">
-                </p-select>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Kategorie *</span>
+                  <p-select
+                    [options]="categories"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Kategorie wählen"
+                    formControlName="categoryId"
+                    class="w-full">
+                  </p-select>
+                </label>
               </div>
             </div>
 
             <div>
-              <label class="block mb-2 font-semibold">Beschreibung</label>
-              <textarea rows="4" formControlName="description" class="w-full"
-                        placeholder="Detaillierte Beschreibung des Produkts..."
-                        style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+              <label class="block font-semibold">
+                <span class="block mb-2">Beschreibung</span>
+                <textarea rows="4" formControlName="description" class="w-full"
+                          placeholder="Detaillierte Beschreibung des Produkts..."
+                          style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+              </label>
             </div>
 
               <div>
-                <label class="block mb-2 font-semibold">Produktbild</label>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Produktbild</span>
 
-                @if (imagePreview()) {
-                  <div class="mb-3">
-                    <img [src]="imagePreview()" alt="Preview"
-                         class="max-w-xs rounded border border-gray-300" />
-                    <button pButton icon="pi pi-times"
-                            label="Bild entfernen"
-                            class="p-button-sm p-button-danger mt-2"
-                            type="button"
-                            (click)="removeImage()"></button>
-                  </div>
-                }
+                  @if (imagePreview()) {
+                    <div class="mb-3">
+                      <img [src]="imagePreview()" alt="Preview"
+                           class="max-w-xs rounded border border-gray-300" />
+                      <button pButton icon="pi pi-times"
+                              label="Bild entfernen"
+                              class="p-button-sm p-button-danger mt-2"
+                              type="button"
+                              (click)="removeImage()"></button>
+                    </div>
+                  }
 
-                <input type="file"
-                       accept="image/jpeg,image/png,image/webp"
-                       (change)="onFileSelected($event)"
-                       class="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100
-                            cursor-pointer" />
-                <small class="text-gray-500">JPG, PNG oder WebP, max. 5MB</small>
+                  <input type="file"
+                         accept="image/jpeg,image/png,image/webp"
+                         (change)="onFileSelected($event)"
+                         class="block w-full text-sm text-gray-500
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700
+                              hover:file:bg-blue-100
+                              cursor-pointer" />
+                  <small class="text-gray-500">JPG, PNG oder WebP, max. 5MB</small>
+                </label>
               </div>
 
             <div>
-              <label class="block mb-2 font-semibold">Zubehör</label>
-              <input pInputText formControlName="accessories" class="w-full"
-                     placeholder='["Controller", "Kabel", "Netzteil"]' />
+              <label class="block font-semibold">
+                <span class="block mb-2">Zubehör</span>
+                <input pInputText formControlName="accessories" class="w-full"
+                       placeholder='["Controller", "Kabel", "Netzteil"]' />
+              </label>
             </div>
 
           </div>
@@ -87,62 +97,74 @@
 
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block mb-2 font-semibold">Max. Ausleihdauer (Tage) *</label>
-                <p-inputNumber formControlName="expiryDate"
-                               [min]="1"
-                               [showButtons]="true"
-                               class="w-full"
-                               placeholder="z.B. 7">
-                </p-inputNumber>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Max. Ausleihdauer (Tage) *</span>
+                  <p-inputNumber formControlName="expiryDate"
+                                 [min]="1"
+                                 [showButtons]="true"
+                                 class="w-full"
+                                 placeholder="z.B. 7">
+                  </p-inputNumber>
+                </label>
               </div>
 
               <div>
-                <label class="block mb-2 font-semibold">Preis / Tagessatz (€) *</label>
-                <p-inputNumber formControlName="price"
-                               [min]="0"
-                               [minFractionDigits]="2"
-                               [maxFractionDigits]="2"
-                               mode="currency"
-                               currency="EUR"
-                               [showButtons]="true"
-                               class="w-full">
-                </p-inputNumber>
-              </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label class="block mb-2 font-semibold">Standort ID *</label>
-                <p-inputNumber formControlName="locationId"
-                               [min]="1"
-                               [showButtons]="true"
-                               class="w-full"
-                               placeholder="z.B. 1">
-                </p-inputNumber>
-              </div>
-
-              <div>
-                <label class="block mb-2 font-semibold">Raum / Standort *</label>
-                <input pInputText formControlName="locationRoomNr"
-                       class="w-full" placeholder="z.B. F01.204" />
+                <label class="block font-semibold">
+                  <span class="block mb-2">Preis / Tagessatz (€) *</span>
+                  <p-inputNumber formControlName="price"
+                                 [min]="0"
+                                 [minFractionDigits]="2"
+                                 [maxFractionDigits]="2"
+                                 mode="currency"
+                                 currency="EUR"
+                                 [showButtons]="true"
+                                 class="w-full">
+                  </p-inputNumber>
+                </label>
               </div>
             </div>
 
             <div class="grid md:grid-cols-2 gap-4">
               <div>
-                <label class="block mb-2 font-semibold">Verleiher ID</label>
-                <p-inputNumber formControlName="lenderId"
-                               [min]="1"
-                               [showButtons]="true"
-                               class="w-full"
-                               placeholder="z.B. 1">
-                </p-inputNumber>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Standort ID *</span>
+                  <p-inputNumber formControlName="locationId"
+                                 [min]="1"
+                                 [showButtons]="true"
+                                 class="w-full"
+                                 placeholder="z.B. 1">
+                  </p-inputNumber>
+                </label>
               </div>
 
               <div>
-                <label class="block mb-2 font-semibold">Verleiher Name</label>
-                <input pInputText formControlName="lenderName"
-                       class="w-full" placeholder="Name des Verleihers" />
+                <label class="block font-semibold">
+                  <span class="block mb-2">Raum / Standort *</span>
+                  <input pInputText formControlName="locationRoomNr"
+                         class="w-full" placeholder="z.B. F01.204" />
+                </label>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Verleiher ID</span>
+                  <p-inputNumber formControlName="lenderId"
+                                 [min]="1"
+                                 [showButtons]="true"
+                                 class="w-full"
+                                 placeholder="z.B. 1">
+                  </p-inputNumber>
+                </label>
+              </div>
+
+              <div>
+                <label class="block font-semibold">
+                  <span class="block mb-2">Verleiher Name</span>
+                  <input pInputText formControlName="lenderName"
+                         class="w-full" placeholder="Name des Verleihers" />
+                </label>
               </div>
             </div>
 
@@ -205,13 +227,13 @@
 
       <ng-template pTemplate="header">
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Kategorie</th>
-          <th>Standort</th>
-          <th>Preis/Tag</th>
-          <th>Verfügbar/Gesamt</th>
-          <th style="width: 150px;">Aktionen</th>
+          <th scope="col">ID</th>
+          <th scope="col">Name</th>
+          <th scope="col">Kategorie</th>
+          <th scope="col">Standort</th>
+          <th scope="col">Preis/Tag</th>
+          <th scope="col">Verfügbar/Gesamt</th>
+          <th style="width: 150px;" scope="col">Aktionen</th>
         </tr>
       </ng-template>
 
@@ -262,3 +284,4 @@
 
   </p-card>
 </div>
+

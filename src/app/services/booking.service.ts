@@ -7,36 +7,31 @@ import { Booking, BookingCreate } from '../models/booking.model';
   providedIn: 'root'
 })
 export class BookingService {
-  private apiUrl = 'http://localhost:8080/api/bookings';
+  private readonly apiUrl = 'http://localhost:8080/api/bookings';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  /**
-   * GET /api/bookings - Alle Buchungen abrufen
-   */
-  getAllBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(this.apiUrl);
-  }
+  // ==================== GET Endpunkte ====================
 
   /**
-   * GET /api/bookings/{id} - Einzelne Buchung per ID abrufen
+   * GET /api/bookings/{id} - Einzelne Buchung abrufen
    */
   getBookingById(id: number): Observable<Booking> {
     return this.http.get<Booking>(`${this.apiUrl}/${id}`);
   }
 
   /**
-   * GET /api/bookings/user/{userId} - Buchungen eines Users abrufen
+   * GET /api/bookings/users/{userId} - Buchungen eines bestimmten Users abrufen
    */
   getBookingsByUserId(userId: number): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/user/${userId}`);
+    return this.http.get<Booking[]>(`${this.apiUrl}/users/${userId}`);
   }
 
   /**
-   * GET /api/bookings/pending - Offene Buchungen abrufen
+   * GET /api/bookings/users/me - Eigene Buchungen als Student abrufen
    */
-  getPendingBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/pending`);
+  getMyBookings(): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/users/me`);
   }
 
   /**
@@ -47,17 +42,49 @@ export class BookingService {
   }
 
   /**
+   * GET /api/bookings/lenders/{lenderId} - Buchungen eines bestimmten Verleihers abrufen
+   */
+  getBookingsByLenderId(lenderId: number): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/lenders/${lenderId}`);
+  }
+
+  /**
+   * GET /api/bookings/lenders/{lenderId}/pending - PENDING Buchungen eines bestimmten Verleihers abrufen
+   */
+  getPendingBookingsByLenderId(lenderId: number): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/lenders/${lenderId}/pending`);
+  }
+
+  /**
+   * GET /api/bookings/lenders/me - Alle eigenen Buchungen als Verleiher abrufen
+   */
+  getMyLenderBookings(): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/lenders/me`);
+  }
+
+  /**
+   * GET /api/bookings/lenders/me/pending - Eigene PENDING Anfragen als Verleiher abrufen
+   */
+  getMyPendingLenderBookings(): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/lenders/me/pending`);
+  }
+
+  // ==================== POST Endpunkte ====================
+
+  /**
    * POST /api/bookings - Neue Buchung erstellen
    */
   createBooking(booking: BookingCreate): Observable<Booking> {
     return this.http.post<Booking>(this.apiUrl, booking);
   }
 
+  // ==================== PUT Endpunkte ====================
+
   /**
-   * PUT /api/bookings/{id}/confirm - Buchung bestätigen
+   * PUT /api/bookings/{id}/confirm - Buchung bestätigen und Termine vorschlagen
    */
-  confirmBooking(id: number): Observable<Booking> {
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, {});
+  confirmBooking(id: number, proposedPickups: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, { proposedPickups });
   }
 
   /**
@@ -68,25 +95,34 @@ export class BookingService {
   }
 
   /**
-   * PUT /api/bookings/{id}/pickup - Abholung registrieren
+   * PUT /api/bookings/{id}/propose - Gegenvorschlag machen (Ping-Pong)
+   */
+  proposePickupDate(id: number, proposedPickups: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/propose`, { proposedPickups });
+  }
+
+  /**
+   * PUT /api/bookings/{id}/select-pickup - Abholtermin auswählen
+   */
+  selectPickupDate(id: number, confirmedPickup: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/select-pickup`, { confirmedPickup });
+  }
+
+  /**
+   * PUT /api/bookings/{id}/pickup - Ausgabe dokumentieren
    */
   recordPickup(id: number): Observable<Booking> {
     return this.http.put<Booking>(`${this.apiUrl}/${id}/pickup`, {});
   }
 
   /**
-   * PUT /api/bookings/{id}/return - Rückgabe registrieren
+   * PUT /api/bookings/{id}/return - Rückgabe dokumentieren
    */
   recordReturn(id: number): Observable<Booking> {
     return this.http.put<Booking>(`${this.apiUrl}/${id}/return`, {});
   }
 
-  /**
-   * PUT /api/bookings/{id}/propose - Neuen Abholtermin vorschlagen
-   */
-  proposePickupDate(id: number, proposalPickup: string): Observable<Booking> {
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/propose`, { proposalPickup });
-  }
+  // ==================== DELETE Endpunkte ====================
 
   /**
    * DELETE /api/bookings/{id} - Buchung stornieren

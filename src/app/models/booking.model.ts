@@ -11,21 +11,24 @@ export interface Booking {
   id: number;
   userId: number;
   userName: string;
-  receiverId: number;
-  receiverName: string;
+  lenderId: number;
+  lenderName: string;
   itemId: number;
   itemInvNumber: string;
   productId: number;
   productName: string;
+  proposalById: number;
+  proposalByName: string;
   message: string;
   status: BookingStatus;
   startDate: string;            // ISO DateTime
   endDate: string;
-  proposalPickup: string;
+  proposedPickups: string;
   confirmedPickup: string;
   distributionDate: string;
   returnDate: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface BookingCreate {

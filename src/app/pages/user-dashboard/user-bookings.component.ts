@@ -1,22 +1,19 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { InputTextModule } from 'primeng/inputtext';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
-import { BookingService } from '../../services/booking.service';
-import { AuthService } from '../../services/auth.service';
 import { Booking, BookingStatus } from '../../models/booking.model';
+import { BookingService } from '../../services/booking.service';
 
 @Component({
   selector: 'app-user-bookings',
@@ -25,172 +22,131 @@ import { Booking, BookingStatus } from '../../models/booking.model';
     CommonModule,
     FormsModule,
     CardModule,
-    ButtonModule,
     TableModule,
-    TagModule,
+    ButtonModule,
+    InputTextModule,
     IconFieldModule,
     InputIconModule,
-    InputTextModule,
-    ConfirmDialogModule,
+    TagModule,
     ToastModule,
     TooltipModule
   ],
+  providers: [MessageService],
   templateUrl: './user-bookings.component.html',
-  styleUrls: ['./user-bookings.component.scss'],
-  providers: [ConfirmationService, MessageService]
+  styleUrls: ['./user-bookings.component.scss']
 })
 export class UserBookingsComponent implements OnInit {
-
   bookings = signal<Booking[]>([]);
-  isLoading = signal(true);
-  searchQuery = signal('');
+  searchQuery = signal<string>('');
+  isLoading = signal<boolean>(true);
 
   filteredBookings = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    const bookings = this.bookings();
-
     if (!query) {
-      return bookings;
+      return this.bookings();
     }
 
-    return bookings.filter(booking =>
+    return this.bookings().filter(booking =>
       booking.productName.toLowerCase().includes(query) ||
       booking.itemInvNumber.toLowerCase().includes(query) ||
-      booking.receiverName.toLowerCase().includes(query) ||
-      booking.status.toLowerCase().includes(query)
+      booking.lenderName.toLowerCase().includes(query) ||
+      this.getStatusLabel(booking.status).toLowerCase().includes(query)
     );
   });
 
   constructor(
     private readonly bookingService: BookingService,
-    private readonly authService: AuthService,
-    private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
+    this.loadUserBookings();
   }
 
-  loadCurrentUser(): void {
-    // Direkt die User-ID vom AuthService holen (aus dem CurrentUser Signal)
-    const userId = this.authService.getUserId();
-
-    if (!userId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Keine Benutzer-ID gefunden. Bitte melden Sie sich erneut an.'
-      });
-      this.isLoading.set(false);
-      return;
-    }
-
-    // Buchungen mit der User-ID laden
-    this.loadBookings(userId);
-  }
-
-  loadBookings(userId: number): void {
+  /**
+   * Lädt die Buchungen des aktuellen Users
+   */
+  private loadUserBookings(): void {
     this.isLoading.set(true);
-    this.bookingService.getBookingsByUserId(userId).subscribe({
-      next: (bookings: Booking[]) => {
+
+    // Direkt die eigenen Buchungen über den /users/me Endpunkt laden
+    this.bookingService.getMyBookings().subscribe({
+      next: (bookings) => {
         this.bookings.set(bookings);
         this.isLoading.set(false);
       },
-      error: (err: unknown) => {
-        console.error('Error loading bookings:', err);
+      error: (error) => {
+        console.error('Fehler beim Laden der Buchungen:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
-          detail: 'Buchungen konnten nicht geladen werden.'
+          detail: 'Die Buchungen konnten nicht geladen werden.'
         });
         this.isLoading.set(false);
       }
     });
   }
 
-  cancelBooking(booking: Booking): void {
-    this.confirmationService.confirm({
-      message: `Möchten Sie die Buchung für "${booking.productName}" wirklich stornieren?`,
-      header: 'Stornierung bestätigen',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Ja, stornieren',
-      rejectLabel: 'Abbrechen',
-      accept: () => {
-        this.bookingService.cancelBooking(booking.id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Erfolg',
-              detail: 'Buchung wurde storniert.'
-            });
-            const userId = this.authService.getUserId();
-            if (userId) {
-              this.loadBookings(userId);
-            }
-          },
-          error: (err: unknown) => {
-            console.error(err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Buchung konnte nicht storniert werden.'
-            });
-          }
-        });
-      }
-    });
-  }
 
+  /**
+   * Gibt das Severity-Level für den Status-Tag zurück
+   */
   getStatusSeverity(status: BookingStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
-    const severityMap: Record<BookingStatus, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
-      'PENDING': 'warn',
-      'CONFIRMED': 'info',
-      'PICKED_UP': 'success',
-      'RETURNED': 'secondary',
-      'REJECTED': 'danger',
-      'EXPIRED': 'danger',
-      'CANCELLED': 'contrast'
-    };
-    return severityMap[status];
+    switch (status) {
+      case 'CONFIRMED':
+        return 'success';
+      case 'PICKED_UP':
+        return 'info';
+      case 'RETURNED':
+        return 'success';
+      case 'PENDING':
+        return 'warn';
+      case 'REJECTED':
+        return 'danger';
+      case 'EXPIRED':
+        return 'danger';
+      case 'CANCELLED':
+        return 'secondary';
+      default:
+        return 'contrast';
+    }
   }
 
+  /**
+   * Gibt das deutsche Label für den Status zurück
+   */
   getStatusLabel(status: BookingStatus): string {
-    const labelMap: Record<BookingStatus, string> = {
-      'PENDING': 'Ausstehend',
-      'CONFIRMED': 'Bestätigt',
-      'PICKED_UP': 'Ausgeliehen',
-      'RETURNED': 'Zurückgegeben',
-      'REJECTED': 'Abgelehnt',
-      'EXPIRED': 'Abgelaufen',
-      'CANCELLED': 'Storniert'
-    };
-    return labelMap[status];
+    switch (status) {
+      case 'PENDING':
+        return 'Ausstehend';
+      case 'CONFIRMED':
+        return 'Bestätigt';
+      case 'PICKED_UP':
+        return 'Ausgeliehen';
+      case 'RETURNED':
+        return 'Zurückgegeben';
+      case 'REJECTED':
+        return 'Abgelehnt';
+      case 'EXPIRED':
+        return 'Abgelaufen';
+      case 'CANCELLED':
+        return 'Storniert';
+      default:
+        return status;
+    }
   }
 
-  canCancelBooking(booking: Booking): boolean {
-    return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
-  }
-
-  formatDate(dateString: string): string {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
+  /**
+   * Formatiert ein Datum in ein kurzes Format (DD.MM.YYYY)
+   */
   formatDateShort(dateString: string): string {
     if (!dateString) return '-';
+
     const date = new Date(dateString);
     return date.toLocaleDateString('de-DE', {
-      year: 'numeric',
+      day: '2-digit',
       month: '2-digit',
-      day: '2-digit'
+      year: 'numeric'
     });
   }
 }

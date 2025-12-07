@@ -76,10 +76,13 @@ describe('UserBookingsComponent', () => {
       'cancelBooking'
     ]);
     const userServiceSpy = jasmine.createSpyObj('UserService', [
-      'getCurrentUser',
-      'getUserByKeycloakId'
+      'getCurrentUser'
     ]);
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['getKeycloakId']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'isAdmin',
+      'getUsername',
+      'getUserId'
+    ]);
     const messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
     const confirmationServiceSpy = jasmine.createSpyObj('ConfirmationService', ['confirm']);
 
@@ -102,9 +105,8 @@ describe('UserBookingsComponent', () => {
     messageService = TestBed.inject(MessageService) as jasmine.SpyObj<MessageService>;
     confirmationService = TestBed.inject(ConfirmationService) as jasmine.SpyObj<ConfirmationService>;
 
+    authService.getUserId.and.returnValue(mockUser.id);
     userService.getCurrentUser.and.returnValue(of(mockUser));
-    authService.getKeycloakId.and.returnValue(mockKeycloakId);
-    userService.getUserByKeycloakId.and.returnValue(of(mockUser));
     bookingService.getBookingsByUserId.and.returnValue(of([]));
   });
 
@@ -114,13 +116,12 @@ describe('UserBookingsComponent', () => {
 
   describe('ngOnInit', () => {
     it('should load current user via /me endpoint and bookings on init', () => {
-      userService.getCurrentUser.and.returnValue(of(mockUser));
+      authService.getUserId.and.returnValue(mockUser.id);
       bookingService.getBookingsByUserId.and.returnValue(of(mockBookings));
 
       component.ngOnInit();
 
-      expect(userService.getCurrentUser).toHaveBeenCalled();
-      expect(component.currentUser()).toEqual(mockUser);
+      expect(authService.getUserId).toHaveBeenCalled();
       expect(bookingService.getBookingsByUserId).toHaveBeenCalledWith(mockUser.id);
       expect(component.bookings()).toEqual(mockBookings);
       expect(component.isLoading()).toBe(false);

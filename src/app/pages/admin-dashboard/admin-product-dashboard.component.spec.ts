@@ -3,17 +3,33 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AdminProductDashboardComponent } from './admin-product-dashboard.component';
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { Product } from '../../models/product.model';
+import { Category } from '../../models/category.model';
+import { Location } from '../../models/location.model';
 
 describe('AdminProductDashboardComponent', () => {
   let component: AdminProductDashboardComponent;
   let fixture: ComponentFixture<AdminProductDashboardComponent>;
   let mockItemService: jasmine.SpyObj<ItemService>;
   let mockProductService: jasmine.SpyObj<ProductService>;
+  let mockCategoryService: jasmine.SpyObj<CategoryService>;
+  let mockLocationService: jasmine.SpyObj<LocationService>;
   let mockConfirmationService: jasmine.SpyObj<ConfirmationService>;
   let mockMessageService: jasmine.SpyObj<MessageService>;
+
+  const mockCategories: Category[] = [
+    { id: 1, name: 'Kamera', deleted: false, createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+    { id: 2, name: 'Audio', deleted: false, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+  ];
+
+  const mockLocations: Location[] = [
+    { id: 1, roomNr: 'F01.204', deleted: false, createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+    { id: 2, roomNr: 'F01.205', deleted: false, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+  ];
 
   const mockProducts: Product[] = [
     {
@@ -25,15 +41,12 @@ describe('AdminProductDashboardComponent', () => {
       imageUrl: 'test.jpg',
       accessories: null,
       categoryId: 1,
-      categoryName: 'Kamera',
       locationId: 1,
-      locationRoomNr: 'A101',
-      lenderId: 1,
-      lenderName: 'Test Lender',
-      availableItems: 5,
-      totalItems: 10,
+      availableItemCount: 5,
+      totalItemCount: 10,
       createdAt: '2024-01-01',
-      updatedAt: '2024-01-01'
+      updatedAt: '2024-01-01',
+      deleted: false
     },
     {
       id: 2,
@@ -44,15 +57,12 @@ describe('AdminProductDashboardComponent', () => {
       imageUrl: null,
       accessories: '["Cable", "Stand"]',
       categoryId: 2,
-      categoryName: 'Audio',
-      locationId: 1,
-      locationRoomNr: 'B202',
-      lenderId: 1,
-      lenderName: 'Test Lender',
-      availableItems: 3,
-      totalItems: 5,
+      locationId: 2,
+      availableItemCount: 3,
+      totalItemCount: 5,
       createdAt: '2024-01-02',
-      updatedAt: '2024-01-02'
+      updatedAt: '2024-01-02',
+      deleted: false
     }
   ];
 
@@ -66,16 +76,30 @@ describe('AdminProductDashboardComponent', () => {
 
     mockProductService = jasmine.createSpyObj('ProductService', [
       'getProducts',
+      'getProductsWithCategories',
       'getProductById',
       'createProduct',
       'updateProduct',
       'deleteProduct'
     ]);
 
+    mockCategoryService = jasmine.createSpyObj('CategoryService', [
+      'getAllCategories',
+      'getCategoryById'
+    ]);
+
+    mockLocationService = jasmine.createSpyObj('LocationService', [
+      'getAllLocations',
+      'getLocationById'
+    ]);
+
     mockConfirmationService = jasmine.createSpyObj('ConfirmationService', ['confirm']);
     mockMessageService = jasmine.createSpyObj('MessageService', ['add']);
 
-    mockProductService.getProducts.and.returnValue(of([]));
+    mockProductService.getProductsWithCategories.and.returnValue(of(mockProducts));
+    mockProductService.getProducts.and.returnValue(of(mockProducts));
+    mockCategoryService.getAllCategories.and.returnValue(of(mockCategories));
+    mockLocationService.getAllLocations.and.returnValue(of(mockLocations));
     mockItemService.getAllItems.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
@@ -86,6 +110,8 @@ describe('AdminProductDashboardComponent', () => {
       providers: [
         { provide: ItemService, useValue: mockItemService },
         { provide: ProductService, useValue: mockProductService },
+        { provide: CategoryService, useValue: mockCategoryService },
+        { provide: LocationService, useValue: mockLocationService },
         { provide: ConfirmationService, useValue: mockConfirmationService },
         { provide: MessageService, useValue: mockMessageService }
       ]
@@ -93,14 +119,26 @@ describe('AdminProductDashboardComponent', () => {
 
     fixture = TestBed.createComponent(AdminProductDashboardComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with empty products array', () => {
-    expect(component.allProducts()).toEqual([]);
+  it('should load categories on init', () => {
+    expect(mockCategoryService.getAllCategories).toHaveBeenCalled();
+    expect(component.allCategories()).toEqual(mockCategories);
+  });
+
+  it('should load locations on init', () => {
+    expect(mockLocationService.getAllLocations).toHaveBeenCalled();
+    expect(component.allLocations()).toEqual(mockLocations);
+  });
+
+  it('should load products on init', () => {
+    expect(mockProductService.getProductsWithCategories).toHaveBeenCalled();
+    expect(component.allProducts()).toEqual(mockProducts);
   });
 
   it('should initialize form with correct validators', () => {
@@ -108,12 +146,6 @@ describe('AdminProductDashboardComponent', () => {
     expect(component.itemForm.get('name')).toBeTruthy();
     expect(component.itemForm.get('categoryId')).toBeTruthy();
     expect(component.itemForm.get('locationId')).toBeTruthy();
-  });
-
-  it('should have categories array with 6 items', () => {
-    expect(component.categories.length).toBe(6);
-    expect(component.categories[0].name).toBe('Kamera');
-    expect(component.categories[5].name).toBe('Zubehör');
   });
 
   it('should filter products based on search query', () => {
@@ -126,12 +158,16 @@ describe('AdminProductDashboardComponent', () => {
   });
 
   it('should filter products by category name', () => {
-    component.allProducts.set(mockProducts);
+    const productsWithCategory = mockProducts.map(p => ({
+      ...p,
+      category: mockCategories.find(c => c.id === p.categoryId)
+    }));
+    component.allProducts.set(productsWithCategory as Product[]);
     component.searchQuery.set('audio');
 
     const filtered = component.filteredProducts();
     expect(filtered.length).toBe(1);
-    expect(filtered[0].categoryName).toBe('Audio');
+    expect(filtered[0].category?.name).toBe('Audio');
   });
 
   it('should return all products when search query is empty', () => {

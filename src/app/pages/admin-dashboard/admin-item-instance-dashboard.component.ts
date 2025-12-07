@@ -22,7 +22,6 @@ import { UserService } from '../../services/user.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
-import { Location } from '../../models/location.model';
 
 @Component({
   selector: 'app-admin-item-instance',
@@ -54,6 +53,7 @@ export class AdminItemInstanceComponent implements OnInit {
 
 
   allItems = signal<Item[]>([]);
+  allItemsIncludingDeleted = signal<Item[]>([]); // Für Inventarnummern-Prüfung
   allProducts = signal<Product[]>([]);
   selectedProductForNewItem = signal<Product | null>(null);
   isLoading = signal(true);
@@ -64,8 +64,10 @@ export class AdminItemInstanceComponent implements OnInit {
   expandedProductIds = signal<Set<number>>(new Set());
   generatedInventoryNumbers = signal<string[]>([]);
   userIdToNameMap = signal<Map<number, string>>(new Map());
-  ownerDisplayValue = signal<string>('');
-  isLoadingOwner = signal<boolean>(false);
+  ownerIdDisplayValue = signal<string>('');
+  ownerNameDisplayValue = signal<string>('');
+  isLoadingOwnerId = signal<boolean>(false);
+  isLoadingOwnerName = signal<boolean>(false);
   ownerFound = signal<boolean>(false);
   lenderDisplayValue = signal<string>('');
   isLoadingLender = signal<boolean>(false);
@@ -110,7 +112,8 @@ export class AdminItemInstanceComponent implements OnInit {
   ngOnInit(): void {
     this.itemForm = this.fb.group({
       invNumber: ['', Validators.required],
-      owner: ['', Validators.required],
+      ownerId: [null],
+      ownerName: ['', Validators.required],
       lenderId: [null, Validators.required],
       lenderName: [''],
       productId: [null, Validators.required],
@@ -120,6 +123,7 @@ export class AdminItemInstanceComponent implements OnInit {
 
     this.loadProducts();
     this.loadItems();
+    this.loadAllItemsIncludingDeleted();
   }
 
   loadProducts() {
@@ -172,6 +176,31 @@ export class AdminItemInstanceComponent implements OnInit {
     });
   }
 
+  loadAllItemsIncludingDeleted(): void {
+    // Lade alle aktiven Items
+    this.itemService.getAllItems().subscribe({
+      next: (activeItems) => {
+        // Lade alle gelöschten Items
+        this.itemService.getDeletedItems().subscribe({
+          next: (deletedItems: Item[]) => {
+            // Kombiniere aktive und gelöschte Items
+            const allItems = [...activeItems, ...deletedItems];
+            this.allItemsIncludingDeleted.set(allItems);
+          },
+          error: (err: any) => {
+            console.error('Fehler beim Laden der gelöschten Items:', err);
+            // Fallback: Verwende nur aktive Items
+            this.allItemsIncludingDeleted.set(activeItems);
+          }
+        });
+      },
+      error: (err: any) => {
+        console.error('Fehler beim Laden aller Items:', err);
+        this.allItemsIncludingDeleted.set([]);
+      }
+    });
+  }
+
   submitForm() {
     if (!this.itemForm.valid) {
       this.messageService.add({
@@ -183,8 +212,8 @@ export class AdminItemInstanceComponent implements OnInit {
     }
 
     // Validiere dass Owner gefunden wurde
-    const ownerValue = this.itemForm.get('owner')?.value;
-    if (ownerValue && !this.ownerFound()) {
+    const ownerName = this.itemForm.get('ownerName')?.value;
+    if (ownerName && !this.ownerFound()) {
       this.messageService.add({
         severity: 'error',
         summary: 'Validierungsfehler',
@@ -224,6 +253,7 @@ export class AdminItemInstanceComponent implements OnInit {
             });
             this.resetForm();
             this.loadItems();
+            this.loadAllItemsIncludingDeleted();
           }
           if (errorCount > 0) {
             this.messageService.add({
@@ -237,7 +267,7 @@ export class AdminItemInstanceComponent implements OnInit {
 
         const payload = {
           invNumber: invNumbers[index],
-          owner: formValue.owner,
+          owner: formValue.ownerName, // Nur der Name wird weitergegeben
           lenderId: formValue.lenderId,
           productId: formValue.productId,
           available: formValue.available
@@ -261,7 +291,7 @@ export class AdminItemInstanceComponent implements OnInit {
       // Update existing item
       const payload = {
         invNumber: formValue.invNumber,
-        owner: formValue.owner,
+        owner: formValue.ownerName, // Nur der Name wird weitergegeben
         lenderId: formValue.lenderId,
         productId: formValue.productId,
         available: formValue.available
@@ -276,6 +306,7 @@ export class AdminItemInstanceComponent implements OnInit {
           });
           this.resetForm();
           this.loadItems();
+          this.loadAllItemsIncludingDeleted();
         },
         error: err => {
           console.error('Error updating item:', err);
@@ -298,9 +329,19 @@ export class AdminItemInstanceComponent implements OnInit {
     // Hole den Lender-Namen aus der Map
     const lenderName = item.lenderId ? this.userIdToNameMap().get(item.lenderId) : '';
 
+    // Owner ist jetzt nur der Name, versuche ID zu finden
+    let ownerId = null;
+    for (const [id, name] of this.userIdToNameMap()) {
+      if (name === item.owner) {
+        ownerId = id;
+        break;
+      }
+    }
+
     this.itemForm.patchValue({
       invNumber: item.invNumber,
-      owner: item.owner,
+      ownerId: ownerId,
+      ownerName: item.owner,
       lenderId: item.lenderId,
       lenderName: lenderName || '',
       productId: item.productId,
@@ -308,7 +349,9 @@ export class AdminItemInstanceComponent implements OnInit {
     });
 
     // Setze Display-Werte und Found-Status
-    this.ownerDisplayValue.set(this.getOwnerDisplay(item.owner));
+    if (ownerId) {
+      this.ownerIdDisplayValue.set(`Gefunden: ${item.owner}`);
+    }
     this.ownerFound.set(true); // Im Edit-Modus ist der Owner bereits validiert
 
     if (item.lenderId && lenderName) {
@@ -356,8 +399,10 @@ export class AdminItemInstanceComponent implements OnInit {
     this.editingItemId.set(null);
     this.showItemForm.set(false);
     this.selectedProductForNewItem.set(null);
-    this.ownerDisplayValue.set('');
-    this.isLoadingOwner.set(false);
+    this.ownerIdDisplayValue.set('');
+    this.ownerNameDisplayValue.set('');
+    this.isLoadingOwnerId.set(false);
+    this.isLoadingOwnerName.set(false);
     this.ownerFound.set(false);
     this.lenderDisplayValue.set('');
     this.isLoadingLender.set(false);
@@ -403,8 +448,8 @@ export class AdminItemInstanceComponent implements OnInit {
   generateInventoryNumbers(prefix: string, quantity: number): string[] {
     if (!prefix || quantity < 1) return [];
 
-    const allItems = this.allItems();
-
+    // Verwende allItemsIncludingDeleted um auch gelöschte Items zu berücksichtigen
+    const allItems = this.allItemsIncludingDeleted();
 
     const existingNumbers = allItems
       .filter(item => item.invNumber.startsWith(prefix))
@@ -457,74 +502,90 @@ export class AdminItemInstanceComponent implements OnInit {
   }
 
   /**
-   * Behandelt Änderungen im Owner-Feld
-   * Akzeptiert sowohl User ID (Zahl) als auch Username (String)
+   * Behandelt Änderungen im Owner ID Feld
+   * Lädt den Benutzernamen und füllt das Name-Feld aus
    */
-  onOwnerChange(): void {
-    const ownerValue = this.itemForm.get('owner')?.value?.trim();
-    if (!ownerValue) {
-      this.ownerDisplayValue.set('');
+  onOwnerIdChange(): void {
+    const ownerId = this.itemForm.get('ownerId')?.value;
+    if (!ownerId) {
+      this.ownerIdDisplayValue.set('');
       this.ownerFound.set(false);
+      this.itemForm.patchValue({ ownerName: '' }, { emitEvent: false });
       return;
     }
 
-    this.isLoadingOwner.set(true);
+    this.isLoadingOwnerId.set(true);
 
-    // Prüfe ob es eine Zahl ist (User ID)
-    const userId = Number(ownerValue);
+    const userId = Number(ownerId);
     if (!Number.isNaN(userId) && Number.isInteger(userId)) {
-      // User ID eingegeben - hole Username
       this.userService.getUserById(userId).subscribe({
         next: (user: User) => {
-          this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.ownerIdDisplayValue.set(`Gefunden: ${user.name}`);
           this.ownerFound.set(true);
+          this.itemForm.patchValue({ ownerName: user.name }, { emitEvent: false });
           this.userIdToNameMap.update(map => {
             const newMap = new Map(map);
             newMap.set(user.id, user.name);
             return newMap;
           });
-          this.isLoadingOwner.set(false);
+          this.isLoadingOwnerId.set(false);
         },
         error: () => {
-          this.ownerDisplayValue.set('Benutzer nicht gefunden');
+          this.ownerIdDisplayValue.set('Benutzer mit dieser ID nicht gefunden');
           this.ownerFound.set(false);
-          this.isLoadingOwner.set(false);
+          this.itemForm.patchValue({ ownerName: '' }, { emitEvent: false });
+          this.isLoadingOwnerId.set(false);
         }
       });
     } else {
-      // Username eingegeben - hole User ID
-      this.userService.getUserByName(ownerValue).subscribe({
-        next: (user: User) => {
-          this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
-          this.ownerFound.set(true);
-          this.itemForm.patchValue({ owner: user.id.toString() }, { emitEvent: false });
-          this.userIdToNameMap.update(map => {
-            const newMap = new Map(map);
-            newMap.set(user.id, user.name);
-            return newMap;
-          });
-          this.isLoadingOwner.set(false);
-        },
-        error: () => {
-          this.ownerDisplayValue.set('Benutzer nicht gefunden');
-          this.ownerFound.set(false);
-          this.isLoadingOwner.set(false);
-        }
-      });
+      this.ownerIdDisplayValue.set('Ungültige ID');
+      this.ownerFound.set(false);
+      this.isLoadingOwnerId.set(false);
     }
   }
 
   /**
+   * Behandelt Änderungen im Owner Name Feld
+   * Lädt die User ID und füllt das ID-Feld aus
+   */
+  onOwnerNameChange(): void {
+    const ownerName = this.itemForm.get('ownerName')?.value?.trim();
+    if (!ownerName) {
+      this.ownerNameDisplayValue.set('');
+      this.ownerFound.set(false);
+      this.itemForm.patchValue({ ownerId: null }, { emitEvent: false });
+      return;
+    }
+
+    this.isLoadingOwnerName.set(true);
+
+    this.userService.getUserByName(ownerName).subscribe({
+      next: (user: User) => {
+        this.ownerNameDisplayValue.set(`Gefunden: ID ${user.id}`);
+        this.ownerFound.set(true);
+        this.itemForm.patchValue({ ownerId: user.id }, { emitEvent: false });
+        this.userIdToNameMap.update(map => {
+          const newMap = new Map(map);
+          newMap.set(user.id, user.name);
+          return newMap;
+        });
+        this.isLoadingOwnerName.set(false);
+      },
+      error: () => {
+        this.ownerNameDisplayValue.set('Benutzer mit diesem Namen nicht gefunden');
+        this.ownerFound.set(false);
+        this.itemForm.patchValue({ ownerId: null }, { emitEvent: false });
+        this.isLoadingOwnerName.set(false);
+      }
+    });
+  }
+
+  /**
    * Gibt den Anzeigenamen für einen Owner zurück
-   * Wenn owner eine User ID ist, wird der Username angezeigt
    */
   getOwnerDisplay(owner: string): string {
-    const userId = Number(owner);
-    if (!Number.isNaN(userId) && Number.isInteger(userId)) {
-      const userName = this.userIdToNameMap().get(userId);
-      return userName ? `${userName} (ID: ${userId})` : owner;
-    }
-    return owner;
+    // Owner ist jetzt nur der Name, direkt zurückgeben
+    return owner || 'N/A';
   }
 
   /**

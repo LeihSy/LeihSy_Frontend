@@ -55,23 +55,26 @@ export class LenderItemsComponent implements OnInit {
   isAdmin = signal(false);
   isLoading = signal(true);
   searchQuery = signal('');
-  keycloakUsername = '';
 
   productsWithItems = computed(() => {
     const products = this.allProducts();
     const items = this.allItems();
-    const admin = this.isAdmin();
+    const currentUser = this.currentUser();
+    const isAdmin = this.isAdmin();
     const query = this.searchQuery().toLowerCase().trim();
 
-    let filteredProducts = products;
+    // Filtere Items basierend auf Rolle
+    let filteredItems = items;
+    if (!isAdmin && currentUser) {
+      // Normale Verleiher: Nur eigene Items
+      filteredItems = items.filter(item => item.lenderId === currentUser.id);
+    }
+    // Admins sehen alle Items (kein Filter)
 
-    // Admin sieht alle Produkte, reguläre User nur ihre eigenen
-    // Da lenderName nicht mehr im Product Model ist, zeigen wir erstmal alle an
-    // TODO: Backend muss lender-Relation expandieren oder lenderName zurückgeben
-
-    let productGroups = filteredProducts
+    // Erstelle Produktgruppen mit gefilterten Items
+    let productGroups = products
       .map(product => {
-        const productItems = items.filter(item => item.productId === product.id);
+        const productItems = filteredItems.filter(item => item.productId === product.id);
         return {
           product,
           items: productItems,
@@ -79,8 +82,9 @@ export class LenderItemsComponent implements OnInit {
           totalCount: productItems.length
         };
       })
-      .filter(pg => pg.totalCount > 0);
+      .filter(pg => pg.totalCount > 0); // Nur Produkte mit mindestens einem Item anzeigen
 
+    // Suchfilter
     if (query) {
       productGroups = productGroups.filter(pg =>
         pg.product.name.toLowerCase().includes(query) ||
@@ -110,87 +114,35 @@ export class LenderItemsComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAdmin.set(this.authService.isAdmin());
-
-    this.extractKeycloakName();
-
     this.loadCurrentUser();
     this.loadProducts();
     this.loadItems();
   }
 
-  private extractKeycloakName(): void {
-    try {
-      const keycloakInstance = (this.authService as any).keycloak;
-      if (keycloakInstance?.tokenParsed) {
-        this.keycloakUsername = keycloakInstance.tokenParsed['preferred_username'] || '';
-      } else {
-        this.keycloakUsername = this.authService.getUsername();
-      }
-    } catch (error) {
-      this.keycloakUsername = this.authService.getUsername();
-    }
-  }
-
   loadCurrentUser(): void {
-    let keycloakUsername = '';
-
-    try {
-      const keycloakInstance = (this.authService as any).keycloak;
-      if (keycloakInstance?.tokenParsed) {
-        keycloakUsername = keycloakInstance.tokenParsed['preferred_username'] || '';
-      } else {
-        keycloakUsername = this.authService.getUsername();
-      }
-    } catch (error) {
-      keycloakUsername = this.authService.getUsername();
-    }
-
-
     this.userService.getCurrentUser().subscribe({
       next: (user) => {
-
-        const namesMatch = this.checkNamesMatch(keycloakUsername, user.name);
-
-        if (namesMatch) {
-          this.currentUser.set(user);
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Authentifizierung erfolgreich',
-            detail: `Angemeldet als ${user.name} (ID: ${user.id})`,
-            life: 3000
-          });
-        } else {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warnung',
-            detail: `Keycloak-Username "${keycloakUsername}" stimmt nicht mit Datenbank-Name "${user.name}" überein. Zeige alle Produkte an.`,
-            life: 8000
-          });
-
-          this.currentUser.set(null);
-        }
+        this.currentUser.set(user);
+        const roleText = this.isAdmin() ? '(Administrator)' : '(Verleiher)';
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Angemeldet',
+          detail: `Angemeldet als ${user.name} ${roleText} (ID: ${user.id})`,
+          life: 3000
+        });
       },
       error: (err) => {
-
+        console.error('Fehler beim Laden des aktuellen Users:', err);
         this.messageService.add({
-          severity: 'warn',
-          summary: 'Hinweis',
-          detail: 'User-Daten konnten nicht geladen werden. Es werden alle Produkte angezeigt.',
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'User-Daten konnten nicht geladen werden.',
           life: 5000
         });
 
         this.currentUser.set(null);
       }
     });
-  }
-
-
-  private checkNamesMatch(name1: string, name2: string): boolean {
-    if (!name1 || !name2) return false;
-
-    // Einfacher Case-insensitive Vergleich für Usernamen
-    return name1.toLowerCase().trim() === name2.toLowerCase().trim();
   }
 
   loadProducts(): void {
@@ -202,14 +154,15 @@ export class LenderItemsComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
+        console.error('Fehler beim Laden der Produkte:', err);
 
-        // Fallback ohne expandierte Kategorien
         this.productService.getProducts().subscribe({
           next: (products) => {
             this.allProducts.set(products);
             this.isLoading.set(false);
           },
           error: (fallbackErr) => {
+            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
             this.messageService.add({
               severity: 'error',
               summary: 'Fehler',
@@ -231,7 +184,7 @@ export class LenderItemsComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('GET /api/items - Error:', err.status, err.message);
+        console.error('Fehler beim Laden der Items:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',

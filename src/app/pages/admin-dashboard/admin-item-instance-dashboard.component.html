@@ -39,22 +39,48 @@
               </small>
             }
           </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold">
+              <span class="block mb-2">Besitzer User ID</span>
+              <p-inputNumber formControlName="ownerId"
+                             [useGrouping]="false"
+                             class="w-full"
+                             placeholder="z.B. 1"
+                             (onInput)="onOwnerIdChange()">
+              </p-inputNumber>
+            </label>
+            @if (ownerIdDisplayValue() && !itemForm.get('ownerName')?.value) {
+              <small [class]="isLoadingOwnerId() ? 'text-gray-400' : (ownerFound() ? 'text-green-600' : 'text-red-600')" class="mt-1 block">
+                @if (isLoadingOwnerId()) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
+                } @else if (ownerFound()) {
+                  <i class="pi pi-check mr-1"></i>{{ ownerIdDisplayValue() }}
+                } @else {
+                  <i class="pi pi-times mr-1"></i>{{ ownerIdDisplayValue() }}
+                }
+              </small>
+            }
+          </div>
 
           <div>
             <label class="block font-semibold">
-              <span class="block mb-2">Besitzer * (User ID oder Username)</span>
-              <input pInputText formControlName="owner" class="w-full"
-                     placeholder="z.B. 1 oder username"
-                     (input)="onOwnerChange()" />
+              <span class="block mb-2">Besitzer Benutzername *</span>
+              <input pInputText formControlName="ownerName"
+                     class="w-full"
+                     placeholder="Username"
+                     (input)="onOwnerNameChange()" />
             </label>
-            @if (ownerDisplayValue()) {
-              <small [class]="isLoadingOwner() ? 'text-gray-400' : (ownerFound() ? 'text-green-600' : 'text-red-600')" class="mt-1 block">
-                @if (isLoadingOwner()) {
+            @if (ownerNameDisplayValue() && itemForm.get('ownerName')?.value) {
+              <small [class]="isLoadingOwnerName() ? 'text-gray-400' : (ownerFound() ? 'text-green-600' : 'text-red-600')" class="mt-1 block">
+                @if (isLoadingOwnerName()) {
                   <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
                 } @else if (ownerFound()) {
-                  <i class="pi pi-check mr-1"></i>{{ ownerDisplayValue() }}
+                  <i class="pi pi-check mr-1"></i>{{ ownerNameDisplayValue() }}
                 } @else {
-                  <i class="pi pi-times mr-1"></i>{{ ownerDisplayValue() }}
+                  <i class="pi pi-times mr-1"></i>{{ ownerNameDisplayValue() }}
                 }
               </small>
             }

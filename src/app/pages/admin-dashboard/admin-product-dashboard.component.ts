@@ -19,7 +19,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
 import { Product } from '../../models/product.model';
+import { Category } from '../../models/category.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -51,6 +53,7 @@ export class AdminProductDashboardComponent {
 
   // Signals
   allProducts = signal<Product[]>([]);
+  allCategories = signal<Category[]>([]);
   isLoading = signal(false);
   isEditMode = signal(false);
   editingProductId = signal<number | null>(null);
@@ -58,14 +61,16 @@ export class AdminProductDashboardComponent {
   selectedFile = signal<File | null>(null);
   imagePreview = signal<string | null>(null);
 
-  categories = [
-    { id: 1, name: 'Kamera' },
-    { id: 2, name: 'Audio' },
-    { id: 3, name: 'Licht' },
-    { id: 4, name: 'Stativ' },
-    { id: 5, name: 'Objektiv' },
-    { id: 6, name: 'Zubehör' }
+  // Fallback Kategorien (falls Backend nicht funktioniert)
+  private readonly fallbackCategories: Category[] = [
+    { id: 1, name: 'Kamera', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: 2, name: 'Audio', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: 3, name: 'Licht', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: 4, name: 'Stativ', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: 5, name: 'Objektiv', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+    { id: 6, name: 'Zubehör', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
   ];
+
 
   filteredProducts = computed(() => {
     const products = this.allProducts();
@@ -76,7 +81,7 @@ export class AdminProductDashboardComponent {
     return products.filter(p =>
       p.name.toLowerCase().includes(query) ||
       p.description.toLowerCase().includes(query) ||
-      p.categoryName.toLowerCase().includes(query)
+      (p.category?.name || '').toLowerCase().includes(query)
     );
   });
 
@@ -84,6 +89,7 @@ export class AdminProductDashboardComponent {
     private readonly fb: FormBuilder,
     private readonly itemService: ItemService,
     private readonly productService: ProductService,
+    private readonly categoryService: CategoryService,
     private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
   ) {
@@ -97,31 +103,112 @@ export class AdminProductDashboardComponent {
       accessories: [''],
       categoryId: [null, Validators.required],
       locationId: [null, Validators.required],
-      locationRoomNr: ['', Validators.required],
-      lenderId: [null],
-      lenderName: [''],
-      availableItems: [0, Validators.min(0)],
-      totalItems: [0, Validators.min(1)]
+      locationRoomNr: ['', Validators.required]
     });
 
+    this.loadCategories();
     this.loadProducts();
   }
 
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getProducts().subscribe({
+
+    // Verwende getProductsWithCategories um Kategorien automatisch zu laden
+    this.productService.getProductsWithCategories().subscribe({
       next: (products: Product[]) => {
+        console.log('✅ Produkte mit Kategorien geladen:', products);
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err: any) => {
-        console.error('Fehler beim Laden der Produkte:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Produkte konnten nicht geladen werden.'
+        console.error('❌ Fehler beim Laden der Produkte:', err);
+
+        // Fallback: Versuche normale Methode ohne expandierte Kategorien
+        console.log('⚠️ Versuche Fallback ohne expandierte Kategorien...');
+        this.productService.getProducts().subscribe({
+          next: (products: Product[]) => {
+            console.log('✅ Produkte geladen (ohne Kategorien):', products);
+            this.allProducts.set(products);
+            this.isLoading.set(false);
+          },
+          error: (fallbackErr: any) => {
+            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fehler',
+              detail: 'Produkte konnten nicht geladen werden.'
+            });
+            this.isLoading.set(false);
+          }
         });
-        this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadCategories(): void {
+    console.log('🔄 Lade Kategorien von:', this.categoryService['apiUrl']);
+
+    this.categoryService.getAllCategories().subscribe({
+      next: (categories: Category[]) => {
+        console.log('✅ Categories loaded successfully:', categories);
+        console.log('📊 Anzahl der Kategorien:', categories.length);
+        console.log('📋 Erste Kategorie:', categories[0]);
+
+        this.allCategories.set(categories);
+
+        if (categories.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Keine Kategorien',
+            detail: 'Es wurden keine Kategorien in der Datenbank gefunden. Bitte erstellen Sie zuerst Kategorien.',
+            life: 5000
+          });
+        }
+      },
+      error: (err: any) => {
+        console.error('❌ Fehler beim Laden der Kategorien:', err);
+        console.error('Status:', err.status);
+        console.error('Message:', err.message);
+        console.error('URL:', err.url);
+        console.error('Error Type:', err.name);
+
+        // Versuche Response Body zu loggen
+        if (err.error) {
+          console.error('Response Body:', err.error);
+          console.error('Response Body Type:', typeof err.error);
+        }
+
+        let errorMessage = 'Kategorien konnten nicht geladen werden.';
+        let useFallback = false;
+
+        if (err.status === 200 && err.message.includes('parsing')) {
+          errorMessage = 'Backend antwortet, aber das Datenformat ist ungültig. Verwende Fallback-Kategorien.';
+          console.error('💡 Tipp: Überprüfe, ob der Backend-Controller @RestController verwendet und ein List<Category> zurückgibt.');
+          useFallback = true;
+        } else if (err.status === 404) {
+          errorMessage = 'API-Endpunkt /api/categories nicht gefunden. Verwende Fallback-Kategorien.';
+          useFallback = true;
+        } else if (err.status === 0) {
+          errorMessage = 'Keine Verbindung zum Backend möglich. Verwende Fallback-Kategorien.';
+          useFallback = true;
+        } else if (err.status === 401 || err.status === 403) {
+          errorMessage = 'Keine Berechtigung zum Laden der Kategorien.';
+        }
+
+        this.messageService.add({
+          severity: useFallback ? 'warn' : 'error',
+          summary: useFallback ? 'Fallback-Modus' : 'Fehler',
+          detail: errorMessage,
+          life: 10000
+        });
+
+        // Verwende Fallback-Kategorien wenn verfügbar
+        if (useFallback) {
+          console.log('📋 Verwende Fallback-Kategorien:', this.fallbackCategories);
+          this.allCategories.set(this.fallbackCategories);
+        } else {
+          this.allCategories.set([]);
+        }
       }
     });
   }
@@ -192,11 +279,7 @@ export class AdminProductDashboardComponent {
       accessories: product.accessories,
       categoryId: product.categoryId,
       locationId: product.locationId,
-      locationRoomNr: product.locationRoomNr,
-      lenderId: product.lenderId,
-      lenderName: product.lenderName,
-      availableItems: product.availableItems,
-      totalItems: product.totalItems
+      locationRoomNr: product.location?.roomNr || ''
     });
 
     if (product.imageUrl) {

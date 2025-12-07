@@ -15,10 +15,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { BookingService } from '../../services/booking.service';
-import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { Booking, BookingStatus } from '../../models/booking.model';
-import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-bookings',
@@ -44,7 +42,6 @@ import { User } from '../../models/user.model';
 export class UserBookingsComponent implements OnInit {
 
   bookings = signal<Booking[]>([]);
-  currentUser = signal<User | null>(null);
   isLoading = signal(true);
   searchQuery = signal('');
 
@@ -66,7 +63,6 @@ export class UserBookingsComponent implements OnInit {
 
   constructor(
     private readonly bookingService: BookingService,
-    private readonly userService: UserService,
     private readonly authService: AuthService,
     private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
@@ -77,22 +73,10 @@ export class UserBookingsComponent implements OnInit {
   }
 
   loadCurrentUser(): void {
-    this.userService.getCurrentUser().subscribe({
-      next: (user: User) => {
-        this.currentUser.set(user);
-        this.loadBookings(user.id);
-      },
-      error: (err: unknown) => {
-        console.warn('getCurrentUser failed, trying Keycloak ID fallback:', err);
-        this.loadUserByKeycloakId();
-      }
-    });
-  }
+    // Direkt die User-ID vom AuthService holen (aus dem CurrentUser Signal)
+    const userId = this.authService.getUserId();
 
-  private loadUserByKeycloakId(): void {
-    const keycloakId = this.authService.getKeycloakId();
-
-    if (!keycloakId) {
+    if (!userId) {
       this.messageService.add({
         severity: 'error',
         summary: 'Fehler',
@@ -102,21 +86,8 @@ export class UserBookingsComponent implements OnInit {
       return;
     }
 
-    this.userService.getUserByKeycloakId(keycloakId).subscribe({
-      next: (user: User) => {
-        this.currentUser.set(user);
-        this.loadBookings(user.id);
-      },
-      error: (err: unknown) => {
-        console.error('Error loading current user:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Benutzer konnte nicht geladen werden. Bitte kontaktieren Sie einen Administrator.'
-        });
-        this.isLoading.set(false);
-      }
-    });
+    // Buchungen mit der User-ID laden
+    this.loadBookings(userId);
   }
 
   loadBookings(userId: number): void {
@@ -153,9 +124,9 @@ export class UserBookingsComponent implements OnInit {
               summary: 'Erfolg',
               detail: 'Buchung wurde storniert.'
             });
-            const user = this.currentUser();
-            if (user) {
-              this.loadBookings(user.id);
+            const userId = this.authService.getUserId();
+            if (userId) {
+              this.loadBookings(userId);
             }
           },
           error: (err: unknown) => {

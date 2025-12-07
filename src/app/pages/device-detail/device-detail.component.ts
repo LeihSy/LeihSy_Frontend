@@ -113,22 +113,48 @@ export class DeviceDetailPageComponent implements OnInit {
 
     this.productService.getProductById(id).subscribe({
       next: (product: Product) => {
-        console.log('Product loaded:', product);
-        this.device = this.mapProductToDevice(product);
+        console.log('✅ Product loaded:', product);
 
-        // Finde Campus Daten
-        this.flandernstrasseData = this.device.campusAvailability.find(
-          (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
-        );
-
-        this.isLoading.set(false);
+        // Falls Kategorie nicht expandiert ist, lade sie nach
+        if (product.categoryId && !product.category) {
+          console.log('🔄 Kategorie nicht expandiert, lade nach...');
+          this.productService.getProductsWithCategories().subscribe({
+            next: (products) => {
+              const productWithCategory = products.find(p => p.id === id);
+              if (productWithCategory) {
+                this.device = this.mapProductToDevice(productWithCategory);
+              } else {
+                this.device = this.mapProductToDevice(product);
+              }
+              this.setupDeviceData();
+            },
+            error: () => {
+              // Fallback: Verwende Produkt ohne Kategorie
+              this.device = this.mapProductToDevice(product);
+              this.setupDeviceData();
+            }
+          });
+        } else {
+          this.device = this.mapProductToDevice(product);
+          this.setupDeviceData();
+        }
       },
-      error: (error: any) => {
-        console.error('Error loading product:', error);
+      error: (err: any) => {
+        console.error('❌ Error loading product:', err);
         this.errorMessage.set('Produkt konnte nicht geladen werden.');
         this.isLoading.set(false);
       }
     });
+  }
+
+  private setupDeviceData(): void {
+    // Finde Campus Daten
+    if (this.device) {
+      this.flandernstrasseData = this.device.campusAvailability.find(
+        (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
+      );
+    }
+    this.isLoading.set(false);
   }
 
   // Konvertiere Backend Product zu Frontend Device
@@ -138,25 +164,25 @@ export class DeviceDetailPageComponent implements OnInit {
     return {
       id: product.id.toString(),
       name: product.name,
-      category: product.categoryName,
+      category: product.category?.name || 'Unbekannt',
       description: product.description,
       price: product.price,
       expiryDate: product.expiryDate,
 
       // Verfügbarkeit
       availability: {
-        available: product.availableItems,
-        total: product.totalItems,
-        borrowed: product.totalItems - product.availableItems
+        available: product.availableItemCount,
+        total: product.totalItemCount,
+        borrowed: product.totalItemCount - product.availableItemCount
       },
 
       // Campus Verfügbarkeit
       campusAvailability: [
         {
           campus: 'Campus Esslingen Flandernstraße',
-          location: product.locationRoomNr,
-          available: product.availableItems,
-          total: product.totalItems,
+          location: product.location?.roomNr || 'N/A',
+          available: product.availableItemCount,
+          total: product.totalItemCount,
         }
       ],
 
@@ -173,7 +199,7 @@ export class DeviceDetailPageComponent implements OnInit {
       },
 
       // Keywords
-      keywords: [product.categoryName]
+      keywords: [product.category?.name || 'Unbekannt']
     };
   }
 

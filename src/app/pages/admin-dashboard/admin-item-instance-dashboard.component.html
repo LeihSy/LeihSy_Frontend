@@ -16,7 +16,7 @@
             <p class="text-sm">
               <strong>Produkt:</strong> {{ selectedProductForNewItem()!.name }}
               <br>
-              <strong>Kategorie:</strong> {{ selectedProductForNewItem()!.categoryName }}
+              <strong>Kategorie:</strong> {{ selectedProductForNewItem()!.category?.name || 'N/A' }}
             </p>
           </div>
         }
@@ -137,8 +137,8 @@
               <div>
                 <h3 class="text-lg font-bold">{{ productData.product.name }}</h3>
                 <p class="text-xs text-gray-600">
-                  <strong>Kategorie:</strong> {{ productData.product.categoryName }} |
-                  <strong>Standort:</strong> {{ productData.product.locationRoomNr || 'N/A' }}
+                  <strong>Kategorie:</strong> {{ productData.product.category?.name || 'N/A' }} |
+                  <strong>Standort:</strong> {{ productData.product.location?.roomNr || 'N/A' }}
                 </p>
               </div>
             </div>
@@ -171,6 +171,7 @@
                       <th scope="col">ID</th>
                       <th scope="col">Inventarnummer</th>
                       <th scope="col">Besitzer</th>
+                      <th scope="col">Verleiher</th>
                       <th scope="col">Status</th>
                       <th style="width: 150px;" scope="col">Aktionen</th>
                     </tr>
@@ -180,7 +181,8 @@
                     <tr>
                       <td>{{ item.id }}</td>
                       <td>{{ item.invNumber }}</td>
-                      <td>{{ item.owner }}</td>
+                      <td>{{ getOwnerDisplay(item.owner) }}</td>
+                      <td>{{ getLenderDisplay(item.lenderId) }}</td>
                       <td>
                         <span [class]="item.available ? 'badge badge-available' : 'badge badge-unavailable'">
                           {{ item.available ? 'Verfügbar' : 'Nicht verfügbar' }}

@@ -54,7 +54,7 @@ export class LenderItemsComponent implements OnInit {
   isAdmin = signal(false);
   isLoading = signal(true);
   searchQuery = signal('');
-  keycloakFullName = '';
+  keycloakUsername = '';
 
   productsWithItems = computed(() => {
     const products = this.allProducts();
@@ -64,11 +64,9 @@ export class LenderItemsComponent implements OnInit {
 
     let filteredProducts = products;
 
-    if (!admin) {
-      filteredProducts = products.filter(product =>
-        this.checkNamesMatch(product.lenderName, this.keycloakFullName)
-      );
-    }
+    // Admin sieht alle Produkte, reguläre User nur ihre eigenen
+    // Da lenderName nicht mehr im Product Model ist, zeigen wir erstmal alle an
+    // TODO: Backend muss lender-Relation expandieren oder lenderName zurückgeben
 
     let productGroups = filteredProducts
       .map(product => {
@@ -85,7 +83,7 @@ export class LenderItemsComponent implements OnInit {
     if (query) {
       productGroups = productGroups.filter(pg =>
         pg.product.name.toLowerCase().includes(query) ||
-        pg.product.categoryName.toLowerCase().includes(query) ||
+        (pg.product.category?.name || '').toLowerCase().includes(query) ||
         pg.items.some(item => item.invNumber.toLowerCase().includes(query))
       );
     }
@@ -123,31 +121,27 @@ export class LenderItemsComponent implements OnInit {
     try {
       const keycloakInstance = (this.authService as any).keycloak;
       if (keycloakInstance?.tokenParsed) {
-        const givenName = keycloakInstance.tokenParsed['given_name'] || '';
-        const familyName = keycloakInstance.tokenParsed['family_name'] || '';
-        this.keycloakFullName = `${givenName} ${familyName}`.trim();
+        this.keycloakUsername = keycloakInstance.tokenParsed['preferred_username'] || '';
       } else {
-        this.keycloakFullName = this.authService.getUsername();
+        this.keycloakUsername = this.authService.getUsername();
       }
     } catch (error) {
-      this.keycloakFullName = this.authService.getUsername();
+      this.keycloakUsername = this.authService.getUsername();
     }
   }
 
   loadCurrentUser(): void {
-    let keycloakFullName = '';
+    let keycloakUsername = '';
 
     try {
       const keycloakInstance = (this.authService as any).keycloak;
       if (keycloakInstance?.tokenParsed) {
-        const givenName = keycloakInstance.tokenParsed['given_name'] || '';
-        const familyName = keycloakInstance.tokenParsed['family_name'] || '';
-        keycloakFullName = `${givenName} ${familyName}`.trim();
+        keycloakUsername = keycloakInstance.tokenParsed['preferred_username'] || '';
       } else {
-        keycloakFullName = this.authService.getUsername();
+        keycloakUsername = this.authService.getUsername();
       }
     } catch (error) {
-      keycloakFullName = this.authService.getUsername();
+      keycloakUsername = this.authService.getUsername();
     }
 
     console.log('API Call: GET /api/users/me');
@@ -156,7 +150,7 @@ export class LenderItemsComponent implements OnInit {
       next: (user) => {
         console.log('GET /api/users/me - Success:', user);
 
-        const namesMatch = this.checkNamesMatch(keycloakFullName, user.name);
+        const namesMatch = this.checkNamesMatch(keycloakUsername, user.name);
 
         if (namesMatch) {
           this.currentUser.set(user);
@@ -171,7 +165,7 @@ export class LenderItemsComponent implements OnInit {
           this.messageService.add({
             severity: 'warn',
             summary: 'Warnung',
-            detail: `Keycloak-Name "${keycloakFullName}" stimmt nicht mit Datenbank-Name "${user.name}" überein. Zeige alle Produkte an.`,
+            detail: `Keycloak-Username "${keycloakUsername}" stimmt nicht mit Datenbank-Name "${user.name}" überein. Zeige alle Produkte an.`,
             life: 8000
           });
 
@@ -197,39 +191,41 @@ export class LenderItemsComponent implements OnInit {
   private checkNamesMatch(name1: string, name2: string): boolean {
     if (!name1 || !name2) return false;
 
-    const normalize = (name: string) =>
-      name.toLowerCase().trim().split(/\s+/).sort().join(' ');
-
-    const normalized1 = normalize(name1);
-    const normalized2 = normalize(name2);
-
-    if (normalized1 === normalized2) return true;
-
-    const parts1 = name1.toLowerCase().trim().split(/\s+/);
-    const parts2 = name2.toLowerCase().trim().split(/\s+/);
-
-    return parts1.every(part => parts2.includes(part)) ||
-           parts2.every(part => parts1.includes(part));
+    // Einfacher Case-insensitive Vergleich für Usernamen
+    return name1.toLowerCase().trim() === name2.toLowerCase().trim();
   }
 
   loadProducts(): void {
     this.isLoading.set(true);
     console.log('API Call: GET /api/products');
 
-    this.productService.getProducts().subscribe({
+    this.productService.getProductsWithCategories().subscribe({
       next: (products) => {
-        console.log('GET /api/products - Success:', products.length, 'products loaded');
+        console.log('✅ GET /api/products - Success:', products.length, 'products with categories loaded');
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error(' GET /api/products - Error:', err.status, err.message);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Fehler beim Laden der Produkte.'
+        console.error('❌ GET /api/products - Error:', err.status, err.message);
+        console.log('⚠️ Versuche Fallback ohne Kategorien...');
+
+        // Fallback ohne expandierte Kategorien
+        this.productService.getProducts().subscribe({
+          next: (products) => {
+            console.log('✅ Products loaded (fallback):', products.length);
+            this.allProducts.set(products);
+            this.isLoading.set(false);
+          },
+          error: (fallbackErr) => {
+            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fehler',
+              detail: 'Fehler beim Laden der Produkte.'
+            });
+            this.isLoading.set(false);
+          }
         });
-        this.isLoading.set(false);
       }
     });
   }

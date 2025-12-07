@@ -88,12 +88,12 @@
 
                 <div class="flex items-start">
                   <span class="w-40 text-gray-600 font-medium">Kategorie:</span>
-                  <span class="flex-1">{{ product()!.categoryName }}</span>
+                  <span class="flex-1">{{ product()!.category?.name || 'N/A' }}</span>
                 </div>
 
                 <div class="flex items-start">
                   <span class="w-40 text-gray-600 font-medium">Standort:</span>
-                  <span class="flex-1">{{ product()!.locationRoomNr }}</span>
+                  <span class="flex-1">{{ product()!.location?.roomNr || 'N/A' }}</span>
                 </div>
 
                 @if (product()!.imageUrl) {
@@ -117,17 +117,17 @@
           <!-- Verleiher Informationen -->
           @if (product()) {
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 class="text-xl font-semibold text-[#000080] mb-4">Verleiher</h2>
+              <h2 class="text-xl font-semibold text-[#000080] mb-4">Produkt-Info</h2>
 
               <div class="space-y-3">
                 <div class="flex items-start">
-                  <span class="w-40 text-gray-600 font-medium">Name:</span>
-                  <span class="flex-1 font-semibold">{{ product()!.lenderName }}</span>
+                  <span class="w-40 text-gray-600 font-medium">Produkt ID:</span>
+                  <span class="flex-1 font-semibold">{{ product()!.id }}</span>
                 </div>
 
                 <div class="flex items-start">
-                  <span class="w-40 text-gray-600 font-medium">Lender ID:</span>
-                  <span class="flex-1">{{ product()!.lenderId }}</span>
+                  <span class="w-40 text-gray-600 font-medium">Preis:</span>
+                  <span class="flex-1">{{ product()!.price | currency:'EUR' }}</span>
                 </div>
               </div>
             </div>

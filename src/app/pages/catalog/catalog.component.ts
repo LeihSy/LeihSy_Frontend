@@ -108,14 +108,14 @@ export class CatalogComponent implements OnInit {
     }
   }
 
-  // Lade alle Produkte vom Backend
+  // Lade alle Produkte vom Backend mit expandierten Kategorien
   loadProducts() {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.productService.getProducts().subscribe({
+    this.productService.getProductsWithCategories().subscribe({
       next: (products: Product[]) => {
-        console.log('Products loaded:', products);
+        console.log('✅ Products with categories loaded:', products);
         this.products.set(products);
 
         // Konvertiere Products → Devices
@@ -139,24 +139,24 @@ export class CatalogComponent implements OnInit {
     return products.map(p => ({
       id: p.id,
       name: p.name,
-      category: p.categoryName,
+      category: p.category?.name || 'Unbekannt',
       description: p.description,
       availability: {
-        available: p.availableItems,
-        total: p.totalItems
+        available: p.availableItemCount,
+        total: p.totalItemCount
       },
       loanConditions: {
         loanPeriod: `${p.expiryDate} Tage`
       },
-      location: p.locationRoomNr,
-      availableItems: p.availableItems,
-      imageUrl: p.imageUrl  // NEU: Bild-URL übernehmen
+      location: p.location?.roomNr || 'N/A',
+      availableItems: p.availableItemCount,
+      imageUrl: p.imageUrl
     }));
   }
 
   // Extrahiere eindeutige Kategorien
   private extractCategories(products: Product[]) {
-    const uniqueCategories = [...new Set(products.map(p => p.categoryName))];
+    const uniqueCategories = [...new Set(products.map(p => p.category?.name || 'Unbekannt'))];
     this.categories = uniqueCategories;
   }
 

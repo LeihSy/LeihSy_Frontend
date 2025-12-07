@@ -31,13 +31,19 @@
                 <label class="block font-semibold">
                   <span class="block mb-2">Kategorie *</span>
                   <p-select
-                    [options]="categories"
+                    [options]="allCategories()"
                     optionLabel="name"
                     optionValue="id"
                     placeholder="Kategorie wählen"
                     formControlName="categoryId"
                     class="w-full">
                   </p-select>
+                  @if (allCategories().length === 0) {
+                    <small class="text-orange-600 mt-1 block">
+                      <i class="pi pi-exclamation-triangle mr-1"></i>
+                      Keine Kategorien verfügbar. Bitte Backend überprüfen oder Kategorien in der Datenbank anlegen.
+                    </small>
+                  }
                 </label>
               </div>
             </div>
@@ -146,49 +152,6 @@
               </div>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label class="block font-semibold">
-                  <span class="block mb-2">Verleiher ID</span>
-                  <p-inputNumber formControlName="lenderId"
-                                 [min]="1"
-                                 [showButtons]="true"
-                                 class="w-full"
-                                 placeholder="z.B. 1">
-                  </p-inputNumber>
-                </label>
-              </div>
-
-              <div>
-                <label class="block font-semibold">
-                  <span class="block mb-2">Verleiher Name</span>
-                  <input pInputText formControlName="lenderName"
-                         class="w-full" placeholder="Name des Verleihers" />
-                </label>
-              </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label class="block mb-2 font-semibold">Verfügbare Exemplare</label>
-                <p-inputNumber formControlName="availableItems"
-                               [min]="0"
-                               [showButtons]="true"
-                               class="w-full"
-                               placeholder="z.B. 5">
-                </p-inputNumber>
-              </div>
-
-              <div>
-                <label class="block mb-2 font-semibold">Gesamt Exemplare *</label>
-                <p-inputNumber formControlName="totalItems"
-                               [min]="1"
-                               [showButtons]="true"
-                               class="w-full"
-                               placeholder="z.B. 10">
-                </p-inputNumber>
-              </div>
-            </div>
 
             <div class="flex gap-2 mt-6">
               <button pButton type="submit"
@@ -232,7 +195,6 @@
           <th scope="col">Kategorie</th>
           <th scope="col">Standort</th>
           <th scope="col">Preis/Tag</th>
-          <th scope="col">Verfügbar/Gesamt</th>
           <th style="width: 150px;" scope="col">Aktionen</th>
         </tr>
       </ng-template>
@@ -245,14 +207,9 @@
             <br>
             <small class="text-gray-500">{{ product.description | slice:0:50 }}{{ product.description.length > 50 ? '...' : '' }}</small>
           </td>
-          <td>{{ product.categoryName }}</td>
-          <td>{{ product.locationRoomNr || '-' }}</td>
+          <td>{{ product.category?.name || 'N/A' }}</td>
+          <td>{{ product.location?.roomNr || '-' }}</td>
           <td>{{ product.price | number:'1.2-2' }} €</td>
-          <td>
-            <span class="badge badge-info">
-              {{ product.availableItems }} / {{ product.totalItems }}
-            </span>
-          </td>
           <td>
             <div class="flex gap-2">
               <button pButton icon="pi pi-pencil"
@@ -270,7 +227,7 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7" class="text-center text-gray-500 py-4">
+          <td colspan="6" class="text-center text-gray-500 py-4">
             @if (searchQuery()) {
               Keine Produkte gefunden für "{{ searchQuery() }}"
             } @else {

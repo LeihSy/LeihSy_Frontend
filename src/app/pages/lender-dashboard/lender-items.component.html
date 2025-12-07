@@ -97,16 +97,16 @@
                 <div class="flex items-center gap-4 text-sm text-gray-600">
                   <span>
                     <i class="pi pi-tag mr-1"></i>
-                    {{ productData.product.categoryName }}
+                    {{ productData.product.category?.name || 'N/A' }}
                   </span>
                   <span>
                     <i class="pi pi-map-marker mr-1"></i>
-                    {{ productData.product.locationRoomNr }}
+                    {{ productData.product.location?.roomNr || 'N/A' }}
                   </span>
                   @if (isAdmin()) {
                     <span class="text-blue-600">
-                      <i class="pi pi-user mr-1"></i>
-                      Verleiher: {{ productData.product.lenderName }}
+                      <i class="pi pi-info-circle mr-1"></i>
+                      ID: {{ productData.product.id }}
                     </span>
                   }
                 </div>

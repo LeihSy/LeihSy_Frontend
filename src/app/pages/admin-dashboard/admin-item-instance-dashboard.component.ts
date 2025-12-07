@@ -18,8 +18,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
+import { UserService } from '../../services/user.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-admin-item-instance',
@@ -60,6 +62,11 @@ export class AdminItemInstanceComponent implements OnInit {
   showItemForm = signal(false);
   expandedProductIds = signal<Set<number>>(new Set());
   generatedInventoryNumbers = signal<string[]>([]);
+  userIdToNameMap = signal<Map<number, string>>(new Map());
+  ownerDisplayValue = signal<string>('');
+  isLoadingOwner = signal<boolean>(false);
+  lenderDisplayValue = signal<string>('');
+  isLoadingLender = signal<boolean>(false);
 
 
   productsWithItems = computed(() => {
@@ -81,7 +88,7 @@ export class AdminItemInstanceComponent implements OnInit {
     if (query) {
       filtered = filtered.filter(p =>
         p.product.name.toLowerCase().includes(query) ||
-        p.product.categoryName.toLowerCase().includes(query)
+        (p.product.category?.name || '').toLowerCase().includes(query)
       );
     }
 
@@ -92,6 +99,7 @@ export class AdminItemInstanceComponent implements OnInit {
     private readonly fb: FormBuilder,
     private readonly itemService: ItemService,
     private readonly productService: ProductService,
+    private readonly userService: UserService,
     private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
   ) {}
@@ -100,6 +108,7 @@ export class AdminItemInstanceComponent implements OnInit {
     this.itemForm = this.fb.group({
       invNumber: ['', Validators.required],
       owner: ['', Validators.required],
+      lenderId: [null, Validators.required],
       productId: [null, Validators.required],
       available: [true],
       quantity: [1, [Validators.required, Validators.min(1), Validators.max(100)]]
@@ -111,20 +120,33 @@ export class AdminItemInstanceComponent implements OnInit {
 
   loadProducts() {
     this.isLoading.set(true);
-    this.productService.getProducts().subscribe({
+    this.productService.getProductsWithCategories().subscribe({
       next: (products) => {
-        console.log('Products loaded:', products);
+        console.log('✅ Products with categories loaded:', products);
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error loading products:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Fehler beim Laden der Produkte.'
+        console.error('❌ Error loading products with categories:', err);
+        console.log('⚠️ Versuche Fallback ohne Kategorien...');
+
+        // Fallback ohne expandierte Kategorien
+        this.productService.getProducts().subscribe({
+          next: (products) => {
+            console.log('✅ Products loaded (fallback):', products);
+            this.allProducts.set(products);
+            this.isLoading.set(false);
+          },
+          error: (fallbackErr) => {
+            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fehler',
+              detail: 'Fehler beim Laden der Produkte.'
+            });
+            this.isLoading.set(false);
+          }
         });
-        this.isLoading.set(false);
       }
     });
   }
@@ -135,6 +157,8 @@ export class AdminItemInstanceComponent implements OnInit {
       next: (items) => {
         console.log('Items loaded:', items);
         this.allItems.set(items);
+        this.loadUserNamesForItems();
+        this.loadLenderNamesForItems();
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -186,6 +210,7 @@ export class AdminItemInstanceComponent implements OnInit {
         const payload = {
           invNumber: invNumbers[index],
           owner: formValue.owner,
+          lenderId: formValue.lenderId,
           productId: formValue.productId,
           available: formValue.available
         };
@@ -209,6 +234,7 @@ export class AdminItemInstanceComponent implements OnInit {
       const payload = {
         invNumber: formValue.invNumber,
         owner: formValue.owner,
+        lenderId: formValue.lenderId,
         productId: formValue.productId,
         available: formValue.available
       };
@@ -244,10 +270,14 @@ export class AdminItemInstanceComponent implements OnInit {
     this.itemForm.patchValue({
       invNumber: item.invNumber,
       owner: item.owner,
+      lenderId: item.lenderId,
       productId: item.productId,
       available: item.available
     });
 
+    // Setze Display-Werte
+    this.ownerDisplayValue.set(this.getOwnerDisplay(item.owner));
+    this.lenderDisplayValue.set(this.getLenderDisplay(item.lenderId));
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -289,6 +319,10 @@ export class AdminItemInstanceComponent implements OnInit {
     this.editingItemId.set(null);
     this.showItemForm.set(false);
     this.selectedProductForNewItem.set(null);
+    this.ownerDisplayValue.set('');
+    this.isLoadingOwner.set(false);
+    this.lenderDisplayValue.set('');
+    this.isLoadingLender.set(false);
   }
 
   addItemForProduct(product: Product): void {
@@ -381,5 +415,197 @@ export class AdminItemInstanceComponent implements OnInit {
       const numbers = this.generateInventoryNumbers(prefix, quantity);
       this.generatedInventoryNumbers.set(numbers);
     }
+  }
+
+  /**
+   * Behandelt Änderungen im Owner-Feld
+   * Akzeptiert sowohl User ID (Zahl) als auch Username (String)
+   */
+  onOwnerChange(): void {
+    const ownerValue = this.itemForm.get('owner')?.value?.trim();
+    if (!ownerValue) {
+      this.ownerDisplayValue.set('');
+      return;
+    }
+
+    this.isLoadingOwner.set(true);
+
+    // Prüfe ob es eine Zahl ist (User ID)
+    const userId = Number(ownerValue);
+    if (!Number.isNaN(userId) && Number.isInteger(userId)) {
+      // User ID eingegeben - hole Username
+      this.userService.getUserById(userId).subscribe({
+        next: (user: User) => {
+          this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.userIdToNameMap.update(map => {
+            const newMap = new Map(map);
+            newMap.set(user.id, user.name);
+            return newMap;
+          });
+          this.isLoadingOwner.set(false);
+        },
+        error: () => {
+          this.ownerDisplayValue.set('Benutzer nicht gefunden');
+          this.isLoadingOwner.set(false);
+        }
+      });
+    } else {
+      // Username eingegeben - hole User ID
+      this.userService.getUserByName(ownerValue).subscribe({
+        next: (user: User) => {
+          this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.itemForm.patchValue({ owner: user.id.toString() }, { emitEvent: false });
+          this.userIdToNameMap.update(map => {
+            const newMap = new Map(map);
+            newMap.set(user.id, user.name);
+            return newMap;
+          });
+          this.isLoadingOwner.set(false);
+        },
+        error: () => {
+          this.ownerDisplayValue.set('Benutzer nicht gefunden');
+          this.isLoadingOwner.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Gibt den Anzeigenamen für einen Owner zurück
+   * Wenn owner eine User ID ist, wird der Username angezeigt
+   */
+  getOwnerDisplay(owner: string): string {
+    const userId = Number(owner);
+    if (!Number.isNaN(userId) && Number.isInteger(userId)) {
+      const userName = this.userIdToNameMap().get(userId);
+      return userName ? `${userName} (ID: ${userId})` : owner;
+    }
+    return owner;
+  }
+
+  /**
+   * Lädt User-Namen für alle Items
+   */
+  loadUserNamesForItems(): void {
+    const items = this.allItems();
+    const userIds = new Set<number>();
+
+    items.forEach(item => {
+      const userId = Number(item.owner);
+      if (!Number.isNaN(userId) && Number.isInteger(userId)) {
+        userIds.add(userId);
+      }
+    });
+
+    userIds.forEach(userId => {
+      if (!this.userIdToNameMap().has(userId)) {
+        this.userService.getUserById(userId).subscribe({
+          next: (user: User) => {
+            this.userIdToNameMap.update(map => {
+              const newMap = new Map(map);
+              newMap.set(user.id, user.name);
+              return newMap;
+            });
+          },
+          error: () => {
+            console.warn(`Could not load user with ID ${userId}`);
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Behandelt Änderungen im Lender-Feld
+   * Akzeptiert sowohl User ID (Zahl) als auch Username (String)
+   */
+  onLenderChange(): void {
+    const lenderValue = this.itemForm.get('lenderId')?.value;
+    if (!lenderValue) {
+      this.lenderDisplayValue.set('');
+      return;
+    }
+
+    this.isLoadingLender.set(true);
+
+    // Prüfe ob es eine Zahl ist (User ID)
+    const userId = Number(lenderValue);
+    if (!Number.isNaN(userId) && Number.isInteger(userId)) {
+      // User ID eingegeben - hole Username
+      this.userService.getUserById(userId).subscribe({
+        next: (user: User) => {
+          this.lenderDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.userIdToNameMap.update(map => {
+            const newMap = new Map(map);
+            newMap.set(user.id, user.name);
+            return newMap;
+          });
+          this.isLoadingLender.set(false);
+        },
+        error: () => {
+          this.lenderDisplayValue.set('Benutzer nicht gefunden');
+          this.isLoadingLender.set(false);
+        }
+      });
+    } else {
+      // Username eingegeben - hole User ID
+      const usernameStr = String(lenderValue).trim();
+      this.userService.getUserByName(usernameStr).subscribe({
+        next: (user: User) => {
+          this.lenderDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.itemForm.patchValue({ lenderId: user.id }, { emitEvent: false });
+          this.userIdToNameMap.update(map => {
+            const newMap = new Map(map);
+            newMap.set(user.id, user.name);
+            return newMap;
+          });
+          this.isLoadingLender.set(false);
+        },
+        error: () => {
+          this.lenderDisplayValue.set('Benutzer nicht gefunden');
+          this.isLoadingLender.set(false);
+        }
+      });
+    }
+  }
+
+  /**
+   * Gibt den Anzeigenamen für einen Lender zurück
+   */
+  getLenderDisplay(lenderId: number | undefined): string {
+    if (!lenderId) return 'N/A';
+    const userName = this.userIdToNameMap().get(lenderId);
+    return userName ? `${userName} (ID: ${lenderId})` : lenderId.toString();
+  }
+
+  /**
+   * Lädt Lender-Namen für alle Items
+   */
+  loadLenderNamesForItems(): void {
+    const items = this.allItems();
+    const lenderIds = new Set<number>();
+
+    items.forEach(item => {
+      if (item.lenderId) {
+        lenderIds.add(item.lenderId);
+      }
+    });
+
+    lenderIds.forEach(lenderId => {
+      if (!this.userIdToNameMap().has(lenderId)) {
+        this.userService.getUserById(lenderId).subscribe({
+          next: (user: User) => {
+            this.userIdToNameMap.update(map => {
+              const newMap = new Map(map);
+              newMap.set(user.id, user.name);
+              return newMap;
+            });
+          },
+          error: () => {
+            console.warn(`Could not load lender with ID ${lenderId}`);
+          }
+        });
+      }
+    });
   }
 }

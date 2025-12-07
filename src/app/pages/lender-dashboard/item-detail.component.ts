@@ -123,29 +123,26 @@ export class ItemDetailComponent implements OnInit {
       next: (product) => {
         console.log('✅ GET /api/products/' + productId + ' - Success:', product);
 
-        const isAdmin = this.authService.isAdmin();
-
-        if (!isAdmin) {
-          const namesMatch = this.checkNamesMatch(product.lenderName, this.keycloakFullName);
-
-          if (!namesMatch) {
-            console.warn('⚠️ Zugriff verweigert: Verleiher-Name stimmt nicht überein');
-            console.warn('  Product.lenderName:', product.lenderName);
-            console.warn('  Keycloak Name:', this.keycloakFullName);
-
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Zugriff verweigert',
-              detail: 'Sie haben keine Berechtigung, dieses Item anzuzeigen.',
-              life: 5000
-            });
-
-            this.goBack();
-            return;
-          }
+        // Falls Kategorie nicht expandiert ist, lade sie nach
+        if (product.categoryId && !product.category) {
+          console.log('🔄 Kategorie nicht expandiert, lade nach...');
+          this.productService.getProductsWithCategories().subscribe({
+            next: (products) => {
+              const productWithCategory = products.find(p => p.id === productId);
+              if (productWithCategory) {
+                this.product.set(productWithCategory);
+              } else {
+                this.product.set(product);
+              }
+            },
+            error: () => {
+              // Fallback: Verwende Produkt ohne Kategorie
+              this.product.set(product);
+            }
+          });
+        } else {
+          this.product.set(product);
         }
-
-        this.product.set(product);
       },
       error: (err) => {
         console.error('❌ GET /api/products/' + productId + ' - Error:', err.status, err.message);

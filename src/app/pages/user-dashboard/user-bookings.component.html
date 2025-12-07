@@ -1,14 +1,29 @@
-<div class="p-8 max-w-7xl mx-auto">
+<div class="bookings-container">
   <p-toast></p-toast>
 
-  <h1 class="text-3xl font-bold mb-4">Meine Buchungen</h1>
-  <p class="text-muted-foreground mb-6">
-    Übersicht über alle Ihre Buchungen
-  </p>
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="header-icon">
+        <i class="pi pi-calendar text-4xl"></i>
+      </div>
+      <div>
+        <h1 class="header-title">Meine Buchungen</h1>
+        <p class="header-subtitle">
+          Übersicht über alle Ihre Buchungen und Ausleihen
+        </p>
+      </div>
+    </div>
+    <div class="stats-badge">
+      <i class="pi pi-chart-line"></i>
+      <span>{{ filteredBookings().length }} Buchung(en)</span>
+    </div>
+  </div>
 
-  <p-card class="mb-6">
-    <div class="flex gap-4">
-      <p-iconfield iconPosition="left" class="flex-1">
+  <!-- Search Card -->
+  <p-card class="search-card">
+    <div class="search-wrapper">
+      <p-iconfield iconPosition="left" class="search-field">
         <p-inputicon styleClass="pi pi-search"></p-inputicon>
         <input
           type="text"
@@ -16,26 +31,44 @@
           placeholder="Suche nach Produkt, Inventarnummer, Verleiher oder Status..."
           [(ngModel)]="searchQuery"
           (ngModelChange)="searchQuery.set($event)"
-          class="w-full" />
+          class="search-input" />
       </p-iconfield>
+      @if (searchQuery()) {
+        <button
+          pButton
+          icon="pi pi-times"
+          class="p-button-text p-button-rounded"
+          (click)="searchQuery.set('')"
+          pTooltip="Suche zurücksetzen"></button>
+      }
     </div>
   </p-card>
 
-  <p-card>
+  <!-- Bookings Table Card -->
+  <p-card class="table-card">
     @if (isLoading()) {
-      <div class="text-center py-8">
-        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
-        <p class="mt-4 text-muted-foreground">Lade Buchungen...</p>
+      <div class="loading-state">
+        <i class="pi pi-spin pi-spinner loading-spinner"></i>
+        <p class="loading-text">Lade Buchungen...</p>
       </div>
     } @else {
       @if (filteredBookings().length === 0) {
-        <div class="text-center py-8">
-          <i class="pi pi-inbox text-4xl text-muted-foreground"></i>
-          <p class="mt-4 text-muted-foreground">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="pi pi-inbox"></i>
+          </div>
+          <h3 class="empty-title">
             @if (searchQuery()) {
-              Keine Buchungen gefunden, die der Suche entsprechen.
+              Keine Ergebnisse gefunden
             } @else {
-              Sie haben noch keine Buchungen.
+              Noch keine Buchungen
+            }
+          </h3>
+          <p class="empty-message">
+            @if (searchQuery()) {
+              Ihre Suche nach "{{ searchQuery() }}" ergab keine Treffer.
+            } @else {
+              Sie haben aktuell keine Buchungen. Starten Sie jetzt mit Ihrer ersten Ausleihe!
             }
           </p>
         </div>
@@ -47,27 +80,74 @@
           [rowsPerPageOptions]="[10, 25, 50]"
           [showCurrentPageReport]="true"
           currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Buchungen"
+          styleClass="modern-table"
           [tableStyle]="{ 'min-width': '60rem' }">
           <ng-template pTemplate="header">
             <tr>
-              <th scope="col">Produkt</th>
-              <th scope="col">Inventarnummer</th>
-              <th scope="col">Verleiher</th>
-              <th scope="col">Status</th>
-              <th scope="col">Abholung</th>
-              <th scope="col">Rückgabe</th>
+              <th scope="col" class="col-product">
+                <i class="pi pi-box mr-2"></i>Produkt
+              </th>
+              <th scope="col" class="col-inv">
+                <i class="pi pi-tag mr-2"></i>Inventarnummer
+              </th>
+              <th scope="col" class="col-lender">
+                <i class="pi pi-user mr-2"></i>Verleiher
+              </th>
+              <th scope="col" class="col-status">
+                <i class="pi pi-info-circle mr-2"></i>Status
+              </th>
+              <th scope="col" class="col-date">
+                <i class="pi pi-calendar-plus mr-2"></i>Abholung
+              </th>
+              <th scope="col" class="col-date">
+                <i class="pi pi-calendar-minus mr-2"></i>Rückgabe
+              </th>
+              <th scope="col" class="col-created">
+                <i class="pi pi-clock mr-2"></i>Erstellt am
+              </th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-booking>
-            <tr>
-              <td>{{ booking.productName }}</td>
-              <td>{{ booking.itemInvNumber }}</td>
-              <td>{{ booking.lenderName }}</td>
-              <td>
-                <p-tag [severity]="getStatusSeverity(booking.status)" [value]="getStatusLabel(booking.status)"></p-tag>
+            <tr class="table-row">
+              <td class="col-product">
+                <div class="product-cell">
+                  <i class="pi pi-box product-icon"></i>
+                  <span class="product-name">{{ booking.productName }}</span>
+                </div>
               </td>
-              <td>{{ formatDateShort(booking.startDate) }}</td>
-              <td>{{ formatDateShort(booking.endDate) }}</td>
+              <td class="col-inv">
+                <span class="inv-number">{{ booking.itemInvNumber }}</span>
+              </td>
+              <td class="col-lender">
+                <div class="lender-cell">
+                  <i class="pi pi-user lender-icon"></i>
+                  <span>{{ booking.lenderName }}</span>
+                </div>
+              </td>
+              <td class="col-status">
+                <p-tag
+                  [severity]="getStatusSeverity(booking.status)"
+                  [value]="getStatusLabel(booking.status)"
+                  [icon]="getStatusIcon(booking.status)"></p-tag>
+              </td>
+              <td class="col-date">
+                <div class="date-cell">
+                  <i class="pi pi-calendar date-icon"></i>
+                  <span>{{ formatDateShort(booking.startDate) }}</span>
+                </div>
+              </td>
+              <td class="col-date">
+                <div class="date-cell">
+                  <i class="pi pi-calendar date-icon"></i>
+                  <span>{{ formatDateShort(booking.endDate) }}</span>
+                </div>
+              </td>
+              <td class="col-created">
+                <div class="created-cell">
+                  <i class="pi pi-clock created-icon"></i>
+                  <span>{{ formatDateTimeShort(booking.createdAt) }}</span>
+                </div>
+              </td>
             </tr>
           </ng-template>
         </p-table>

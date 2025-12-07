@@ -1,35 +1,326 @@
-// Styling für die User-Buchungen-Komponente
+// Moderne Styling für die User-Buchungen-Komponente
 :host {
   display: block;
 }
 
-// Optimierungen für die Tabelle
+.bookings-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in;
+}
+
+// Header Section
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-600));
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  color: var(--text-color-secondary);
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+}
+
+.stats-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-50);
+  color: var(--primary-color);
+  border-radius: 50px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+// Search Card
+.search-card {
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  ::ng-deep .p-card-body {
+    padding: 1.25rem;
+  }
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem !important;
+  font-size: 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    box-shadow: 0 0 0 3px var(--primary-100);
+  }
+}
+
+// Table Card
+.table-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  ::ng-deep .p-card-body {
+    padding: 0;
+  }
+}
+
+// Loading State
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  color: var(--text-color-secondary);
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-100);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+
+  i {
+    font-size: 4rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.empty-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 0.75rem 0;
+}
+
+.empty-message {
+  font-size: 1rem;
+  color: var(--text-color-secondary);
+  max-width: 500px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+// Table Styling
 ::ng-deep {
-  .p-datatable {
+  .modern-table {
+    .p-datatable-header {
+      background: transparent;
+      border: none;
+    }
+
     .p-datatable-thead > tr > th {
-      background-color: var(--surface-50);
+      background: linear-gradient(to bottom, var(--surface-50), var(--surface-100));
       color: var(--text-color);
       font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1rem;
+      border-bottom: 2px solid var(--surface-border);
+
+      i {
+        color: var(--primary-color);
+      }
     }
 
     .p-datatable-tbody > tr {
-      transition: background-color 0.2s;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid var(--surface-border);
 
       &:hover {
-        background-color: var(--surface-50);
+        background: var(--primary-50);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .p-datatable-tbody > tr > td {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+
+    .p-paginator {
+      background: var(--surface-50);
+      border-top: 1px solid var(--surface-border);
+      padding: 1rem;
+      border-radius: 0 0 12px 12px;
+    }
+  }
+}
+
+// Table Cells
+.product-cell, .lender-cell, .date-cell, .created-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.product-icon, .lender-icon {
+  color: var(--primary-color);
+  font-size: 1.125rem;
+}
+
+.product-name {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.inv-number {
+  font-family: 'Courier New', monospace;
+  background: var(--surface-100);
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.date-icon, .created-icon {
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+}
+
+.created-cell {
+  span {
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .bookings-container {
+    padding: 1.5rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .stats-badge {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .bookings-container {
+    padding: 1rem;
+  }
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+
+    i {
+      font-size: 1.5rem;
     }
   }
 
-  // Responsives Design für mobile Geräte
-  @media (max-width: 768px) {
-    .p-datatable {
-      font-size: 0.875rem;
+  .header-title {
+    font-size: 1.5rem;
+  }
 
-      .p-datatable-thead > tr > th,
-      .p-datatable-tbody > tr > td {
-        padding: 0.5rem;
-      }
+  .header-subtitle {
+    font-size: 0.875rem;
+  }
+
+  ::ng-deep .modern-table {
+    font-size: 0.875rem;
+
+    .p-datatable-thead > tr > th,
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem 0.5rem;
     }
   }
 }

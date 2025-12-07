@@ -11,6 +11,7 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { forkJoin } from 'rxjs';
 
 import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
@@ -64,15 +65,26 @@ export class UserBookingsComponent implements OnInit {
   }
 
   /**
-   * Lädt die Buchungen des aktuellen Users
+   * Lädt die Buchungen des aktuellen Users (aktive + gelöschte)
    */
   private loadUserBookings(): void {
     this.isLoading.set(true);
 
-    // Direkt die eigenen Buchungen über den /users/me Endpunkt laden
-    this.bookingService.getMyBookings().subscribe({
-      next: (bookings) => {
-        this.bookings.set(bookings);
+    // Lade sowohl aktive als auch gelöschte Buchungen parallel
+    forkJoin({
+      activeBookings: this.bookingService.getMyBookings(),
+      deletedBookings: this.bookingService.getMyDeletedBookings()
+    }).subscribe({
+      next: ({ activeBookings, deletedBookings }) => {
+        // Setze bei allen gelöschten Buchungen den Status explizit auf CANCELLED
+        const deletedWithStatus = deletedBookings.map(booking => ({
+          ...booking,
+          status: 'CANCELLED' as BookingStatus
+        }));
+
+        // Kombiniere beide Arrays
+        const allBookings = [...activeBookings, ...deletedWithStatus];
+        this.bookings.set(allBookings);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -137,6 +149,30 @@ export class UserBookingsComponent implements OnInit {
   }
 
   /**
+   * Gibt das passende Icon für den Status zurück
+   */
+  getStatusIcon(status: BookingStatus): string {
+    switch (status) {
+      case 'PENDING':
+        return 'pi pi-clock';
+      case 'CONFIRMED':
+        return 'pi pi-check-circle';
+      case 'PICKED_UP':
+        return 'pi pi-shopping-bag';
+      case 'RETURNED':
+        return 'pi pi-check';
+      case 'REJECTED':
+        return 'pi pi-times-circle';
+      case 'EXPIRED':
+        return 'pi pi-exclamation-triangle';
+      case 'CANCELLED':
+        return 'pi pi-ban';
+      default:
+        return 'pi pi-info-circle';
+    }
+  }
+
+  /**
    * Formatiert ein Datum in ein kurzes Format (DD.MM.YYYY)
    */
   formatDateShort(dateString: string): string {
@@ -147,6 +183,22 @@ export class UserBookingsComponent implements OnInit {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
+    });
+  }
+
+  /**
+   * Formatiert ein Datum mit Uhrzeit (DD.MM.YYYY HH:MM)
+   */
+  formatDateTimeShort(dateString: string): string {
+    if (!dateString) return '-';
+
+    const date = new Date(dateString);
+    return date.toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 }

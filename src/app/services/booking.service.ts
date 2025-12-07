@@ -35,6 +35,13 @@ export class BookingService {
   }
 
   /**
+   * GET /api/bookings/users/me/deleted - Eigene stornierte Buchungen als Student abrufen
+   */
+  getMyDeletedBookings(): Observable<Booking[]> {
+    return this.http.get<Booking[]>(`${this.apiUrl}/users/me/deleted`);
+  }
+
+  /**
    * GET /api/bookings/overdue - Überfällige Buchungen abrufen
    */
   getOverdueBookings(): Observable<Booking[]> {

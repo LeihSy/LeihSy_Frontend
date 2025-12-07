@@ -1,11 +1,12 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule, Location as AngularLocation } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 // Import Product Service & Models
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { Location } from '../../models/location.model';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
@@ -70,7 +71,7 @@ interface Device {
 export class DeviceDetailPageComponent implements OnInit {
   // --- Injected Services ---
   private route = inject(ActivatedRoute);
-  private location = inject(Location);
+  private location = inject(AngularLocation);
   private productService = inject(ProductService);
   private primeng = inject(PrimeNG);
 
@@ -113,11 +114,11 @@ export class DeviceDetailPageComponent implements OnInit {
 
     this.productService.getProductById(id).subscribe({
       next: (product: Product) => {
-        console.log('✅ Product loaded:', product);
+        console.log('Product loaded:', product);
 
         // Falls Kategorie nicht expandiert ist, lade sie nach
         if (product.categoryId && !product.category) {
-          console.log('🔄 Kategorie nicht expandiert, lade nach...');
+          console.log('Kategorie nicht expandiert, lade nach...');
           this.productService.getProductsWithCategories().subscribe({
             next: (products) => {
               const productWithCategory = products.find(p => p.id === id);
@@ -140,7 +141,7 @@ export class DeviceDetailPageComponent implements OnInit {
         }
       },
       error: (err: any) => {
-        console.error('❌ Error loading product:', err);
+        console.error('Error loading product:', err);
         this.errorMessage.set('Produkt konnte nicht geladen werden.');
         this.isLoading.set(false);
       }

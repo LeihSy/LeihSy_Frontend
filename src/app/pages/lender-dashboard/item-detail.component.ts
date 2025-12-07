@@ -14,6 +14,7 @@ import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
+import { Location } from '../../models/location.model';
 
 @Component({
   selector: 'app-item-detail',
@@ -86,11 +87,9 @@ export class ItemDetailComponent implements OnInit {
   loadItemDetails(): void {
     if (!this.itemId) return;
 
-    console.log('🔗 API Call: GET /api/items/' + this.itemId);
 
     this.itemService.getItemById(this.itemId).subscribe({
       next: (item) => {
-        console.log('✅ GET /api/items/' + this.itemId + ' - Success:', item);
         this.item.set(item);
 
         // Lade zugehöriges Produkt
@@ -104,7 +103,6 @@ export class ItemDetailComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ GET /api/items/' + this.itemId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -117,15 +115,13 @@ export class ItemDetailComponent implements OnInit {
   }
 
   loadProduct(productId: number): void {
-    console.log('🔗 API Call: GET /api/products/' + productId);
+
 
     this.productService.getProductById(productId).subscribe({
       next: (product) => {
-        console.log('✅ GET /api/products/' + productId + ' - Success:', product);
 
         // Falls Kategorie nicht expandiert ist, lade sie nach
         if (product.categoryId && !product.category) {
-          console.log('🔄 Kategorie nicht expandiert, lade nach...');
           this.productService.getProductsWithCategories().subscribe({
             next: (products) => {
               const productWithCategory = products.find(p => p.id === productId);
@@ -145,7 +141,6 @@ export class ItemDetailComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('❌ GET /api/products/' + productId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',

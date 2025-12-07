@@ -20,8 +20,10 @@ import { CommonModule } from '@angular/common';
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
 import { Category } from '../../models/category.model';
+import { Location } from '../../models/location.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -54,23 +56,16 @@ export class AdminProductDashboardComponent {
   // Signals
   allProducts = signal<Product[]>([]);
   allCategories = signal<Category[]>([]);
+  allLocations = signal<Location[]>([]);
   isLoading = signal(false);
   isEditMode = signal(false);
   editingProductId = signal<number | null>(null);
   searchQuery = signal('');
   selectedFile = signal<File | null>(null);
   imagePreview = signal<string | null>(null);
-
-  // Fallback Kategorien (falls Backend nicht funktioniert)
-  private readonly fallbackCategories: Category[] = [
-    { id: 1, name: 'Kamera', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 2, name: 'Audio', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 3, name: 'Licht', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 4, name: 'Stativ', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 5, name: 'Objektiv', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 6, name: 'Zubehör', deleted: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-  ];
-
+  locationDisplayValue = signal<string>('');
+  isLoadingLocation = signal<boolean>(false);
+  locationExists = signal<boolean>(false);
 
   filteredProducts = computed(() => {
     const products = this.allProducts();
@@ -90,6 +85,7 @@ export class AdminProductDashboardComponent {
     private readonly itemService: ItemService,
     private readonly productService: ProductService,
     private readonly categoryService: CategoryService,
+    private readonly locationService: LocationService,
     private readonly confirmationService: ConfirmationService,
     private readonly messageService: MessageService
   ) {
@@ -107,32 +103,28 @@ export class AdminProductDashboardComponent {
     });
 
     this.loadCategories();
+    this.loadLocations();
     this.loadProducts();
   }
 
   loadProducts(): void {
     this.isLoading.set(true);
 
-    // Verwende getProductsWithCategories um Kategorien automatisch zu laden
     this.productService.getProductsWithCategories().subscribe({
       next: (products: Product[]) => {
-        console.log('✅ Produkte mit Kategorien geladen:', products);
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err: any) => {
-        console.error('❌ Fehler beim Laden der Produkte:', err);
+        console.error('Fehler beim Laden der Produkte:', err);
 
-        // Fallback: Versuche normale Methode ohne expandierte Kategorien
-        console.log('⚠️ Versuche Fallback ohne expandierte Kategorien...');
         this.productService.getProducts().subscribe({
           next: (products: Product[]) => {
-            console.log('✅ Produkte geladen (ohne Kategorien):', products);
             this.allProducts.set(products);
             this.isLoading.set(false);
           },
           error: (fallbackErr: any) => {
-            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
+            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
             this.messageService.add({
               severity: 'error',
               summary: 'Fehler',
@@ -146,69 +138,79 @@ export class AdminProductDashboardComponent {
   }
 
   loadCategories(): void {
-    console.log('🔄 Lade Kategorien von:', this.categoryService['apiUrl']);
-
     this.categoryService.getAllCategories().subscribe({
       next: (categories: Category[]) => {
-        console.log('✅ Categories loaded successfully:', categories);
-        console.log('📊 Anzahl der Kategorien:', categories.length);
-        console.log('📋 Erste Kategorie:', categories[0]);
-
         this.allCategories.set(categories);
 
         if (categories.length === 0) {
           this.messageService.add({
             severity: 'warn',
             summary: 'Keine Kategorien',
-            detail: 'Es wurden keine Kategorien in der Datenbank gefunden. Bitte erstellen Sie zuerst Kategorien.',
+            detail: 'Es wurden keine Kategorien in der Datenbank gefunden.',
             life: 5000
           });
         }
       },
       error: (err: any) => {
-        console.error('❌ Fehler beim Laden der Kategorien:', err);
-        console.error('Status:', err.status);
-        console.error('Message:', err.message);
-        console.error('URL:', err.url);
-        console.error('Error Type:', err.name);
-
-        // Versuche Response Body zu loggen
-        if (err.error) {
-          console.error('Response Body:', err.error);
-          console.error('Response Body Type:', typeof err.error);
-        }
+        console.error('Fehler beim Laden der Kategorien:', err);
 
         let errorMessage = 'Kategorien konnten nicht geladen werden.';
-        let useFallback = false;
 
-        if (err.status === 200 && err.message.includes('parsing')) {
-          errorMessage = 'Backend antwortet, aber das Datenformat ist ungültig. Verwende Fallback-Kategorien.';
-          console.error('💡 Tipp: Überprüfe, ob der Backend-Controller @RestController verwendet und ein List<Category> zurückgibt.');
-          useFallback = true;
-        } else if (err.status === 404) {
-          errorMessage = 'API-Endpunkt /api/categories nicht gefunden. Verwende Fallback-Kategorien.';
-          useFallback = true;
+        if (err.status === 404) {
+          errorMessage = 'API-Endpunkt /api/categories nicht gefunden.';
         } else if (err.status === 0) {
-          errorMessage = 'Keine Verbindung zum Backend möglich. Verwende Fallback-Kategorien.';
-          useFallback = true;
+          errorMessage = 'Keine Verbindung zum Backend möglich. Ist das Backend gestartet?';
         } else if (err.status === 401 || err.status === 403) {
           errorMessage = 'Keine Berechtigung zum Laden der Kategorien.';
         }
 
         this.messageService.add({
-          severity: useFallback ? 'warn' : 'error',
-          summary: useFallback ? 'Fallback-Modus' : 'Fehler',
+          severity: 'error',
+          summary: 'Fehler beim Laden der Kategorien',
           detail: errorMessage,
           life: 10000
         });
 
-        // Verwende Fallback-Kategorien wenn verfügbar
-        if (useFallback) {
-          console.log('📋 Verwende Fallback-Kategorien:', this.fallbackCategories);
-          this.allCategories.set(this.fallbackCategories);
-        } else {
-          this.allCategories.set([]);
+        this.allCategories.set([]);
+      }
+    });
+  }
+
+  loadLocations(): void {
+    this.locationService.getAllLocations().subscribe({
+      next: (locations: Location[]) => {
+        this.allLocations.set(locations);
+
+        if (locations.length === 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Keine Locations',
+            detail: 'Es wurden keine Locations in der Datenbank gefunden.',
+            life: 5000
+          });
         }
+      },
+      error: (err: any) => {
+        console.error('Fehler beim Laden der Locations:', err);
+
+        let errorMessage = 'Locations konnten nicht geladen werden.';
+
+        if (err.status === 404) {
+          errorMessage = 'API-Endpunkt /api/locations nicht gefunden.';
+        } else if (err.status === 0) {
+          errorMessage = 'Keine Verbindung zum Backend möglich. Ist das Backend gestartet?';
+        } else if (err.status === 401 || err.status === 403) {
+          errorMessage = 'Keine Berechtigung zum Laden der Locations.';
+        }
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler beim Laden der Locations',
+          detail: errorMessage,
+          life: 10000
+        });
+
+        this.allLocations.set([]);
       }
     });
   }
@@ -329,6 +331,46 @@ export class AdminProductDashboardComponent {
 
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
+  }
+
+
+
+   //Prüft ob Location existiert oder neue ID vorgeschlagen wird
+
+  onLocationRoomNrChange(): void {
+    const roomNr = this.itemForm.get('locationRoomNr')?.value?.trim();
+    if (!roomNr) {
+      this.locationDisplayValue.set('');
+      this.locationExists.set(false);
+      this.itemForm.patchValue({ locationId: null }, { emitEvent: false });
+      return;
+    }
+
+    this.isLoadingLocation.set(true);
+
+    // Suche in bereits geladenen Locations
+    const existingLocation = this.allLocations().find(
+      loc => loc.roomNr.toLowerCase() === roomNr.toLowerCase()
+    );
+
+    if (existingLocation) {
+      // Location existiert bereits
+      this.locationDisplayValue.set(`ID: ${existingLocation.id}`);
+      this.locationExists.set(true);
+      this.itemForm.patchValue({ locationId: existingLocation.id }, { emitEvent: false });
+      this.isLoadingLocation.set(false);
+    } else {
+      // Location existiert noch nicht - generiere neue ID
+      const maxId = this.allLocations().length > 0
+        ? Math.max(...this.allLocations().map(loc => loc.id))
+        : 0;
+      const newId = maxId + 1;
+
+      this.locationDisplayValue.set(`Neue ID: ${newId}`);
+      this.locationExists.set(false);
+      this.itemForm.patchValue({ locationId: newId }, { emitEvent: false });
+      this.isLoadingLocation.set(false);
+    }
   }
 
   onFileSelected(event: Event): void {

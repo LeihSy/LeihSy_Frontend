@@ -17,6 +17,7 @@ import { BadgeModule } from 'primeng/badge';
 // Services & Models
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { Location } from '../../models/location.model';
 
 // Pipe
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
@@ -115,7 +116,7 @@ export class CatalogComponent implements OnInit {
 
     this.productService.getProductsWithCategories().subscribe({
       next: (products: Product[]) => {
-        console.log('✅ Products with categories loaded:', products);
+        console.log('Products with categories loaded:', products);
         this.products.set(products);
 
         // Konvertiere Products → Devices

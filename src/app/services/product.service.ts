@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, map, switchMap } from 'rxjs';
 import { Product, ProductCreateDTO } from '../models/product.model';
 import { CategoryService } from './category.service';
+import { LocationService } from './location.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,8 @@ export class ProductService {
 
   constructor(
     private http: HttpClient,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private locationService: LocationService
   ) {}
 
   // Alle Products abrufen
@@ -20,42 +22,56 @@ export class ProductService {
     return this.http.get<Product[]>(this.apiUrl);
   }
 
-  // Alle Products abrufen mit expandierten Kategorien
+  // Alle Products abrufen mit expandierten Kategorien und Locations
   getProductsWithCategories(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl).pipe(
       switchMap((products: Product[]) => {
-        console.log('📦 Products geladen, lade nun Kategorien...');
-
-        // Sammle alle eindeutigen Category IDs
+        // Sammle alle eindeutigen Category IDs und Location IDs
         const categoryIds = [...new Set(products.map(p => p.categoryId).filter(id => id))];
+        const locationIds = [...new Set(products.map(p => p.locationId).filter(id => id))];
 
-        if (categoryIds.length === 0) {
-          console.log('⚠️ Keine Kategorie-IDs in Produkten gefunden');
-          return [products];
+        const requests: Observable<any>[] = [];
+
+        // Lade Kategorien
+        if (categoryIds.length > 0) {
+          const categoryRequests = categoryIds.map(id =>
+            this.categoryService.getCategoryById(id!)
+          );
+          requests.push(forkJoin(categoryRequests));
+        } else {
+          requests.push(new Observable(observer => {
+            observer.next([]);
+            observer.complete();
+          }));
         }
 
-        console.log('🔍 Lade Kategorien für IDs:', categoryIds);
+        // Lade Locations
+        if (locationIds.length > 0) {
+          const locationRequests = locationIds.map(id =>
+            this.locationService.getLocationById(id!)
+          );
+          requests.push(forkJoin(locationRequests));
+        } else {
+          requests.push(new Observable(observer => {
+            observer.next([]);
+            observer.complete();
+          }));
+        }
 
-        // Lade alle Kategorien parallel
-        const categoryRequests = categoryIds.map(id =>
-          this.categoryService.getCategoryById(id!)
-        );
+        return forkJoin(requests).pipe(
+          map(([categories, locations]) => {
+            // Erstelle Maps für schnellen Zugriff
+            const categoryMap = new Map(categories.map((cat: any) => [cat.id, cat]));
+            const locationMap = new Map(locations.map((loc: any) => [loc.id, loc]));
 
-        return forkJoin(categoryRequests).pipe(
-          map(categories => {
-            console.log('✅ Kategorien geladen:', categories);
-
-            // Erstelle eine Map für schnellen Zugriff
-            const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
-
-            // Füge die Category-Objekte zu den Produkten hinzu
-            const productsWithCategories = products.map(product => ({
+            // Füge die Category- und Location-Objekte zu den Produkten hinzu
+            const productsWithData: Product[] = products.map(product => ({
               ...product,
-              category: product.categoryId ? categoryMap.get(product.categoryId) : undefined
-            }));
+              category: product.categoryId ? categoryMap.get(product.categoryId) : undefined,
+              location: product.locationId ? locationMap.get(product.locationId) : undefined
+            } as Product));
 
-            console.log('✅ Produkte mit Kategorien:', productsWithCategories);
-            return productsWithCategories;
+            return productsWithData;
           })
         );
       })

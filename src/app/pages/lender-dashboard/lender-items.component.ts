@@ -19,6 +19,7 @@ import { UserService } from '../../services/user.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
+import { Location } from '../../models/location.model';
 
 interface ProductWithItems {
   product: Product;
@@ -144,11 +145,9 @@ export class LenderItemsComponent implements OnInit {
       keycloakUsername = this.authService.getUsername();
     }
 
-    console.log('API Call: GET /api/users/me');
 
     this.userService.getCurrentUser().subscribe({
       next: (user) => {
-        console.log('GET /api/users/me - Success:', user);
 
         const namesMatch = this.checkNamesMatch(keycloakUsername, user.name);
 
@@ -173,7 +172,6 @@ export class LenderItemsComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error(' GET /api/users/me - Error:', err.status, err.message);
 
         this.messageService.add({
           severity: 'warn',
@@ -197,27 +195,21 @@ export class LenderItemsComponent implements OnInit {
 
   loadProducts(): void {
     this.isLoading.set(true);
-    console.log('API Call: GET /api/products');
 
     this.productService.getProductsWithCategories().subscribe({
       next: (products) => {
-        console.log('✅ GET /api/products - Success:', products.length, 'products with categories loaded');
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ GET /api/products - Error:', err.status, err.message);
-        console.log('⚠️ Versuche Fallback ohne Kategorien...');
 
         // Fallback ohne expandierte Kategorien
         this.productService.getProducts().subscribe({
           next: (products) => {
-            console.log('✅ Products loaded (fallback):', products.length);
             this.allProducts.set(products);
             this.isLoading.set(false);
           },
           error: (fallbackErr) => {
-            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
             this.messageService.add({
               severity: 'error',
               summary: 'Fehler',
@@ -232,11 +224,9 @@ export class LenderItemsComponent implements OnInit {
 
   loadItems(): void {
     this.isLoading.set(true);
-    console.log('API Call: GET /api/items');
 
     this.itemService.getAllItems().subscribe({
       next: (items) => {
-        console.log('GET /api/items - Success:', items.length, 'items loaded');
         this.allItems.set(items);
         this.isLoading.set(false);
       },

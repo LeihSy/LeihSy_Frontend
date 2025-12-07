@@ -22,6 +22,7 @@ import { UserService } from '../../services/user.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
+import { Location } from '../../models/location.model';
 
 @Component({
   selector: 'app-admin-item-instance',
@@ -65,8 +66,10 @@ export class AdminItemInstanceComponent implements OnInit {
   userIdToNameMap = signal<Map<number, string>>(new Map());
   ownerDisplayValue = signal<string>('');
   isLoadingOwner = signal<boolean>(false);
+  ownerFound = signal<boolean>(false);
   lenderDisplayValue = signal<string>('');
   isLoadingLender = signal<boolean>(false);
+  lenderFound = signal<boolean>(false);
 
 
   productsWithItems = computed(() => {
@@ -109,6 +112,7 @@ export class AdminItemInstanceComponent implements OnInit {
       invNumber: ['', Validators.required],
       owner: ['', Validators.required],
       lenderId: [null, Validators.required],
+      lenderName: [''],
       productId: [null, Validators.required],
       available: [true],
       quantity: [1, [Validators.required, Validators.min(1), Validators.max(100)]]
@@ -122,23 +126,19 @@ export class AdminItemInstanceComponent implements OnInit {
     this.isLoading.set(true);
     this.productService.getProductsWithCategories().subscribe({
       next: (products) => {
-        console.log('✅ Products with categories loaded:', products);
         this.allProducts.set(products);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ Error loading products with categories:', err);
-        console.log('⚠️ Versuche Fallback ohne Kategorien...');
+        console.error('Fehler beim Laden der Produkte:', err);
 
-        // Fallback ohne expandierte Kategorien
         this.productService.getProducts().subscribe({
           next: (products) => {
-            console.log('✅ Products loaded (fallback):', products);
             this.allProducts.set(products);
             this.isLoading.set(false);
           },
           error: (fallbackErr) => {
-            console.error('❌ Auch Fallback fehlgeschlagen:', fallbackErr);
+            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
             this.messageService.add({
               severity: 'error',
               summary: 'Fehler',
@@ -155,14 +155,13 @@ export class AdminItemInstanceComponent implements OnInit {
     this.isLoading.set(true);
     this.itemService.getAllItems().subscribe({
       next: (items) => {
-        console.log('Items loaded:', items);
         this.allItems.set(items);
         this.loadUserNamesForItems();
         this.loadLenderNamesForItems();
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error loading items:', err);
+        console.error('Fehler beim Laden der Items:', err);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -174,7 +173,36 @@ export class AdminItemInstanceComponent implements OnInit {
   }
 
   submitForm() {
-    if (!this.itemForm.valid) return;
+    if (!this.itemForm.valid) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validierungsfehler',
+        detail: 'Bitte füllen Sie alle Pflichtfelder aus.'
+      });
+      return;
+    }
+
+    // Validiere dass Owner gefunden wurde
+    const ownerValue = this.itemForm.get('owner')?.value;
+    if (ownerValue && !this.ownerFound()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validierungsfehler',
+        detail: 'Der angegebene Besitzer konnte nicht gefunden werden. Bitte geben Sie eine gültige User ID oder Username ein.'
+      });
+      return;
+    }
+
+    // Validiere dass Lender gefunden wurde
+    const lenderId = this.itemForm.get('lenderId')?.value;
+    if (lenderId && !this.lenderFound()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validierungsfehler',
+        detail: 'Der angegebene Verleiher konnte nicht gefunden werden. Bitte geben Sie eine gültige User ID oder Username ein.'
+      });
+      return;
+    }
 
     const formValue = this.itemForm.value;
     const editId = this.editingItemId();
@@ -267,17 +295,26 @@ export class AdminItemInstanceComponent implements OnInit {
     this.editingItemId.set(item.id);
     this.showItemForm.set(true);
 
+    // Hole den Lender-Namen aus der Map
+    const lenderName = item.lenderId ? this.userIdToNameMap().get(item.lenderId) : '';
+
     this.itemForm.patchValue({
       invNumber: item.invNumber,
       owner: item.owner,
       lenderId: item.lenderId,
+      lenderName: lenderName || '',
       productId: item.productId,
       available: item.available
     });
 
-    // Setze Display-Werte
+    // Setze Display-Werte und Found-Status
     this.ownerDisplayValue.set(this.getOwnerDisplay(item.owner));
-    this.lenderDisplayValue.set(this.getLenderDisplay(item.lenderId));
+    this.ownerFound.set(true); // Im Edit-Modus ist der Owner bereits validiert
+
+    if (item.lenderId && lenderName) {
+      this.lenderDisplayValue.set(`Gefunden: ${lenderName}`);
+      this.lenderFound.set(true); // Im Edit-Modus ist der Lender bereits validiert
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -321,8 +358,10 @@ export class AdminItemInstanceComponent implements OnInit {
     this.selectedProductForNewItem.set(null);
     this.ownerDisplayValue.set('');
     this.isLoadingOwner.set(false);
+    this.ownerFound.set(false);
     this.lenderDisplayValue.set('');
     this.isLoadingLender.set(false);
+    this.lenderFound.set(false);
   }
 
   addItemForProduct(product: Product): void {
@@ -425,6 +464,7 @@ export class AdminItemInstanceComponent implements OnInit {
     const ownerValue = this.itemForm.get('owner')?.value?.trim();
     if (!ownerValue) {
       this.ownerDisplayValue.set('');
+      this.ownerFound.set(false);
       return;
     }
 
@@ -437,6 +477,7 @@ export class AdminItemInstanceComponent implements OnInit {
       this.userService.getUserById(userId).subscribe({
         next: (user: User) => {
           this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.ownerFound.set(true);
           this.userIdToNameMap.update(map => {
             const newMap = new Map(map);
             newMap.set(user.id, user.name);
@@ -446,6 +487,7 @@ export class AdminItemInstanceComponent implements OnInit {
         },
         error: () => {
           this.ownerDisplayValue.set('Benutzer nicht gefunden');
+          this.ownerFound.set(false);
           this.isLoadingOwner.set(false);
         }
       });
@@ -454,6 +496,7 @@ export class AdminItemInstanceComponent implements OnInit {
       this.userService.getUserByName(ownerValue).subscribe({
         next: (user: User) => {
           this.ownerDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.ownerFound.set(true);
           this.itemForm.patchValue({ owner: user.id.toString() }, { emitEvent: false });
           this.userIdToNameMap.update(map => {
             const newMap = new Map(map);
@@ -464,6 +507,7 @@ export class AdminItemInstanceComponent implements OnInit {
         },
         error: () => {
           this.ownerDisplayValue.set('Benutzer nicht gefunden');
+          this.ownerFound.set(false);
           this.isLoadingOwner.set(false);
         }
       });
@@ -508,7 +552,7 @@ export class AdminItemInstanceComponent implements OnInit {
             });
           },
           error: () => {
-            console.warn(`Could not load user with ID ${userId}`);
+            // Fehler beim Laden des Users - stillschweigend ignorieren
           }
         });
       }
@@ -516,25 +560,28 @@ export class AdminItemInstanceComponent implements OnInit {
   }
 
   /**
-   * Behandelt Änderungen im Lender-Feld
-   * Akzeptiert sowohl User ID (Zahl) als auch Username (String)
+   * Behandelt Änderungen im Lender ID Feld
+   * Lädt den Benutzernamen und füllt das Name-Feld aus
    */
-  onLenderChange(): void {
-    const lenderValue = this.itemForm.get('lenderId')?.value;
-    if (!lenderValue) {
+  onLenderIdChange(): void {
+    const lenderId = this.itemForm.get('lenderId')?.value;
+    if (!lenderId) {
       this.lenderDisplayValue.set('');
+      this.lenderFound.set(false);
+      this.itemForm.patchValue({ lenderName: '' }, { emitEvent: false });
       return;
     }
 
     this.isLoadingLender.set(true);
 
-    // Prüfe ob es eine Zahl ist (User ID)
-    const userId = Number(lenderValue);
+    const userId = Number(lenderId);
     if (!Number.isNaN(userId) && Number.isInteger(userId)) {
-      // User ID eingegeben - hole Username
+      // Hole User anhand der ID
       this.userService.getUserById(userId).subscribe({
         next: (user: User) => {
-          this.lenderDisplayValue.set(`${user.name} (ID: ${user.id})`);
+          this.lenderDisplayValue.set(`Gefunden: ${user.name}`);
+          this.lenderFound.set(true);
+          this.itemForm.patchValue({ lenderName: user.name }, { emitEvent: false });
           this.userIdToNameMap.update(map => {
             const newMap = new Map(map);
             newMap.set(user.id, user.name);
@@ -543,30 +590,54 @@ export class AdminItemInstanceComponent implements OnInit {
           this.isLoadingLender.set(false);
         },
         error: () => {
-          this.lenderDisplayValue.set('Benutzer nicht gefunden');
+          this.lenderDisplayValue.set('Benutzer mit dieser ID nicht gefunden');
+          this.lenderFound.set(false);
+          this.itemForm.patchValue({ lenderName: '' }, { emitEvent: false });
           this.isLoadingLender.set(false);
         }
       });
     } else {
-      // Username eingegeben - hole User ID
-      const usernameStr = String(lenderValue).trim();
-      this.userService.getUserByName(usernameStr).subscribe({
-        next: (user: User) => {
-          this.lenderDisplayValue.set(`${user.name} (ID: ${user.id})`);
-          this.itemForm.patchValue({ lenderId: user.id }, { emitEvent: false });
-          this.userIdToNameMap.update(map => {
-            const newMap = new Map(map);
-            newMap.set(user.id, user.name);
-            return newMap;
-          });
-          this.isLoadingLender.set(false);
-        },
-        error: () => {
-          this.lenderDisplayValue.set('Benutzer nicht gefunden');
-          this.isLoadingLender.set(false);
-        }
-      });
+      this.lenderDisplayValue.set('Ungültige ID');
+      this.lenderFound.set(false);
+      this.isLoadingLender.set(false);
     }
+  }
+
+  /**
+   * Behandelt Änderungen im Lender Name Feld
+   * Lädt die User ID und füllt das ID-Feld aus
+   */
+  onLenderNameChange(): void {
+    const lenderName = this.itemForm.get('lenderName')?.value?.trim();
+    if (!lenderName) {
+      this.lenderDisplayValue.set('');
+      this.lenderFound.set(false);
+      this.itemForm.patchValue({ lenderId: null }, { emitEvent: false });
+      return;
+    }
+
+    this.isLoadingLender.set(true);
+
+    // Hole User anhand des Namens
+    this.userService.getUserByName(lenderName).subscribe({
+      next: (user: User) => {
+        this.lenderDisplayValue.set(`Gefunden: ID ${user.id}`);
+        this.lenderFound.set(true);
+        this.itemForm.patchValue({ lenderId: user.id }, { emitEvent: false });
+        this.userIdToNameMap.update(map => {
+          const newMap = new Map(map);
+          newMap.set(user.id, user.name);
+          return newMap;
+        });
+        this.isLoadingLender.set(false);
+      },
+      error: () => {
+        this.lenderDisplayValue.set('Benutzer mit diesem Namen nicht gefunden');
+        this.lenderFound.set(false);
+        this.itemForm.patchValue({ lenderId: null }, { emitEvent: false });
+        this.isLoadingLender.set(false);
+      }
+    });
   }
 
   /**
@@ -602,7 +673,7 @@ export class AdminItemInstanceComponent implements OnInit {
             });
           },
           error: () => {
-            console.warn(`Could not load lender with ID ${lenderId}`);
+            // Fehler beim Laden des Lenders - stillschweigend ignorieren
           }
         });
       }

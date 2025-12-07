@@ -1,5 +1,6 @@
-// Import Category from dedicated model file
+// Import Category and Location from dedicated model files
 import { Category } from './category.model';
+import { Location } from './location.model';
 
 // Product DTO (vereinfachte Version für Listen/Übersichten)
 export interface ProductDTO {
@@ -64,12 +65,6 @@ export interface Product {
 
 // Hilfsobjekte für expandierte Relations
 
-export interface Location {
-  id: number;
-  roomNr: string;
-  building?: string;
-  floor?: string;
-}
 
 export interface RecommendedSet {
   id: number;

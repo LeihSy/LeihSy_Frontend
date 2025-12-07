@@ -133,21 +133,37 @@
             <div class="grid md:grid-cols-2 gap-4">
               <div>
                 <label class="block font-semibold">
-                  <span class="block mb-2">Standort ID *</span>
-                  <p-inputNumber formControlName="locationId"
-                                 [min]="1"
-                                 [showButtons]="true"
-                                 class="w-full"
-                                 placeholder="z.B. 1">
-                  </p-inputNumber>
+                  <span class="block mb-2">Raumnummer *</span>
+                  <input pInputText formControlName="locationRoomNr"
+                         class="w-full"
+                         placeholder="z.B. F01.204"
+                         (input)="onLocationRoomNrChange()" />
+                  @if (locationDisplayValue()) {
+                    <small [class]="isLoadingLocation() ? 'text-gray-400' : 'text-green-600'" class="mt-1 block">
+                      @if (isLoadingLocation()) {
+                        <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
+                      } @else if (locationExists()) {
+                        <i class="pi pi-check mr-1"></i>{{ locationDisplayValue() }} (Existiert bereits)
+                      } @else {
+                        <i class="pi pi-info-circle mr-1"></i>{{ locationDisplayValue() }} (Wird neu angelegt)
+                      }
+                    </small>
+                  }
                 </label>
               </div>
 
               <div>
                 <label class="block font-semibold">
-                  <span class="block mb-2">Raum / Standort *</span>
-                  <input pInputText formControlName="locationRoomNr"
-                         class="w-full" placeholder="z.B. F01.204" />
+                  <span class="block mb-2">Location ID</span>
+                  <p-inputNumber formControlName="locationId"
+                                 [useGrouping]="false"
+                                 class="w-full"
+                                 [disabled]="true"
+                                 placeholder="Wird automatisch gesetzt">
+                  </p-inputNumber>
+                  <small class="text-gray-600 mt-1 block">
+                    Wird automatisch aus Raumnummer ermittelt
+                  </small>
                 </label>
               </div>
             </div>

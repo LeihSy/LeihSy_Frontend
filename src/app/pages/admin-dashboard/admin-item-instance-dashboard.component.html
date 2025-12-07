@@ -42,10 +42,68 @@
 
           <div>
             <label class="block font-semibold">
-              <span class="block mb-2">Besitzer *</span>
+              <span class="block mb-2">Besitzer * (User ID oder Username)</span>
               <input pInputText formControlName="owner" class="w-full"
-                     placeholder="z.B. Hochschule Esslingen" />
+                     placeholder="z.B. 1 oder username"
+                     (input)="onOwnerChange()" />
             </label>
+            @if (ownerDisplayValue()) {
+              <small [class]="isLoadingOwner() ? 'text-gray-400' : (ownerFound() ? 'text-green-600' : 'text-red-600')" class="mt-1 block">
+                @if (isLoadingOwner()) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
+                } @else if (ownerFound()) {
+                  <i class="pi pi-check mr-1"></i>{{ ownerDisplayValue() }}
+                } @else {
+                  <i class="pi pi-times mr-1"></i>{{ ownerDisplayValue() }}
+                }
+              </small>
+            }
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold">
+              <span class="block mb-2">Verleiher User ID *</span>
+              <p-inputNumber formControlName="lenderId"
+                             [useGrouping]="false"
+                             class="w-full"
+                             placeholder="z.B. 1"
+                             (onInput)="onLenderIdChange()">
+              </p-inputNumber>
+            </label>
+            @if (lenderDisplayValue() && !itemForm.get('lenderName')?.value) {
+              <small [class]="isLoadingLender() ? 'text-gray-400' : (lenderDisplayValue().includes('nicht gefunden') ? 'text-red-600' : 'text-green-600')" class="mt-1 block">
+                @if (isLoadingLender()) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
+                } @else if (lenderDisplayValue().includes('nicht gefunden')) {
+                  <i class="pi pi-times mr-1"></i>{{ lenderDisplayValue() }}
+                } @else {
+                  <i class="pi pi-check mr-1"></i>{{ lenderDisplayValue() }}
+                }
+              </small>
+            }
+          </div>
+
+          <div>
+            <label class="block font-semibold">
+              <span class="block mb-2">Verleiher Benutzername *</span>
+              <input pInputText formControlName="lenderName"
+                     class="w-full"
+                     placeholder="Username"
+                     (input)="onLenderNameChange()" />
+            </label>
+            @if (lenderDisplayValue() && itemForm.get('lenderName')?.value) {
+              <small [class]="isLoadingLender() ? 'text-gray-400' : (lenderDisplayValue().includes('nicht gefunden') ? 'text-red-600' : 'text-green-600')" class="mt-1 block">
+                @if (isLoadingLender()) {
+                  <i class="pi pi-spin pi-spinner mr-1"></i>Lädt...
+                } @else if (lenderDisplayValue().includes('nicht gefunden')) {
+                  <i class="pi pi-times mr-1"></i>{{ lenderDisplayValue() }}
+                } @else {
+                  <i class="pi pi-check mr-1"></i>{{ lenderDisplayValue() }}
+                }
+              </small>
+            }
           </div>
         </div>
 

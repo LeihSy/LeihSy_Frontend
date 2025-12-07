@@ -30,7 +30,7 @@ export class AuthService {
   constructor() {}
 
   private updateLoginStatus() {
-    this.isLoggedIn.set(!!this.keycloak.authenticated);
+    this.isLoggedIn.set(this.keycloak.authenticated);
   }
 
   /**

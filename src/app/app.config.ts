@@ -2,15 +2,18 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
-  APP_INITIALIZER
+  provideAppInitializer,
+  inject
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import Aura from '@primeuix/themes/aura';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
 import Keycloak from 'keycloak-js';
 import { routes } from './app.routes';
+import { authInterceptor } from './interceptors/auth.interceptor';
+import { AuthService } from './services/auth.service';
 
 // Keycloak Instance erstellen
 const keycloak = new Keycloak({
@@ -19,38 +22,13 @@ const keycloak = new Keycloak({
   clientId: 'leihsy-frontend-dev'
 });
 
-// Keycloak Initializer
-function initializeKeycloak() {
-  return () => {
-    console.log('Initializing Keycloak...');
-
-    return keycloak.init({
-      onLoad: 'check-sso',
-      checkLoginIframe: true,
-      silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
-    }).then((authenticated) => {
-      console.log('Keycloak initialized. Authenticated:', authenticated);
-      if (authenticated) {
-        console.log('👤 User:', keycloak.tokenParsed?.['preferred_username']);
-        const clientId = keycloak.clientId ?? keycloak.tokenParsed?.['azp'];
-        if (clientId) {
-          const roles = keycloak.tokenParsed?.['resource_access']?.[clientId]?.['roles'] ?? [];
-          console.log('Roles:', roles);
-        }
-      }
-    }).catch(error => {
-      console.error('Keycloak initialization failed:', error);
-    });
-  };
-}
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
-    provideAnimationsAsync(),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimations(),
     providePrimeNG({
       theme: {
         preset: Aura,
@@ -65,11 +43,31 @@ export const appConfig: ApplicationConfig = {
     }),
     // Keycloak als Provider
     { provide: Keycloak, useValue: keycloak },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeKeycloak,
-      multi: true,
-      deps: []
-    }
+    // Kombinierter Initializer: Keycloak DANN AuthService
+    provideAppInitializer(async () => {
+      // AuthService SOFORT holen (vor jedem await!)
+      const authService = inject(AuthService);
+
+      // 1. Keycloak initialisieren
+      console.log('Initializing Keycloak...');
+      try {
+        const authenticated = await keycloak.init({
+          onLoad: 'check-sso',
+          checkLoginIframe: true,
+          silentCheckSsoRedirectUri: globalThis.location.origin + '/silent-check-sso.html'
+        });
+        console.log('Keycloak initialized. Authenticated:', authenticated);
+        if (authenticated) {
+          console.log('User:', keycloak.tokenParsed?.['preferred_username']);
+        }
+      } catch (error) {
+        console.error('Keycloak initialization failed:', error);
+      }
+
+      // 2. AuthService initialisieren (NACH Keycloak)
+      console.log('Initializing AuthService...');
+      await authService.initialize();
+      console.log('AuthService initialized. isLoggedIn:', authService.isLoggedIn());
+    })
   ],
 };

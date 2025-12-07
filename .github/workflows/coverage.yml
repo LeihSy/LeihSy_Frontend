@@ -1,0 +1,170 @@
+name: Code Coverage
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    name: Generate Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # -----------------------------------------------------
+      # Unit Tests + Coverage
+      # -----------------------------------------------------
+      - name: Run Angular Unit Tests with coverage
+        run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      # -----------------------------------------------------
+      # Generate Coverage Badge
+      # -----------------------------------------------------
+      - name: Generate Coverage Badge
+        run: |
+          if [ -f coverage/frontend/lcov.info ]; then
+            # Extrahiere Coverage-Prozentsatz aus lcov.info
+            LINES_FOUND=$(grep -o "LF:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            LINES_HIT=$(grep -o "LH:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+
+            if [ "$LINES_FOUND" -gt 0 ]; then
+              COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($LINES_HIT / $LINES_FOUND) * 100}")
+              echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+              echo "Line Coverage: $COVERAGE%"
+            else
+              echo "COVERAGE_PERCENT=0" >> $GITHUB_ENV
+            fi
+          else
+            echo "Keine Coverage-Daten gefunden"
+            echo "COVERAGE_PERCENT=0" >> $GITHUB_ENV
+          fi
+
+      # -----------------------------------------------------
+      # Coverage Summary im Job Summary
+      # -----------------------------------------------------
+      - name: Generate Coverage Summary
+        if: always()
+        run: |
+          echo "# Code Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f coverage/frontend/lcov.info ]; then
+            echo "**Tests erfolgreich ausgeführt**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Line Coverage
+            LINES_FOUND=$(grep -o "LF:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            LINES_HIT=$(grep -o "LH:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            LINE_COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($LINES_HIT / $LINES_FOUND) * 100}")
+
+            # Function Coverage
+            FUNCS_FOUND=$(grep -o "FNF:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            FUNCS_HIT=$(grep -o "FNH:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            FUNC_COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($FUNCS_HIT / $FUNCS_FOUND) * 100}")
+
+            # Branch Coverage
+            BRANCH_FOUND=$(grep -o "BRF:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            BRANCH_HIT=$(grep -o "BRH:[0-9]*" coverage/frontend/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            BRANCH_COVERAGE=$(awk "BEGIN {printf \"%.2f\", ($BRANCH_HIT / $BRANCH_FOUND) * 100}")
+
+            echo "| Metrik | Coverage | Getestet | Gesamt |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|----------|----------|--------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Lines | ${LINE_COVERAGE}% | ${LINES_HIT} | ${LINES_FOUND} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Functions | ${FUNC_COVERAGE}% | ${FUNCS_HIT} | ${FUNCS_FOUND} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Branches | ${BRANCH_COVERAGE}% | ${BRANCH_HIT} | ${BRANCH_FOUND} |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Coverage Badge Color
+            if (( $(echo "$LINE_COVERAGE >= 80" | bc -l) )); then
+              BADGE_COLOR="brightgreen"
+            elif (( $(echo "$LINE_COVERAGE >= 60" | bc -l) )); then
+              BADGE_COLOR="yellow"
+            else
+              BADGE_COLOR="red"
+            fi
+
+            echo "## Coverage Badge" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "![Coverage](https://img.shields.io/badge/coverage-${LINE_COVERAGE}%25-${BADGE_COLOR})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Downloads" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- [Vollständiger Coverage Report (HTML)](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            echo "- [LCOV Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo " **Keine Coverage-Daten gefunden**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # -----------------------------------------------------
+      # Upload Coverage Report HTML
+      # -----------------------------------------------------
+      - name: Upload Coverage HTML Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html-report
+          path: coverage/frontend/
+          retention-days: 30
+
+      # -----------------------------------------------------
+      # Upload LCOV Report
+      # -----------------------------------------------------
+      - name: Upload LCOV Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-lcov
+          path: coverage/frontend/lcov.info
+          retention-days: 30
+
+      # -----------------------------------------------------
+      # PR Comment mit Coverage (nur bei Pull Requests)
+      # -----------------------------------------------------
+      - name: Comment PR with Coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coverage = process.env.COVERAGE_PERCENT || '0';
+
+            const comment = `## Code Coverage Report
+
+            **Line Coverage:** ${coverage}%
+
+            ${coverage >= 80 ? 'Excellent coverage!' : coverage >= 60 ? 'Good coverage, but could be improved' : 'Coverage below recommended threshold (60%)'}
+
+            [Vollständiger Coverage Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+

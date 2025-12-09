@@ -172,9 +172,9 @@ export class DeviceDetailPageComponent implements OnInit {
 
       // Verfügbarkeit
       availability: {
-        available: product.availableItemCount,
-        total: product.totalItemCount,
-        borrowed: product.totalItemCount - product.availableItemCount
+        available: product.availableItemCount || 0,
+        total: product.totalItemCount || 0,
+        borrowed: (product.totalItemCount || 0) - (product.availableItemCount || 0)
       },
 
       // Campus Verfügbarkeit
@@ -182,8 +182,8 @@ export class DeviceDetailPageComponent implements OnInit {
         {
           campus: 'Campus Esslingen Flandernstraße',
           location: product.location?.roomNr || 'N/A',
-          available: product.availableItemCount,
-          total: product.totalItemCount,
+          available: product.availableItemCount || 0,
+          total: product.totalItemCount || 0,
         }
       ],
 

@@ -4,6 +4,7 @@ import { Observable, forkJoin, map, switchMap } from 'rxjs';
 import { Product, ProductCreateDTO } from '../models/product.model';
 import { CategoryService } from './category.service';
 import { LocationService } from './location.service';
+import { ItemService } from './item.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class ProductService {
   constructor(
     private http: HttpClient,
     private categoryService: CategoryService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private itemService: ItemService
   ) {}
 
   // Alle Products abrufen
@@ -58,17 +60,36 @@ export class ProductService {
           }));
         }
 
+        // Lade alle Items
+        requests.push(this.itemService.getAllItems());
+
         return forkJoin(requests).pipe(
-          map(([categories, locations]) => {
+          map(([categories, locations, items]) => {
             // Erstelle Maps für schnellen Zugriff
             const categoryMap = new Map(categories.map((cat: any) => [cat.id, cat]));
             const locationMap = new Map(locations.map((loc: any) => [loc.id, loc]));
 
-            // Füge die Category- und Location-Objekte zu den Produkten hinzu
+            // Berechne Item-Counts pro Produkt
+            const itemCountMap = new Map<number, { total: number, available: number }>();
+            items.forEach((item: any) => {
+              const productId = item.productId;
+              if (!itemCountMap.has(productId)) {
+                itemCountMap.set(productId, { total: 0, available: 0 });
+              }
+              const counts = itemCountMap.get(productId)!;
+              counts.total++;
+              if (item.available) {
+                counts.available++;
+              }
+            });
+
+            // Füge die Category-, Location-Objekte und Item-Counts zu den Produkten hinzu
             const productsWithData: Product[] = products.map(product => ({
               ...product,
               category: product.categoryId ? categoryMap.get(product.categoryId) : undefined,
-              location: product.locationId ? locationMap.get(product.locationId) : undefined
+              location: product.locationId ? locationMap.get(product.locationId) : undefined,
+              totalItemCount: itemCountMap.get(product.id)?.total || 0,
+              availableItemCount: itemCountMap.get(product.id)?.available || 0
             } as Product));
 
             return productsWithData;

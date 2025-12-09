@@ -50,12 +50,12 @@ export interface Product {
   categoryId?: number;
   locationId?: number;
 
-  // Availability
-  availableItemCount: number;
-  totalItemCount: number;
+  // Availability (Item Counts für Verfügbarkeitsanzeige)
+  availableItemCount?: number;  // Anzahl verfügbarer Items
+  totalItemCount?: number;      // Gesamtanzahl Items
 
   // Soft Delete
-  deleted: boolean;
+  deleted?: boolean;
   deletedAt?: string | null;    // date-time
 
   // Timestamps

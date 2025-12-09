@@ -143,14 +143,14 @@ export class CatalogComponent implements OnInit {
       category: p.category?.name || 'Unbekannt',
       description: p.description,
       availability: {
-        available: p.availableItemCount,
-        total: p.totalItemCount
+        available: p.availableItemCount || 0,
+        total: p.totalItemCount || 0
       },
       loanConditions: {
         loanPeriod: `${p.expiryDate} Tage`
       },
       location: p.location?.roomNr || 'N/A',
-      availableItems: p.availableItemCount,
+      availableItems: p.availableItemCount || 0,
       imageUrl: p.imageUrl
     }));
   }

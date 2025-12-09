@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
@@ -15,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { Location } from '../../models/location.model';
+import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
 
 @Component({
   selector: 'app-item-detail',
@@ -24,7 +24,7 @@ import { Location } from '../../models/location.model';
     CardModule,
     ButtonModule,
     TagModule,
-    TableModule,
+    TabelleComponent,
     ToastModule
   ],
   templateUrl: './item-detail.component.html',
@@ -32,6 +32,14 @@ import { Location } from '../../models/location.model';
   providers: [MessageService]
 })
 export class ItemDetailComponent implements OnInit {
+
+  // Spalten-Definition für die Loan History Tabelle
+  loanHistoryColumns: ColumnDef[] = [
+    { field: 'borrower', header: 'Ausleiher', sortable: true },
+    { field: 'startDate', header: 'Von', type: 'date', sortable: true, width: '120px' },
+    { field: 'endDate', header: 'Bis', type: 'date', sortable: true, width: '120px' },
+    { field: 'status', header: 'Status', type: 'status', sortable: true, width: '130px' }
+  ];
 
   item = signal<Item | null>(null);
   product = signal<Product | null>(null);
@@ -182,4 +190,3 @@ export class ItemDetailComponent implements OnInit {
     return available ? 'Verfügbar' : 'Ausgeliehen';
   }
 }
-

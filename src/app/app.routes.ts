@@ -72,10 +72,42 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/products/new',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-form-page.component')
+        .then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/products/:id/edit',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-form-page.component')
+        .then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'admin/items',
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-item-instance-dashboard.component')
         .then(m => m.AdminItemInstanceComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/new',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-item-form-page.component')
+        .then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/:id/edit',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-item-form-page.component')
+        .then(m => m.AdminItemFormPageComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

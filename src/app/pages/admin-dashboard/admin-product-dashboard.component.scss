@@ -1,6 +1,7 @@
 :host ::ng-deep {
-  button,
-  .p-button {
+  // Allgemeines Button-Styling (außer Paginator-Buttons, Warning und Danger)
+  button:not(.p-paginator-page):not(.p-paginator-first):not(.p-paginator-prev):not(.p-paginator-next):not(.p-paginator-last):not(.p-button-warning):not(.p-button-danger),
+  .p-button:not(.p-paginator-page):not(.p-paginator-first):not(.p-paginator-prev):not(.p-paginator-next):not(.p-paginator-last):not(.p-button-warning):not(.p-button-danger) {
     background-color: #000080 !important;
     border-color: #000080 !important;
     color: white !important;

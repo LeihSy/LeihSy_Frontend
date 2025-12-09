@@ -2,7 +2,6 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -15,6 +14,7 @@ import { forkJoin } from 'rxjs';
 
 import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
+import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
 
 @Component({
   selector: 'app-user-bookings',
@@ -23,7 +23,7 @@ import { BookingService } from '../../services/booking.service';
     CommonModule,
     FormsModule,
     CardModule,
-    TableModule,
+    TabelleComponent,
     ButtonModule,
     InputTextModule,
     IconFieldModule,
@@ -41,17 +41,33 @@ export class UserBookingsComponent implements OnInit {
   searchQuery = signal<string>('');
   isLoading = signal<boolean>(true);
 
+  // Spalten-Definition für die Tabelle
+  columns: ColumnDef[] = [
+    { field: 'productName', header: 'Produkt', sortable: true },
+    { field: 'itemInvNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
+    { field: 'lenderName', header: 'Verleiher', sortable: true },
+    { field: 'statusLabel', header: 'Status', type: 'status', sortable: true, width: '130px' },
+    { field: 'startDate', header: 'Abholung', type: 'date', sortable: true, width: '120px' },
+    { field: 'endDate', header: 'Rückgabe', type: 'date', sortable: true, width: '120px' },
+    { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
+  ];
+
   filteredBookings = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
+    const bookingsWithStatusLabel = this.bookings().map(booking => ({
+      ...booking,
+      statusLabel: this.getStatusLabel(booking.status)
+    }));
+
     if (!query) {
-      return this.bookings();
+      return bookingsWithStatusLabel;
     }
 
-    return this.bookings().filter(booking =>
+    return bookingsWithStatusLabel.filter(booking =>
       booking.productName.toLowerCase().includes(query) ||
       booking.itemInvNumber.toLowerCase().includes(query) ||
       booking.lenderName.toLowerCase().includes(query) ||
-      this.getStatusLabel(booking.status).toLowerCase().includes(query)
+      booking.statusLabel.toLowerCase().includes(query)
     );
   });
 
@@ -202,4 +218,3 @@ export class UserBookingsComponent implements OnInit {
     });
   }
 }
-

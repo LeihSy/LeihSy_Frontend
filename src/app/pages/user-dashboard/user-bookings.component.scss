@@ -188,7 +188,7 @@
       font-size: 0.875rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 1rem;
+      padding: 0.75rem 0.5rem;  // Reduziert von 1rem auf 0.75rem vertikal und 0.5rem horizontal
       border-bottom: 2px solid var(--surface-border);
 
       i {
@@ -212,16 +212,11 @@
     }
 
     .p-datatable-tbody > tr > td {
-      padding: 1rem;
+      padding: 0.75rem 0.5rem;  // Reduziert von 1rem auf 0.75rem vertikal und 0.5rem horizontal
       vertical-align: middle;
     }
 
-    .p-paginator {
-      background: var(--surface-50);
-      border-top: 1px solid var(--surface-border);
-      padding: 1rem;
-      border-radius: 0 0 12px 12px;
-    }
+    // Entferne altes Paginator-Styling - wird von tabelle.component.scss übernommen
   }
 }
 

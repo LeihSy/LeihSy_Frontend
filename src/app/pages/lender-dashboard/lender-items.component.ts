@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
-import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -20,6 +19,7 @@ import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
 import { Location } from '../../models/location.model';
+import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
 
 interface ProductWithItems {
   product: Product;
@@ -36,7 +36,7 @@ interface ProductWithItems {
     FormsModule,
     RouterModule,
     CardModule,
-    TableModule,
+    TabelleComponent,
     TagModule,
     IconFieldModule,
     InputIconModule,
@@ -48,6 +48,13 @@ interface ProductWithItems {
   providers: [MessageService]
 })
 export class LenderItemsComponent implements OnInit {
+
+  // Spalten-Definition für die Item-Tabelle
+  itemColumns: ColumnDef[] = [
+    { field: 'invNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
+    { field: 'owner', header: 'Besitzer', sortable: true },
+    { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
+  ];
 
   allItems = signal<Item[]>([]);
   allProducts = signal<Product[]>([]);
@@ -75,9 +82,15 @@ export class LenderItemsComponent implements OnInit {
     let productGroups = products
       .map(product => {
         const productItems = filteredItems.filter(item => item.productId === product.id);
+        // Füge zusätzliche Felder für die Tabelle hinzu
+        const itemsWithDisplayFields = productItems.map(item => ({
+          ...item,
+          availableLabel: item.available ? 'Verfügbar' : 'Ausgeliehen'
+        }));
+
         return {
           product,
-          items: productItems,
+          items: itemsWithDisplayFields,
           availableCount: productItems.filter(i => i.available).length,
           totalCount: productItems.length
         };

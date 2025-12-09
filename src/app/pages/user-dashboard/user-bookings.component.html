@@ -1,5 +1,5 @@
 <div class="bookings-container">
-  <p-toast></p-toast>
+  <p-toast position="bottom-right"></p-toast>
 
   <!-- Header Section -->
   <div class="header-section">
@@ -73,84 +73,16 @@
           </p>
         </div>
       } @else {
-        <p-table
-          [value]="filteredBookings()"
-          [paginator]="true"
+        <app-tabelle
+          [columns]="columns"
+          [data]="filteredBookings()"
+          [loading]="isLoading()"
+          [showActions]="false"
           [rows]="10"
-          [rowsPerPageOptions]="[10, 25, 50]"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Buchungen"
-          styleClass="modern-table"
-          [tableStyle]="{ 'min-width': '60rem' }">
-          <ng-template pTemplate="header">
-            <tr>
-              <th scope="col" class="col-product">
-                <i class="pi pi-box mr-2"></i>Produkt
-              </th>
-              <th scope="col" class="col-inv">
-                <i class="pi pi-tag mr-2"></i>Inventarnummer
-              </th>
-              <th scope="col" class="col-lender">
-                <i class="pi pi-user mr-2"></i>Verleiher
-              </th>
-              <th scope="col" class="col-status">
-                <i class="pi pi-info-circle mr-2"></i>Status
-              </th>
-              <th scope="col" class="col-date">
-                <i class="pi pi-calendar-plus mr-2"></i>Abholung
-              </th>
-              <th scope="col" class="col-date">
-                <i class="pi pi-calendar-minus mr-2"></i>Rückgabe
-              </th>
-              <th scope="col" class="col-created">
-                <i class="pi pi-clock mr-2"></i>Erstellt am
-              </th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-booking>
-            <tr class="table-row">
-              <td class="col-product">
-                <div class="product-cell">
-                  <i class="pi pi-box product-icon"></i>
-                  <span class="product-name">{{ booking.productName }}</span>
-                </div>
-              </td>
-              <td class="col-inv">
-                <span class="inv-number">{{ booking.itemInvNumber }}</span>
-              </td>
-              <td class="col-lender">
-                <div class="lender-cell">
-                  <i class="pi pi-user lender-icon"></i>
-                  <span>{{ booking.lenderName }}</span>
-                </div>
-              </td>
-              <td class="col-status">
-                <p-tag
-                  [severity]="getStatusSeverity(booking.status)"
-                  [value]="getStatusLabel(booking.status)"
-                  [icon]="getStatusIcon(booking.status)"></p-tag>
-              </td>
-              <td class="col-date">
-                <div class="date-cell">
-                  <i class="pi pi-calendar date-icon"></i>
-                  <span>{{ formatDateShort(booking.startDate) }}</span>
-                </div>
-              </td>
-              <td class="col-date">
-                <div class="date-cell">
-                  <i class="pi pi-calendar date-icon"></i>
-                  <span>{{ formatDateShort(booking.endDate) }}</span>
-                </div>
-              </td>
-              <td class="col-created">
-                <div class="created-cell">
-                  <i class="pi pi-clock created-icon"></i>
-                  <span>{{ formatDateTimeShort(booking.createdAt) }}</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+          [paginator]="true"
+          [scrollable]="false"
+          emptyMessage="Keine Buchungen vorhanden">
+        </app-tabelle>
       }
     }
   </p-card>

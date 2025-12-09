@@ -1,6 +1,6 @@
 <div class="p-8 max-w-6xl mx-auto">
 
-  <p-toast></p-toast>
+  <p-toast position="bottom-right"></p-toast>
 
   <!-- Back Button -->
   <button pButton icon="pi pi-arrow-left" label="Zurück zur Übersicht"
@@ -166,27 +166,15 @@
             </h2>
 
             @if (loanHistory().length > 0) {
-              <p-table [value]="loanHistory()" styleClass="p-datatable-sm">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th>Von</th>
-                    <th>Bis</th>
-                    <th>Ausgeliehen an</th>
-                    <th>Status</th>
-                  </tr>
-                </ng-template>
-
-                <ng-template pTemplate="body" let-loan>
-                  <tr>
-                    <td>{{ loan.startDate | date: 'dd.MM.yyyy' }}</td>
-                    <td>{{ loan.endDate | date: 'dd.MM.yyyy' }}</td>
-                    <td>{{ loan.borrowerName }}</td>
-                    <td>
-                      <p-tag [value]="loan.status" [severity]="loan.status === 'active' ? 'danger' : 'success'"></p-tag>
-                    </td>
-                  </tr>
-                </ng-template>
-              </p-table>
+              <app-tabelle
+                [columns]="loanHistoryColumns"
+                [data]="loanHistory()"
+                [showActions]="false"
+                [rows]="5"
+                [paginator]="true"
+                [scrollable]="false"
+                emptyMessage="Noch keine Ausleihvorgänge vorhanden">
+              </app-tabelle>
             } @else {
               <div class="text-center py-8 text-gray-500">
                 <i class="pi pi-info-circle text-3xl mb-2"></i>

@@ -1,12 +1,8 @@
 <div class="bookings-container">
   <p-toast position="bottom-right"></p-toast>
 
-  <!-- Header Section -->
   <div class="header-section">
     <div class="header-content">
-      <div class="header-icon">
-        <i class="pi pi-calendar text-4xl"></i>
-      </div>
       <div>
         <h1 class="header-title">Meine Buchungen</h1>
         <p class="header-subtitle">
@@ -20,7 +16,6 @@
     </div>
   </div>
 
-  <!-- Search Card -->
   <p-card class="search-card">
     <div class="search-wrapper">
       <p-iconfield iconPosition="left" class="search-field">
@@ -44,7 +39,6 @@
     </div>
   </p-card>
 
-  <!-- Bookings Table Card -->
   <p-card class="table-card">
     @if (isLoading()) {
       <div class="loading-state">

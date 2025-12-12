@@ -117,6 +117,22 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/bookings',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-bookings.component')
+        .then(m => m.AdminBookingsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/bookings/:id',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-booking-detail.component')
+        .then(m => m.AdminBookingDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

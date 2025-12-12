@@ -1,0 +1,79 @@
+<div class="bookings-container">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-back-button routerLink="/admin"></app-back-button>
+
+  <div class="header-section">
+    <div class="header-content">
+      <div>
+        <h1 class="header-title">Alle Buchungen verwalten</h1>
+        <p class="header-subtitle">
+          Übersicht über alle Buchungen und Ausleihen im System
+        </p>
+      </div>
+    </div>
+    <div class="stats-badge">
+      <i class="pi pi-chart-line"></i>
+      <span>{{ filteredBookings().length }} Buchung(en)</span>
+    </div>
+  </div>
+
+  <p-card class="search-card">
+    <div class="search-wrapper">
+      <p-iconfield iconPosition="left" class="search-field">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Suche nach Benutzer, Produkt, Inventarnummer, Verleiher oder Status..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="searchQuery.set($event)"
+          class="search-input" />
+      </p-iconfield>
+      @if (searchQuery()) {
+        <button
+          pButton
+          icon="pi pi-times"
+          class="p-button-text p-button-rounded"
+          (click)="searchQuery.set('')"
+          pTooltip="Suche zurücksetzen">
+        </button>
+      }
+    </div>
+  </p-card>
+
+  <p-card class="table-card">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+        <p class="loading-text">Lade Buchungen...</p>
+      </div>
+    } @else if (filteredBookings().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-inbox empty-icon"></i>
+        <h3 class="empty-title">Keine Buchungen gefunden</h3>
+        <p class="empty-text">
+          @if (searchQuery()) {
+            Keine Buchungen entsprechen Ihrer Suche.
+          } @else {
+            Es sind noch keine Buchungen vorhanden.
+          }
+        </p>
+      </div>
+    } @else {
+      <app-tabelle
+        [columns]="columns"
+        [data]="filteredBookings()"
+        [loading]="isLoading()"
+        [rows]="10"
+        [paginator]="true"
+        [scrollable]="true"
+        [scrollHeight]="'600px'"
+        [rowClickable]="true"
+        (rowSelect)="onBookingRowClick($event)"
+        emptyMessage="Keine Buchungen vorhanden">
+      </app-tabelle>
+    }
+  </p-card>
+</div>
+

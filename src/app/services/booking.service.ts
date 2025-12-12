@@ -14,6 +14,13 @@ export class BookingService {
   // ==================== GET Endpunkte ====================
 
   /**
+   * GET /api/bookings - Alle Buchungen abrufen (nur für Admin)
+   */
+  getAllBookings(): Observable<Booking[]> {
+    return this.http.get<Booking[]>(this.apiUrl);
+  }
+
+  /**
    * GET /api/bookings/{id} - Einzelne Buchung abrufen
    */
   getBookingById(id: number): Observable<Booking> {

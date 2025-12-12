@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -73,7 +74,8 @@ export class UserBookingsComponent implements OnInit {
 
   constructor(
     private readonly bookingService: BookingService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -216,5 +218,12 @@ export class UserBookingsComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  /**
+   * Navigiert zur Detail-Seite der ausgewählten Buchung
+   */
+  onBookingRowClick(booking: Booking): void {
+    this.router.navigate(['/user-dashboard/bookings', booking.id]);
   }
 }

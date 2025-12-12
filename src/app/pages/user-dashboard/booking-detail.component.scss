@@ -1,0 +1,240 @@
+.booking-detail-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.header-card {
+  @media (min-width: 1024px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeline-section {
+  @media (min-width: 1024px) {
+    grid-row: 2 / 3;
+  }
+}
+
+:host ::ng-deep {
+
+  .info-card .p-card {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: 100%;
+  }
+
+  .info-card .p-card-header {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #000080;
+  }
+
+  .timeline-card .p-card {
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: 100%;
+  }
+
+  .timeline-card .p-card-header {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    color: #000080;
+  }
+
+  .p-tag {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .p-timeline {
+    .p-timeline-event-opposite {
+      display: none;
+    }
+
+    .p-timeline-event-content {
+      padding-left: 1rem;
+    }
+  }
+
+  .timeline-marker {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .p-button-text {
+    color: #000080 !important;
+
+    &:hover {
+      background-color: rgba(0, 0, 128, 0.04) !important;
+    }
+  }
+
+  .p-button:not(.p-button-text) {
+    background-color: #000080 !important;
+    border-color: #000080 !important;
+
+    &:hover {
+      background-color: #000066 !important;
+      border-color: #000066 !important;
+    }
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.info-item {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.info-icon {
+  color: #000080;
+  font-size: 1.25rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.message-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f0f9ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.5rem;
+}
+
+.message-text {
+  color: #1e40af;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.timeline-content {
+  padding: 0.5rem 0;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-icon {
+  font-size: 1.25rem;
+}
+
+.timeline-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.timeline-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.timeline-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin: 0;
+
+  i {
+    font-size: 0.75rem;
+  }
+}
+
+.empty-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .booking-detail-container {
+    padding: 1rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-card h1 {
+    font-size: 1.5rem;
+  }
+}
+

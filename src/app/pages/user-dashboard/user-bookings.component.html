@@ -81,6 +81,8 @@
           [rows]="10"
           [paginator]="true"
           [scrollable]="false"
+          [rowClickable]="true"
+          (rowSelect)="onBookingRowClick($event)"
           emptyMessage="Keine Buchungen vorhanden">
         </app-tabelle>
       }

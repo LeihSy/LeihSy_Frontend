@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { ToggleButtonModule } from 'primeng/togglebutton';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 
@@ -19,11 +19,12 @@ import { Product } from '../../../models/product.model';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     CardModule,
     ButtonModule,
     InputTextModule,
     SelectModule,
-    ToggleButtonModule,
+    RadioButtonModule,
     InputNumberModule,
     TooltipModule
   ],
@@ -56,6 +57,8 @@ export class ItemFormComponent implements OnInit, OnChanges {
   isLoadingLender = signal<boolean>(false);
   lenderFound = signal<boolean>(false);
 
+  availabilityValue: string = 'true';
+
   constructor(private readonly fb: FormBuilder) {}
 
   ngOnInit(): void {
@@ -64,6 +67,8 @@ export class ItemFormComponent implements OnInit, OnChanges {
     if (!this.isEditMode && this.selectedProduct) {
       this.itemForm.patchValue({ productId: this.selectedProduct.id });
     }
+
+    this.updateRadioButtonValue();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -99,6 +104,8 @@ export class ItemFormComponent implements OnInit, OnChanges {
       productId: this.item.productId,
       available: this.item.available
     });
+
+    this.updateRadioButtonValue();
   }
 
   submitForm(): void {
@@ -196,6 +203,16 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
   patchLenderId(id: number): void {
     this.itemForm.patchValue({ lenderId: id }, { emitEvent: false });
+  }
+
+  onAvailableChange(value: boolean): void {
+    this.itemForm.patchValue({ available: value });
+    this.availabilityValue = value.toString();
+  }
+
+  private updateRadioButtonValue(): void {
+    const currentValue = this.itemForm.get('available')?.value;
+    this.availabilityValue = currentValue !== null ? currentValue.toString() : 'true';
   }
 }
 

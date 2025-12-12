@@ -1,2 +1,30 @@
 // Item-Formular verwendet das übergeordnete Styling
 
+:host ::ng-deep {
+  // Radio Button Styling: Schwarzer Punkt
+  .p-radiobutton .p-radiobutton-box {
+    border-color: #d1d5db; // Grauer Border
+    width: 1.25rem;
+    height: 1.25rem;
+
+    &.p-highlight {
+      background-color: #ffffff !important; // Weißer Hintergrund
+      border-color: #000000 !important; // Schwarzer Border wenn aktiv
+
+      .p-radiobutton-icon {
+        background-color: #000000 !important; // Schwarzer Punkt
+        width: 0.625rem;
+        height: 0.625rem;
+      }
+    }
+
+    &:not(.p-disabled):hover {
+      border-color: #000000; // Schwarzer Border beim Hover
+    }
+  }
+
+  .p-radiobutton:not(.p-radiobutton-disabled) .p-radiobutton-box.p-focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.2) !important; // Schwarzer Focus-Ring
+    border-color: #000000 !important;
+  }
+}

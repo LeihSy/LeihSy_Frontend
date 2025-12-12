@@ -101,6 +101,19 @@
     }
   }
 
+
+  .border {
+    border-color: #e5e7eb !important;
+  }
+
+  .border-t {
+    border-top-color: #e5e7eb !important;
+  }
+  
+  .bg-white.rounded.border {
+    border-color: #e5e7eb !important;
+  }
+
   .p-button-rounded {
     border-radius: 50%;
     width: 2.5rem;

@@ -160,15 +160,35 @@
       </div>
 
       <div>
-        <label class="block mb-2 font-semibold">Verfügbar</label>
-        <p-toggleButton
-          formControlName="available"
-          onLabel="Verfügbar"
-          offLabel="Nicht verfügbar"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          class="w-full">
-        </p-toggleButton>
+        <label class="block mb-3 font-semibold">Verfügbarkeit *</label>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center">
+            <p-radioButton
+              name="availability"
+              value="true"
+              inputId="available-yes"
+              [(ngModel)]="availabilityValue"
+              [ngModelOptions]="{standalone: true}"
+              (onClick)="onAvailableChange(true)">
+            </p-radioButton>
+            <label for="available-yes" class="ml-2 cursor-pointer">
+              <span class="font-medium">Verfügbar</span>
+            </label>
+          </div>
+          <div class="flex items-center">
+            <p-radioButton
+              name="availability"
+              value="false"
+              inputId="available-no"
+              [(ngModel)]="availabilityValue"
+              [ngModelOptions]="{standalone: true}"
+              (onClick)="onAvailableChange(false)">
+            </p-radioButton>
+            <label for="available-no" class="ml-2 cursor-pointer">
+              <span class="font-medium">Nicht verfügbar</span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 

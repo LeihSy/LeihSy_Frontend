@@ -5,20 +5,15 @@
     Verwalten Sie Ihre Buchungen und Ausleihen
   </p>
 
-  <div class="grid md:grid-cols-1 gap-6 max-w-md">
+  <div class="grid md:grid-cols-2 gap-6">
 
-    <div class="dashboard-card">
-      <p-card header="Meine Buchungen">
-        <p>Übersicht über alle Ihre Buchungen, aktuelle Ausleihen und deren Status.</p>
-
-        <button
-          pButton
-          label="Zu meinen Buchungen"
-          class="mt-4"
-          routerLink="/user-dashboard/bookings">
-        </button>
-      </p-card>
-    </div>
+    <app-menu-card
+      header="Meine Buchungen"
+      description="Übersicht über alle Ihre Buchungen, aktuelle Ausleihen und deren Status."
+      buttonLabel="Zu meinen Buchungen"
+      routerLink="/user-dashboard/bookings"
+      icon="calendar-plus">
+    </app-menu-card>
 
   </div>
 

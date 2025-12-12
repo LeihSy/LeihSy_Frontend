@@ -1,0 +1,26 @@
+<div class="menu-card">
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        @if (icon) {
+          <i [class]="'pi pi-' + icon + ' text-2xl text-[#000080] mb-2'"></i>
+        }
+        @if (iconClass) {
+          <i [class]="iconClass + ' text-2xl text-[#000080] mb-2'"></i>
+        }
+        <h3 class="text-xl font-semibold text-[#000080]">{{ header }}</h3>
+      </div>
+    </ng-template>
+
+    <p class="text-gray-600 mb-4">{{ description }}</p>
+
+    <button
+      pButton
+      [label]="buttonLabel"
+      class="menu-card-button w-full"
+      [routerLink]="routerLink"
+      [disabled]="disabled">
+    </button>
+  </p-card>
+</div>
+

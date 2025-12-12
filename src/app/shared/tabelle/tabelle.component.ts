@@ -43,6 +43,7 @@ export class TabelleComponent {
   @Input() rowsPerPageOptions: number[] = []; // Leer = kein Dropdown
   @Input() showCurrentPageReport = false; // Kein "Zeige x bis y von z"
   @Input() currentPageReportTemplate = '';
+  @Input() rowClickable = false; // Macht Zeilen anklickbar
 
   @Output() edit = new EventEmitter<any>();
   @Output() remove = new EventEmitter<any>();

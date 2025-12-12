@@ -25,7 +25,12 @@
   </ng-template>
 
   <ng-template pTemplate="body" let-row>
-    <tr>
+    <tr
+      [class.clickable-row]="rowClickable"
+      [attr.tabindex]="rowClickable ? 0 : null"
+      (click)="rowClickable ? onRowSelect(row) : null"
+      (keydown.enter)="rowClickable ? onRowSelect(row) : null"
+      (keydown.space)="rowClickable ? onRowSelect(row) : null">
       <td *ngFor="let col of columns; trackBy: trackByIndex" [ngClass]="col.class">
         <ng-container [ngSwitch]="col.type">
 

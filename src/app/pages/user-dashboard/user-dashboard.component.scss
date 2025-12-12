@@ -1,9 +1,2 @@
-// Styles for user-dashboard component
-.dashboard-card {
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-4px);
-  }
-}
+// Styling is now handled by MenuCardComponent
 

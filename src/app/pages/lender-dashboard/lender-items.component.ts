@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -122,7 +122,8 @@ export class LenderItemsComponent implements OnInit {
     private readonly productService: ProductService,
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -218,6 +219,10 @@ export class LenderItemsComponent implements OnInit {
 
   getStatusLabel(available: boolean): string {
     return available ? 'Verfügbar' : 'Ausgeliehen';
+  }
+
+  onItemRowClick(item: Item): void {
+    this.router.navigate(['/lender/items', item.id]);
   }
 }
 

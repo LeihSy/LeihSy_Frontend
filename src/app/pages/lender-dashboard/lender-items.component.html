@@ -130,6 +130,8 @@
               [rows]="5"
               [paginator]="false"
               [scrollable]="false"
+              [rowClickable]="true"
+              (rowSelect)="onItemRowClick($event)"
               emptyMessage="Keine Gegenstände vorhanden">
             </app-tabelle>
           </div>

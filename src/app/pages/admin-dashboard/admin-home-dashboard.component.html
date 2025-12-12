@@ -7,33 +7,21 @@
 
   <div class="grid md:grid-cols-2 gap-6">
 
+    <app-menu-card
+      header="Produktgruppen verwalten"
+      description="Erstelle neue Produktgruppen oder bearbeite bestehende."
+      buttonLabel="Zu den Produkten"
+      routerLink="/admin/products"
+      icon="tag">
+    </app-menu-card>
 
-    <div class="dashboard-card">
-      <p-card header="Produktgruppen verwalten">
-        <p>Erstelle neue Produktgruppen oder bearbeite bestehende.</p>
-
-        <button
-          pButton
-          label="Zu den Produkten"
-          class="mt-4"
-          routerLink="/admin/products">
-        </button>
-      </p-card>
-    </div>
-
-
-    <div class="dashboard-card">
-      <p-card header="Einzelne Gegenstände verwalten">
-        <p>Verwalte einzelne physische Gegenstände.</p>
-
-        <button
-          pButton
-          label="Zu den einzelnen Gegenständen"
-          class="mt-4"
-          routerLink="/admin/items">
-        </button>
-      </p-card>
-    </div>
+    <app-menu-card
+      header="Einzelne Gegenstände verwalten"
+      description="Verwalte einzelne physische Gegenstände."
+      buttonLabel="Zu den einzelnen Gegenständen"
+      routerLink="/admin/items"
+      icon="box">
+    </app-menu-card>
 
   </div>
 

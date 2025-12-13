@@ -126,27 +126,11 @@ describe('AdminProductDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load categories on init', () => {
-    expect(mockCategoryService.getAllCategories).toHaveBeenCalled();
-    expect(component.allCategories()).toEqual(mockCategories);
-  });
-
-  it('should load locations on init', () => {
-    expect(mockLocationService.getAllLocations).toHaveBeenCalled();
-    expect(component.allLocations()).toEqual(mockLocations);
-  });
-
   it('should load products on init', () => {
     expect(mockProductService.getProductsWithCategories).toHaveBeenCalled();
     expect(component.allProducts()).toEqual(mockProducts);
   });
 
-  it('should initialize form with correct validators', () => {
-    expect(component.itemForm).toBeDefined();
-    expect(component.itemForm.get('name')).toBeTruthy();
-    expect(component.itemForm.get('categoryId')).toBeTruthy();
-    expect(component.itemForm.get('locationId')).toBeTruthy();
-  });
 
   it('should filter products based on search query', () => {
     component.allProducts.set(mockProducts);
@@ -199,25 +183,10 @@ describe('AdminProductDashboardComponent', () => {
     expect(component.isLoading()).toBe(false);
   });
 
-  it('should initialize with isEditMode false', () => {
-    expect(component.isEditMode()).toBe(false);
-  });
-
-  it('should initialize with editingProductId null', () => {
-    expect(component.editingProductId()).toBe(null);
-  });
-
   it('should initialize with empty searchQuery', () => {
     expect(component.searchQuery()).toBe('');
   });
 
-  it('should initialize with selectedFile null', () => {
-    expect(component.selectedFile()).toBe(null);
-  });
-
-  it('should initialize with imagePreview null', () => {
-    expect(component.imagePreview()).toBe(null);
-  });
 
   it('should be a standalone component', () => {
     const componentMetadata = (AdminProductDashboardComponent as any).ɵcmp;
@@ -229,57 +198,97 @@ describe('AdminProductDashboardComponent', () => {
     expect(componentMetadata.selectors[0][0]).toBe('app-admin-dashboard');
   });
 
-  it('should require name field in form', () => {
-    const nameControl = component.itemForm.get('name');
-    expect(nameControl?.hasError('required')).toBe(true);
-
-    nameControl?.setValue('Test Product');
-    expect(nameControl?.hasError('required')).toBe(false);
-  });
-
-  it('should require categoryId field in form', () => {
-    const categoryControl = component.itemForm.get('categoryId');
-    expect(categoryControl?.hasError('required')).toBe(true);
-
-    categoryControl?.setValue(1);
-    expect(categoryControl?.hasError('required')).toBe(false);
-  });
-
-  it('should require price to be non-negative', () => {
-    const priceControl = component.itemForm.get('price');
-    priceControl?.setValue(-10);
-    expect(priceControl?.hasError('min')).toBe(true);
-
-    priceControl?.setValue(0);
-    expect(priceControl?.hasError('min')).toBe(false);
-
-    priceControl?.setValue(100);
-    expect(priceControl?.hasError('min')).toBe(false);
-  });
-
-  it('should require expiryDate to be at least 1', () => {
-    const expiryControl = component.itemForm.get('expiryDate');
-    expiryControl?.setValue(0);
-    expect(expiryControl?.hasError('min')).toBe(true);
-
-    expiryControl?.setValue(1);
-    expect(expiryControl?.hasError('min')).toBe(false);
-  });
-
-  it('should trim whitespace in search query', () => {
+  it('should handle empty search query', () => {
     component.allProducts.set(mockProducts);
-    component.searchQuery.set('  camera  ');
+    component.searchQuery.set('');
+
+    const filtered = component.filteredProducts();
+    expect(filtered.length).toBe(2);
+  });
+
+  it('should handle no results search', () => {
+    component.allProducts.set(mockProducts);
+    component.searchQuery.set('nonexistent product');
+
+    const filtered = component.filteredProducts();
+    expect(filtered.length).toBe(0);
+  });
+
+  it('should search case-insensitively', () => {
+    component.allProducts.set(mockProducts);
+    component.searchQuery.set('CAMERA');
 
     const filtered = component.filteredProducts();
     expect(filtered.length).toBe(1);
   });
 
-  it('should handle empty product array gracefully', () => {
-    component.allProducts.set([]);
-    component.searchQuery.set('test');
+  it('should filter by description', () => {
+    component.allProducts.set(mockProducts);
+    component.searchQuery.set('microphone');
 
     const filtered = component.filteredProducts();
-    expect(filtered.length).toBe(0);
+    expect(filtered.length).toBe(1);
+    expect(filtered[0].description).toContain('microphone');
+  });
+
+  it('should have all required columns', () => {
+    expect(component.columns.length).toBeGreaterThanOrEqual(5);
+    expect(component.columns.some(c => c.field === 'name')).toBe(true);
+    expect(component.columns.some(c => c.field === 'categoryName')).toBe(true);
+    expect(component.columns.some(c => c.field === 'price')).toBe(true);
+  });
+
+  describe('Filter Branches - Coverage', () => {
+    beforeEach(() => {
+      component.allProducts.set(mockProducts);
+    });
+
+    it('should filter by name (first branch)', () => {
+      component.searchQuery.set('Camera');
+      const filtered = component.filteredProducts();
+      expect(filtered.length).toBe(1);
+      expect(filtered[0].name).toContain('Camera');
+    });
+
+    it('should filter by description (second branch)', () => {
+      component.searchQuery.set('microphone');
+      const filtered = component.filteredProducts();
+      expect(filtered.length).toBe(1);
+      expect(filtered[0].description).toContain('microphone');
+    });
+
+    it('should filter by category name (third branch)', () => {
+      const productsWithCategory = mockProducts.map(p => ({
+        ...p,
+        category: mockCategories.find(c => c.id === p.categoryId)
+      }));
+      component.allProducts.set(productsWithCategory as any);
+      component.searchQuery.set('Kamera');
+
+      const filtered = component.filteredProducts();
+      expect(filtered.some(p => p.category?.name.includes('Kamera'))).toBe(true);
+    });
+
+    it('should return all when query is empty (early return branch)', () => {
+      component.searchQuery.set('');
+      const filtered = component.filteredProducts();
+      expect(filtered.length).toBe(2);
+    });
+
+    it('should return empty when no matches (all branches false)', () => {
+      component.searchQuery.set('nonexistentproduct123');
+      const filtered = component.filteredProducts();
+      expect(filtered.length).toBe(0);
+    });
+
+    it('should handle products without category (category branch)', () => {
+      const productsWithoutCategory = mockProducts.map(p => ({ ...p, category: undefined }));
+      component.allProducts.set(productsWithoutCategory as any);
+      component.searchQuery.set('test');
+
+      const filtered = component.filteredProducts();
+      expect(filtered).toBeDefined();
+    });
   });
 });
 

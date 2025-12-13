@@ -11,12 +11,28 @@
           Übersicht über alle Buchungen und Ausleihen im System
         </p>
       </div>
-    </div>
-    <div class="stats-badge">
-      <i class="pi pi-chart-line"></i>
-      <span>{{ filteredBookings().length }} Buchung(en)</span>
+      <button
+        pButton
+        icon="pi pi-refresh"
+        label="Aktualisieren"
+        class="p-button-outlined"
+        (click)="refreshData()"
+        pTooltip="Daten neu laden">
+      </button>
     </div>
   </div>
+
+  <!-- Statistik-Karten -->
+  <app-booking-stats-cards
+    [currentLoansCount]="currentLoans().length"
+    [overdueCount]="overdueBookings().length"
+    [openRequestsCount]="openRequests().length"
+    [confirmedNotPickedUpCount]="confirmedNotPickedUp().length"
+    [futureBookingsCount]="futureBookings().length"
+    [totalCount]="bookings().length"
+    [selectedView]="selectedView()"
+    (viewChange)="setView($event)">
+  </app-booking-stats-cards>
 
   <p-card class="search-card">
     <div class="search-wrapper">
@@ -40,6 +56,27 @@
         </button>
       }
     </div>
+    @if (selectedView() !== 'all') {
+      <div class="current-view-info">
+        <i class="pi pi-filter"></i>
+        <span>
+          Ansicht:
+          @switch (selectedView()) {
+            @case ('current') { <strong>Aktuelle Ausleihen</strong> }
+            @case ('overdue') { <strong>Überfällige Ausleihen</strong> }
+            @case ('pending') { <strong>Offene Anfragen</strong> }
+            @case ('confirmed') { <strong>Bestätigt, nicht abgeholt</strong> }
+            @case ('future') { <strong>Zukünftige Ausleihen</strong> }
+          }
+        </span>
+        <button
+          pButton
+          label="Alle anzeigen"
+          class="p-button-text p-button-sm"
+          (click)="setView('all')">
+        </button>
+      </div>
+    }
   </p-card>
 
   <p-card class="table-card">

@@ -1,0 +1,80 @@
+<div class="stats-grid">
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'current'"
+    (click)="onViewClick('current')">
+    <div class="stat-content">
+      <i class="pi pi-clock stat-icon text-blue-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ currentLoansCount }}</div>
+        <div class="stat-label">Aktuelle Ausleihen</div>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'overdue'"
+    (click)="onViewClick('overdue')">
+    <div class="stat-content">
+      <i class="pi pi-exclamation-triangle stat-icon text-red-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ overdueCount }}</div>
+        <div class="stat-label">Überfällige Ausleihen</div>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'pending'"
+    (click)="onViewClick('pending')">
+    <div class="stat-content">
+      <i class="pi pi-hourglass stat-icon text-yellow-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ openRequestsCount }}</div>
+        <div class="stat-label">Offene Anfragen</div>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'confirmed'"
+    (click)="onViewClick('confirmed')">
+    <div class="stat-content">
+      <i class="pi pi-check-circle stat-icon text-green-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ confirmedNotPickedUpCount }}</div>
+        <div class="stat-label">Bestätigt, nicht abgeholt</div>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'future'"
+    (click)="onViewClick('future')">
+    <div class="stat-content">
+      <i class="pi pi-calendar-plus stat-icon text-purple-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ futureBookingsCount }}</div>
+        <div class="stat-label">Zukünftige Ausleihen</div>
+      </div>
+    </div>
+  </p-card>
+
+  <p-card
+    class="stat-card"
+    [class.active]="selectedView === 'all'"
+    (click)="onViewClick('all')">
+    <div class="stat-content">
+      <i class="pi pi-list stat-icon text-gray-500"></i>
+      <div class="stat-details">
+        <div class="stat-value">{{ totalCount }}</div>
+        <div class="stat-label">Alle Buchungen</div>
+      </div>
+    </div>
+  </p-card>
+</div>
+

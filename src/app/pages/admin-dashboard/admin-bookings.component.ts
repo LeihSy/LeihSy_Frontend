@@ -16,6 +16,7 @@ import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
 import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
+import { BookingStatsCardsComponent } from './components/booking-stats-cards.component';
 
 @Component({
   selector: 'app-admin-bookings',
@@ -32,7 +33,8 @@ import { BackButtonComponent } from '../../components/back-button/back-button.co
     TagModule,
     ToastModule,
     TooltipModule,
-    BackButtonComponent
+    BackButtonComponent,
+    BookingStatsCardsComponent
   ],
   providers: [MessageService],
   templateUrl: './admin-bookings.component.html',
@@ -40,8 +42,10 @@ import { BackButtonComponent } from '../../components/back-button/back-button.co
 })
 export class AdminBookingsComponent implements OnInit {
   bookings = signal<Booking[]>([]);
+  overdueBookings = signal<Booking[]>([]);
   searchQuery = signal<string>('');
   isLoading = signal<boolean>(true);
+  selectedView = signal<'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future'>('all');
 
   // Spalten-Definition für die Tabelle
   columns: ColumnDef[] = [
@@ -55,9 +59,58 @@ export class AdminBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
+  // Computed: Aktuelle Ausleihen (Status PICKED_UP)
+  currentLoans = computed(() => {
+    return this.bookings().filter(booking => booking.status === 'PICKED_UP');
+  });
+
+  // Computed: Offene Anfragen (Status PENDING)
+  openRequests = computed(() => {
+    return this.bookings().filter(booking => booking.status === 'PENDING');
+  });
+
+  // Computed: Bestätigte aber nicht abgeholte Ausleihen (Status CONFIRMED)
+  confirmedNotPickedUp = computed(() => {
+    return this.bookings().filter(booking => booking.status === 'CONFIRMED');
+  });
+
+  // Computed: Zukünftige Ausleihen (Abholung liegt in der Zukunft)
+  futureBookings = computed(() => {
+    const now = new Date();
+    return this.bookings().filter(booking => {
+      if (!booking.confirmedPickup && !booking.startDate) return false;
+      const pickupDate = new Date(booking.confirmedPickup || booking.startDate);
+      return pickupDate > now && (booking.status === 'CONFIRMED' || booking.status === 'PENDING');
+    });
+  });
+
+  // Computed: Gefilterte Buchungen basierend auf ausgewählter Ansicht und Suchquery
   filteredBookings = computed(() => {
+    let bookingsToFilter: Booking[] = [];
+
+    // Wähle die richtige Liste basierend auf der Ansicht
+    switch (this.selectedView()) {
+      case 'current':
+        bookingsToFilter = this.currentLoans();
+        break;
+      case 'overdue':
+        bookingsToFilter = this.overdueBookings();
+        break;
+      case 'pending':
+        bookingsToFilter = this.openRequests();
+        break;
+      case 'confirmed':
+        bookingsToFilter = this.confirmedNotPickedUp();
+        break;
+      case 'future':
+        bookingsToFilter = this.futureBookings();
+        break;
+      default:
+        bookingsToFilter = this.bookings();
+    }
+
     const query = this.searchQuery().toLowerCase().trim();
-    const bookingsWithStatusLabel = this.bookings().map(booking => ({
+    const bookingsWithStatusLabel = bookingsToFilter.map(booking => ({
       ...booking,
       statusLabel: this.getStatusLabel(booking.status)
     }));
@@ -83,6 +136,7 @@ export class AdminBookingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAllBookings();
+    this.loadOverdueBookings();
   }
 
   private loadAllBookings(): void {
@@ -103,6 +157,32 @@ export class AdminBookingsComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  private loadOverdueBookings(): void {
+    this.bookingService.getOverdueBookings().subscribe({
+      next: (bookings) => {
+        this.overdueBookings.set(bookings);
+      },
+      error: (error) => {
+        console.error('Fehler beim Laden der überfälligen Buchungen:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Die überfälligen Buchungen konnten nicht geladen werden.'
+        });
+      }
+    });
+  }
+
+  refreshData(): void {
+    this.loadAllBookings();
+    this.loadOverdueBookings();
+  }
+
+  setView(view: 'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future'): void {
+    this.selectedView.set(view);
+    this.searchQuery.set(''); // Reset search when changing view
   }
 
   getStatusSeverity(status: BookingStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {

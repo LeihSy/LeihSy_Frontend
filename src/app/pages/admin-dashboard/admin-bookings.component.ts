@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -34,7 +34,8 @@ import { BookingStatsCardsComponent } from './components/booking-stats-cards.com
     ToastModule,
     TooltipModule,
     BackButtonComponent,
-    BookingStatsCardsComponent
+    BookingStatsCardsComponent,
+    RouterLink
   ],
   providers: [MessageService],
   templateUrl: './admin-bookings.component.html',
@@ -47,9 +48,8 @@ export class AdminBookingsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   selectedView = signal<'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future'>('all');
 
-  // Spalten-Definition für die Tabelle
   columns: ColumnDef[] = [
-    { field: 'userName', header: 'Benutzer', sortable: true },
+    { field: 'userName', header: 'Ausleiher', sortable: true },
     { field: 'productName', header: 'Produkt', sortable: true },
     { field: 'itemInvNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
     { field: 'lenderName', header: 'Verleiher', sortable: true },
@@ -59,22 +59,18 @@ export class AdminBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
-  // Computed: Aktuelle Ausleihen (Status PICKED_UP)
   currentLoans = computed(() => {
     return this.bookings().filter(booking => booking.status === 'PICKED_UP');
   });
 
-  // Computed: Offene Anfragen (Status PENDING)
   openRequests = computed(() => {
     return this.bookings().filter(booking => booking.status === 'PENDING');
   });
 
-  // Computed: Bestätigte aber nicht abgeholte Ausleihen (Status CONFIRMED)
   confirmedNotPickedUp = computed(() => {
     return this.bookings().filter(booking => booking.status === 'CONFIRMED');
   });
 
-  // Computed: Zukünftige Ausleihen (Abholung liegt in der Zukunft)
   futureBookings = computed(() => {
     const now = new Date();
     return this.bookings().filter(booking => {
@@ -84,11 +80,9 @@ export class AdminBookingsComponent implements OnInit {
     });
   });
 
-  // Computed: Gefilterte Buchungen basierend auf ausgewählter Ansicht und Suchquery
   filteredBookings = computed(() => {
     let bookingsToFilter: Booking[] = [];
 
-    // Wähle die richtige Liste basierend auf der Ansicht
     switch (this.selectedView()) {
       case 'current':
         bookingsToFilter = this.currentLoans();
@@ -185,7 +179,11 @@ export class AdminBookingsComponent implements OnInit {
     this.searchQuery.set(''); // Reset search when changing view
   }
 
-  getStatusSeverity(status: BookingStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+  getStatusSeverity(status: BookingStatus | null): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+    if (status === null || status === undefined) {
+      return 'secondary';
+    }
+
     switch (status) {
       case 'CONFIRMED':
         return 'success';
@@ -206,7 +204,11 @@ export class AdminBookingsComponent implements OnInit {
     }
   }
 
-  getStatusLabel(status: BookingStatus): string {
+  getStatusLabel(status: BookingStatus | null): string {
+    if (status === null || status === undefined) {
+      return 'Storniert';
+    }
+
     switch (status) {
       case 'PENDING':
         return 'Ausstehend';

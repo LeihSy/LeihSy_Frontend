@@ -20,8 +20,8 @@ import { ButtonModule } from 'primeng/button';
     </button>
   `,
   styles: [`
-    :host ::ng-deep {
-      .p-button-text {
+    :host {
+      ::ng-deep .p-button-text {
         color: #000080 !important;
         font-weight: 500;
 

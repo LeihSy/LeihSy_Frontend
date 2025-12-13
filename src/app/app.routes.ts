@@ -125,6 +125,14 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/bookings/statistics',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-booking-statistics.component')
+        .then(m => m.AdminBookingStatisticsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'admin/bookings/:id',
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-booking-detail.component')

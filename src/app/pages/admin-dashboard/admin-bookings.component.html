@@ -11,18 +11,28 @@
           Übersicht über alle Buchungen und Ausleihen im System
         </p>
       </div>
-      <button
-        pButton
-        icon="pi pi-refresh"
-        label="Aktualisieren"
-        class="p-button-outlined"
-        (click)="refreshData()"
-        pTooltip="Daten neu laden">
-      </button>
+      <div class="header-actions">
+        <button
+          pButton
+          icon="pi pi-chart-bar"
+          label="Statistiken"
+          class="p-button-outlined"
+          routerLink="/admin/bookings/statistics"
+          pTooltip="Zu den Statistiken">
+        </button>
+        <button
+          pButton
+          icon="pi pi-refresh"
+          label="Aktualisieren"
+          class="p-button-outlined"
+          (click)="refreshData()"
+          pTooltip="Daten neu laden">
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Statistik-Karten -->
+
   <app-booking-stats-cards
     [currentLoansCount]="currentLoans().length"
     [overdueCount]="overdueBookings().length"

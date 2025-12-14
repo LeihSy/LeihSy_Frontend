@@ -38,8 +38,6 @@ import { TableComponent, ColumnDef } from '../../shared/table/table.component';
   providers: [ConfirmationService, MessageService]
 })
 export class AdminItemInstanceComponent implements OnInit {
-
-  // Spalten-Definition für die Item-Tabelle
   itemColumns: ColumnDef[] = [
     { field: 'invNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
     { field: 'owner', header: 'Besitzer', sortable: true },
@@ -54,6 +52,20 @@ export class AdminItemInstanceComponent implements OnInit {
   expandedProductIds = signal<Set<number>>(new Set());
   userIdToNameMap = signal<Map<number, string>>(new Map());
 
+  constructor(
+    private readonly router: Router,
+    private readonly itemService: ItemService,
+    private readonly productService: ProductService,
+    private readonly confirmationService: ConfirmationService,
+    private readonly messageService: MessageService
+  ) {}
+
+
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadItems();
+  }
+
   productsWithItems = computed(() => {
     const products = this.allProducts();
     const items = this.allItems();
@@ -61,7 +73,6 @@ export class AdminItemInstanceComponent implements OnInit {
 
     let filtered = products.map(product => {
       const productItems = items.filter(item => item.productId === product.id);
-      // Füge zusätzliche Felder für die Tabelle hinzu
       const itemsWithDisplayFields = productItems.map(item => ({
         ...item,
         lenderDisplay: this.getLenderDisplay(item.lenderId),
@@ -86,19 +97,6 @@ export class AdminItemInstanceComponent implements OnInit {
     return filtered;
   });
 
-  constructor(
-    private readonly router: Router,
-    private readonly itemService: ItemService,
-    private readonly productService: ProductService,
-    private readonly confirmationService: ConfirmationService,
-    private readonly messageService: MessageService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadProducts();
-    this.loadItems();
-  }
-
   loadProducts(): void {
     this.isLoading.set(true);
 
@@ -108,23 +106,14 @@ export class AdminItemInstanceComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Fehler beim Laden der Produkte:', err);
 
-        this.productService.getProducts().subscribe({
-          next: (products) => {
-            this.allProducts.set(products);
-            this.isLoading.set(false);
-          },
-          error: (fallbackErr) => {
-            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Fehler beim Laden der Produkte.'
-            });
-            this.isLoading.set(false);
-          }
+        console.error('Fehler beim Laden der Produkte (Fallback):', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Fehler beim Laden der Produkte.'
         });
+        this.isLoading.set(false);
       }
     });
   }
@@ -151,18 +140,9 @@ export class AdminItemInstanceComponent implements OnInit {
   getLenderDisplay(lenderId: number | undefined): string {
     if (!lenderId) return 'N/A';
     const userName = this.userIdToNameMap().get(lenderId);
-    return userName ? `${userName} (ID: ${lenderId})` : lenderId.toString();
+    return userName ? `${userName}` : lenderId.toString();
   }
 
-  addItemForProduct(product: Product): void {
-    this.router.navigate(['/admin/items/new'], {
-      queryParams: { productId: product.id }
-    });
-  }
-
-  editItem(item: Item): void {
-    this.router.navigate(['/admin/items', item.id, 'edit']);
-  }
 
   deleteItem(item: Item): void {
     this.confirmationService.confirm({
@@ -214,5 +194,16 @@ export class AdminItemInstanceComponent implements OnInit {
   isProductExpanded(productId: number): boolean {
     return this.expandedProductIds().has(productId);
   }
+
+  addItemForProduct(product: Product): void {
+    this.router.navigate(['/admin/items/new'], {
+      queryParams: { productId: product.id }
+    });
+  }
+
+  editItem(item: Item): void {
+    this.router.navigate(['/admin/items', item.id, 'edit']);
+  }
+
 }
 

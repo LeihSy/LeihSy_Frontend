@@ -3,9 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
-import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
+import { BackButtonComponent } from '../../components/back-button/back-button.component';
 import { ItemFormComponent } from './components/item-form.component';
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
@@ -20,7 +20,7 @@ import { User } from '../../models/user.model';
   imports: [
     CommonModule,
     ToastModule,
-    ButtonModule,
+    BackButtonComponent,
     ItemFormComponent
   ],
   providers: [MessageService],
@@ -28,13 +28,7 @@ import { User } from '../../models/user.model';
     <div class="p-8 max-w-7xl mx-auto">
       <p-toast position="bottom-right"></p-toast>
 
-      <div class="mb-6">
-        <button pButton
-                icon="pi pi-arrow-left"
-                label="Zurück zur Übersicht"
-                class="p-button-text"
-                (click)="goBack()"></button>
-      </div>
+      <app-back-button (backClick)="goBack()"></app-back-button>
 
       <app-item-form
         [item]="item()"
@@ -45,7 +39,6 @@ import { User } from '../../models/user.model';
         (formSubmit)="handleFormSubmit($event)"
         (formCancel)="goBack()"
         (inventoryPrefixChange)="handleInventoryPrefixChange($event)"
-        (quantityChange)="handleQuantityChange($event)"
         (ownerIdChange)="handleOwnerIdChange($event)"
         (ownerNameChange)="handleOwnerNameChange($event)"
         (lenderIdChange)="handleLenderIdChange($event)"
@@ -244,9 +237,6 @@ export class AdminItemFormPageComponent implements OnInit {
     }
   }
 
-  handleQuantityChange(quantity: number): void {
-    // Implement if needed
-  }
 
   handleOwnerIdChange(ownerId: number): void {
     this.userService.getUserById(ownerId).subscribe({

@@ -48,11 +48,7 @@ export class ItemService {
     return this.http.get<Item[]>(`${this.apiUrl}/available`);
   }
 
-  /**
-   * GET /api/items/deleted
-   * Gibt alle gelöschten (softdeleted) Items zurück
-   * Wird verwendet für Inventarnummern-Validierung
-   */
+  // GET /api/items/deleted - Gibt nur gelöschte Items zurück
   getDeletedItems(): Observable<Item[]> {
     return this.http.get<Item[]>(`${this.apiUrl}/deleted`);
   }

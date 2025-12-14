@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { Location } from '../../models/location.model';
-import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
+import { TableComponent, ColumnDef } from '../../shared/table/table.component';
 
 @Component({
   selector: 'app-item-detail',
@@ -24,7 +24,7 @@ import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.compon
     CardModule,
     ButtonModule,
     TagModule,
-    TabelleComponent,
+    TableComponent,
     ToastModule
   ],
   templateUrl: './item-detail.component.html',

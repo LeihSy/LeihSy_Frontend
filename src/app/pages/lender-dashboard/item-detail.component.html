@@ -166,7 +166,7 @@
             </h2>
 
             @if (loanHistory().length > 0) {
-              <app-tabelle
+              <app-table
                 [columns]="loanHistoryColumns"
                 [data]="loanHistory()"
                 [showActions]="false"
@@ -174,7 +174,7 @@
                 [paginator]="true"
                 [scrollable]="false"
                 emptyMessage="Noch keine Ausleihvorgänge vorhanden">
-              </app-tabelle>
+              </app-table>
             } @else {
               <div class="text-center py-8 text-gray-500">
                 <i class="pi pi-info-circle text-3xl mb-2"></i>

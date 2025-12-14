@@ -108,7 +108,7 @@
         </p>
       </div>
     } @else {
-      <app-tabelle
+      <app-table
         [columns]="columns"
         [data]="filteredBookings()"
         [loading]="isLoading()"
@@ -119,7 +119,7 @@
         [rowClickable]="true"
         (rowSelect)="onBookingRowClick($event)"
         emptyMessage="Keine Buchungen vorhanden">
-      </app-tabelle>
+      </app-table>
     }
   </p-card>
 </div>

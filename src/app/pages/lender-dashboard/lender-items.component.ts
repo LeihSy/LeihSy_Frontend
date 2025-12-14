@@ -19,7 +19,7 @@ import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
 import { Location } from '../../models/location.model';
-import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
+import { TableComponent, ColumnDef } from '../../shared/table/table.component';
 
 interface ProductWithItems {
   product: Product;
@@ -36,7 +36,7 @@ interface ProductWithItems {
     FormsModule,
     RouterModule,
     CardModule,
-    TabelleComponent,
+    TableComponent,
     TagModule,
     IconFieldModule,
     InputIconModule,

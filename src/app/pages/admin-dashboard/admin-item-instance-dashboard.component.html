@@ -65,7 +65,7 @@
               }
 
               @if (productData.items.length > 0) {
-                <app-tabelle
+                <app-table
                   [columns]="itemColumns"
                   [data]="productData.items"
                   [showActions]="true"
@@ -75,7 +75,7 @@
                   (edit)="editItem($event)"
                   (remove)="deleteItem($event)"
                   emptyMessage="Keine Instanzen vorhanden">
-                </app-tabelle>
+                </app-table>
               } @else {
                 <div class="text-center text-gray-500 py-4 bg-white rounded border">
                   <p class="text-sm">Noch keine Instanzen für dieses Produkt angelegt.</p>

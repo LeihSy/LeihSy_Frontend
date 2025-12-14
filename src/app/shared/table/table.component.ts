@@ -16,13 +16,13 @@ export interface ColumnDef {
 }
 
 @Component({
-  selector: 'app-tabelle',
+  selector: 'app-table',
   standalone: true,
   imports: [CommonModule, TableModule, ButtonModule, TooltipModule],
-  templateUrl: './tabelle.component.html',
-  styleUrls: ['./tabelle.component.scss']
+  templateUrl: './table.component.html',
+  styleUrls: ['./table.component.scss']
 })
-export class TabelleComponent {
+export class TableComponent {
   @Input() columns: ColumnDef[] = [];
   @Input() data: any[] = [];
   @Input() loading = false;

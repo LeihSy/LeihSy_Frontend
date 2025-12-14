@@ -25,7 +25,7 @@
       </p-iconfield>
     </div>
 
-    <app-tabelle
+    <app-table
       [columns]="columns"
       [data]="filteredProducts()"
       [loading]="isLoading()"
@@ -37,7 +37,7 @@
       (edit)="editProduct($event)"
       (remove)="deleteProduct($event)"
       emptyMessage="Keine Produkte vorhanden">
-    </app-tabelle>
+    </app-table>
 
   </p-card>
 </div>

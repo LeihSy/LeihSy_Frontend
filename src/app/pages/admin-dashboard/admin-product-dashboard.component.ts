@@ -13,7 +13,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
-import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
+import { TableComponent, ColumnDef } from '../../shared/table/table.component';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -23,7 +23,7 @@ import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.compon
     CardModule,
     ButtonModule,
     InputTextModule,
-    TabelleComponent,
+    TableComponent,
     IconFieldModule,
     InputIconModule,
     ConfirmDialogModule,

@@ -123,7 +123,7 @@
           </div>
 
           <div class="p-4">
-            <app-tabelle
+            <app-table
               [columns]="itemColumns"
               [data]="productData.items"
               [showActions]="false"
@@ -133,7 +133,7 @@
               [rowClickable]="true"
               (rowSelect)="onItemRowClick($event)"
               emptyMessage="Keine Gegenstände vorhanden">
-            </app-tabelle>
+            </app-table>
           </div>
 
         </div>

@@ -15,7 +15,7 @@ import { forkJoin } from 'rxjs';
 
 import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
-import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.component';
+import { TableComponent, ColumnDef } from '../../shared/table/table.component';
 
 @Component({
   selector: 'app-user-bookings',
@@ -24,7 +24,7 @@ import { TabelleComponent, ColumnDef } from '../../shared/tabelle/tabelle.compon
     CommonModule,
     FormsModule,
     CardModule,
-    TabelleComponent,
+    TableComponent,
     ButtonModule,
     InputTextModule,
     IconFieldModule,

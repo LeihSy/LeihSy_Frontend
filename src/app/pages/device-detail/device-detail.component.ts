@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule, getLocaleCurrencyCode, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
@@ -17,6 +17,9 @@ import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { PrimeNG } from 'primeng/config';
+
+// import Cart Service
+import { CartService } from '../../services/cart.service';
 
 // Device Interface (für UI-Kompatibilität)
 interface Device {
@@ -42,7 +45,7 @@ interface Device {
     accessories?: string[];
   };
   loanConditions: {
-    loanPeriod: string;
+    maxLendingDays: string;
     extensions: string;
     notes: string;
   };
@@ -73,6 +76,7 @@ export class DeviceDetailPageComponent implements OnInit {
   private location = inject(Location);
   private productService = inject(ProductService);
   private primeng = inject(PrimeNG);
+  private cartService = inject(CartService);
 
   // --- State ---
   public device: Device | undefined;
@@ -82,16 +86,28 @@ export class DeviceDetailPageComponent implements OnInit {
   public flandernstrasseData: Device['campusAvailability'][0] | undefined;
 
   public selectedCampus: string = '';
-  public pickupDate: Date | undefined;
+  public pickupDate: Date = new Date();
+  public returnDate: Date = new Date();
   public pickupTime: string = '';
+  public addedToCart = false;
 
   // --- UI Configuration ---
-  public minDate: Date;
+  public earliestPickupDate: Date;
+  public latestPickupDate: Date;
+
+  public earliestReturnDate: Date;
+  public latestReturnDate: Date;
 
   constructor() {
-    // Mindestdatum auf heute setzen
-    this.minDate = new Date();
-    this.minDate.setHours(0, 0, 0, 0);
+
+    // Daten auf heute setzen
+    const today = this.setHoursToZero(new Date());
+
+    this.earliestPickupDate = today;  // Abholung frühestens heute
+    this.earliestReturnDate = this.addDays(today, 1); // Rückgabe frühestens morgen
+
+    this.latestPickupDate = this.addDays(today, 180); // Maximal halbes Jahr im Voraus ausleihbar
+    this.latestReturnDate = this.addDays(today, 180);
 
     // Deutsche Lokalisierung für den DatePicker
     this.setupGermanLocale();
@@ -167,7 +183,7 @@ export class DeviceDetailPageComponent implements OnInit {
 
       // Ausleihbedingungen
       loanConditions: {
-        loanPeriod: `${product.expiryDate} Tage`,
+        maxLendingDays: `${product.expiryDate} Tage`,
         extensions: 'Maximal 2 Verlängerungen möglich',
         notes: 'Rechtzeitige Rückgabe erforderlich'
       },
@@ -232,4 +248,43 @@ export class DeviceDetailPageComponent implements OnInit {
       dateFormat: 'dd.mm.yy',
     });
   }
+
+  onAddToCart(): void {
+    if (!this.device || !this.pickupDate || !this.returnDate) return;
+
+    // Füge Item zu lokalem Warenkorb hinzu und überprüfe auf Erfolg
+    if(this.cartService.addItem(
+      this.device.id,
+      this.pickupDate.toISOString(),
+      this.returnDate.toISOString()
+    )) {
+      this.addedToCart = true;
+    } else {
+      this.addedToCart = false;
+    }
+  }
+
+  onSelectPickupDate(date: Date, device: Device) {
+    if (!date) {
+      return;
+    }
+
+    const pickupDate = this.setHoursToZero(date);
+    this.earliestReturnDate = this.addDays(pickupDate, 1); // Rückgabe muss frühestens einen Tag nach nach Ausleihe sein
+    this.latestReturnDate = this.addDays(pickupDate, parseInt(device.loanConditions.maxLendingDays));  // Rückgabe darf spätestens zum Ende des maximalen Ausleihzeitraums sein
+    this.returnDate = this.latestReturnDate; // In Auswahlfenster Rückgabezeitpunkt automatisch auf spätestmögliches Datum setzen
+  }
+
+  private setHoursToZero(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
 }

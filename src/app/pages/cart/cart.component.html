@@ -98,7 +98,7 @@
           [ngClass]="{
             'bg-white hover:bg-gray-100': true
           }"
-          (click)="onBackToCatalogClick"
+          (click)="onBackToCatalogClick()"
         ></button>
         <button
           pButton
@@ -107,7 +107,7 @@
           [ngClass]="{
             'bg-[#253359] hover:bg-blue-900': true
           }"
-          (click)="onConfirmLendingClick"
+          (click)="onConfirmLendingClick()"
           [disabled]="!acceptedTerms"
         ></button>
       </div>

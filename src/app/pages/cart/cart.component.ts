@@ -92,11 +92,10 @@ export class CartPageComponent {
   public onConfirmLendingClick(): void {
     // Array von POST-Requests erstellen
     const bookingsToCreate = this.cartItemsFull.map(item => {
-
       const body = {
         itemId: item.productId,
-        pickupDate: item.pickupDate.toISOString(),
-        returnDate: item.returnDate.toISOString(),
+        startDate: item.pickupDate.toISOString(),
+        endDate: item.returnDate.toISOString(),
         message: ""
       };
 

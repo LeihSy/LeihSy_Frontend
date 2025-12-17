@@ -1,86 +1,51 @@
-<div class="bookings-container">
+<div class="bookings-container p-8 max-w-7xl mx-auto">
   <p-toast position="bottom-right"></p-toast>
 
-  <div class="header-section">
-    <div class="header-content">
-      <div>
-        <h1 class="header-title">Meine Buchungen</h1>
-        <p class="header-subtitle">
-          Übersicht über alle Ihre Buchungen und Ausleihen
-        </p>
-      </div>
-    </div>
-    <div class="stats-badge">
-      <i class="pi pi-chart-line"></i>
-      <span>{{ filteredBookings().length }} Buchung(en)</span>
-    </div>
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Meine Buchungen</h1>
+    <p class="text-gray-600">
+      Übersicht über alle Ihre Buchungen und Ausleihen
+    </p>
   </div>
 
-  <p-card class="search-card">
-    <div class="search-wrapper">
-      <p-iconfield iconPosition="left" class="search-field">
-        <p-inputicon styleClass="pi pi-search"></p-inputicon>
-        <input
-          type="text"
-          pInputText
-          placeholder="Suche nach Produkt, Inventarnummer, Verleiher oder Status..."
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="searchQuery.set($event)"
-          class="search-input" />
-      </p-iconfield>
-      @if (searchQuery()) {
-        <button
-          pButton
-          icon="pi pi-times"
-          class="p-button-text p-button-rounded"
-          (click)="searchQuery.set('')"
-          pTooltip="Suche zurücksetzen"></button>
-      }
-    </div>
-  </p-card>
+  <app-user-stats-cards [stats]="statsCards()"></app-user-stats-cards>
 
-  <p-card class="table-card">
-    @if (isLoading()) {
-      <div class="loading-state">
-        <i class="pi pi-spin pi-spinner loading-spinner"></i>
-        <p class="loading-text">Lade Buchungen...</p>
-      </div>
-    } @else {
-      @if (filteredBookings().length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">
-            <i class="pi pi-inbox"></i>
-          </div>
-          <h3 class="empty-title">
-            @if (searchQuery()) {
-              Keine Ergebnisse gefunden
-            } @else {
-              Noch keine Buchungen
-            }
-          </h3>
-          <p class="empty-message">
-            @if (searchQuery()) {
-              Ihre Suche nach "{{ searchQuery() }}" ergab keine Treffer.
-            } @else {
-              Sie haben aktuell keine Buchungen. Starten Sie jetzt mit Ihrer ersten Ausleihe!
-            }
-          </p>
-        </div>
-      } @else {
-        <app-table
-          [columns]="columns"
-          [data]="filteredBookings()"
-          [loading]="isLoading()"
-          [showActions]="false"
-          [rows]="10"
-          [paginator]="true"
-          [scrollable]="false"
-          [rowClickable]="true"
-          (rowSelect)="onBookingRowClick($event)"
-          emptyMessage="Keine Buchungen vorhanden">
-        </app-table>
-      }
-    }
-  </p-card>
+  <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+    <app-search-bar
+      [placeholder]="'Suche nach Produkt, Inventarnummer, Verleiher oder Status...'"
+      (valueChange)="onSearchChange($event)">
+    </app-search-bar>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <p class="mt-4 text-gray-600">Lade Buchungen...</p>
+    </div>
+  }
+
+  @if (!isLoading() && filteredBookings().length === 0) {
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+      <p class="text-gray-600">Keine Buchungen gefunden</p>
+    </div>
+  }
+
+  @if (!isLoading() && filteredBookings().length > 0) {
+    <div class="bg-white border border-gray-200 rounded-lg">
+      <app-table
+        [columns]="columns"
+        [data]="filteredBookings()"
+        [loading]="isLoading()"
+        [showActions]="false"
+        [rows]="10"
+        [paginator]="true"
+        [scrollable]="false"
+        [rowClickable]="true"
+        (rowSelect)="viewBookingDetail($event)"
+        emptyMessage="Keine Buchungen vorhanden">
+      </app-table>
+    </div>
+  }
 </div>
 

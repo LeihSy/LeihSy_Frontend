@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,11 +11,12 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
-import { forkJoin } from 'rxjs';
 
-import { Booking, BookingStatus } from '../../models/booking.model';
-import { BookingService } from '../../services/booking.service';
 import { TableComponent, ColumnDef } from '../../shared/table/table.component';
+import { UserBookingsService } from './services/user-bookings.service';
+import { UserStatsCardsComponent, UserStatCard } from './components/user-stats-cards.component';
+import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
+import { Booking } from '../../models/booking.model';
 
 @Component({
   selector: 'app-user-bookings',
@@ -31,16 +32,16 @@ import { TableComponent, ColumnDef } from '../../shared/table/table.component';
     InputIconModule,
     TagModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    UserStatsCardsComponent,
+    SearchBarComponent
   ],
-  providers: [MessageService],
+  providers: [MessageService, UserBookingsService],
   templateUrl: './user-bookings.component.html',
   styleUrls: ['./user-bookings.component.scss']
 })
 export class UserBookingsComponent implements OnInit {
-  bookings = signal<Booking[]>([]);
-  searchQuery = signal<string>('');
-  isLoading = signal<boolean>(true);
+  private userBookingsService = inject(UserBookingsService);
 
   // Spalten-Definition für die Tabelle
   columns: ColumnDef[] = [
@@ -53,177 +54,46 @@ export class UserBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
-  filteredBookings = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    const bookingsWithStatusLabel = this.bookings().map(booking => ({
-      ...booking,
-      statusLabel: this.getStatusLabel(booking.status)
-    }));
+  // Use service signals
+  isLoading = this.userBookingsService.isLoading;
+  filteredBookings = this.userBookingsService.filteredBookings;
 
-    if (!query) {
-      return bookingsWithStatusLabel;
+  // Computed stats cards
+  statsCards = computed<UserStatCard[]>(() => [
+    {
+      label: 'Gesamt Buchungen',
+      value: this.userBookingsService.totalBookings(),
+      icon: 'pi-calendar',
+      color: 'text-[#000080]'
+    },
+    {
+      label: 'Aktive Buchungen',
+      value: this.userBookingsService.activeBookings(),
+      icon: 'pi-clock',
+      color: 'text-blue-600'
+    },
+    {
+      label: 'Abgeschlossen',
+      value: this.userBookingsService.completedBookings(),
+      icon: 'pi-check-circle',
+      color: 'text-green-600'
     }
-
-    return bookingsWithStatusLabel.filter(booking =>
-      booking.productName.toLowerCase().includes(query) ||
-      booking.itemInvNumber.toLowerCase().includes(query) ||
-      booking.lenderName.toLowerCase().includes(query) ||
-      booking.statusLabel.toLowerCase().includes(query)
-    );
-  });
-
-  constructor(
-    private readonly bookingService: BookingService,
-    private readonly messageService: MessageService,
-    private readonly router: Router
-  ) {}
+  ]);
 
   ngOnInit(): void {
-    this.loadUserBookings();
+    this.userBookingsService.loadUserBookings();
   }
 
-  /**
-   * Lädt die Buchungen des aktuellen Users (aktive + gelöschte)
-   */
-  private loadUserBookings(): void {
-    this.isLoading.set(true);
-
-    // Lade sowohl aktive als auch gelöschte Buchungen parallel
-    forkJoin({
-      activeBookings: this.bookingService.getMyBookings(),
-      deletedBookings: this.bookingService.getMyDeletedBookings()
-    }).subscribe({
-      next: ({ activeBookings, deletedBookings }) => {
-        // Setze bei allen gelöschten Buchungen den Status explizit auf CANCELLED
-        const deletedWithStatus = deletedBookings.map(booking => ({
-          ...booking,
-          status: 'CANCELLED' as BookingStatus
-        }));
-
-        // Kombiniere beide Arrays
-        const allBookings = [...activeBookings, ...deletedWithStatus];
-        this.bookings.set(allBookings);
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Fehler beim Laden der Buchungen:', error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Die Buchungen konnten nicht geladen werden.'
-        });
-        this.isLoading.set(false);
-      }
-    });
+  onSearchChange(value: string): void {
+    this.userBookingsService.updateSearchQuery(value);
   }
 
-
-  /**
-   * Gibt das Severity-Level für den Status-Tag zurück
-   */
-  getStatusSeverity(status: BookingStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
-    switch (status) {
-      case 'CONFIRMED':
-        return 'success';
-      case 'PICKED_UP':
-        return 'info';
-      case 'RETURNED':
-        return 'success';
-      case 'PENDING':
-        return 'warn';
-      case 'REJECTED':
-        return 'danger';
-      case 'EXPIRED':
-        return 'danger';
-      case 'CANCELLED':
-        return 'secondary';
-      default:
-        return 'contrast';
-    }
+  viewBookingDetail(booking: Booking): void {
+    this.userBookingsService.navigateToBookingDetail(booking.id);
   }
 
-  /**
-   * Gibt das deutsche Label für den Status zurück
-   */
-  getStatusLabel(status: BookingStatus): string {
-    switch (status) {
-      case 'PENDING':
-        return 'Ausstehend';
-      case 'CONFIRMED':
-        return 'Bestätigt';
-      case 'PICKED_UP':
-        return 'Ausgeliehen';
-      case 'RETURNED':
-        return 'Zurückgegeben';
-      case 'REJECTED':
-        return 'Abgelehnt';
-      case 'EXPIRED':
-        return 'Abgelaufen';
-      case 'CANCELLED':
-        return 'Storniert';
-      default:
-        return status;
-    }
-  }
-
-  /**
-   * Gibt das passende Icon für den Status zurück
-   */
-  getStatusIcon(status: BookingStatus): string {
-    switch (status) {
-      case 'PENDING':
-        return 'pi pi-clock';
-      case 'CONFIRMED':
-        return 'pi pi-check-circle';
-      case 'PICKED_UP':
-        return 'pi pi-shopping-bag';
-      case 'RETURNED':
-        return 'pi pi-check';
-      case 'REJECTED':
-        return 'pi pi-times-circle';
-      case 'EXPIRED':
-        return 'pi pi-exclamation-triangle';
-      case 'CANCELLED':
-        return 'pi pi-ban';
-      default:
-        return 'pi pi-info-circle';
-    }
-  }
-
-  /**
-   * Formatiert ein Datum in ein kurzes Format (DD.MM.YYYY)
-   */
-  formatDateShort(dateString: string): string {
-    if (!dateString) return '-';
-
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  }
-
-  /**
-   * Formatiert ein Datum mit Uhrzeit (DD.MM.YYYY HH:MM)
-   */
-  formatDateTimeShort(dateString: string): string {
-    if (!dateString) return '-';
-
-    const date = new Date(dateString);
-    return date.toLocaleString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  /**
-   * Navigiert zur Detail-Seite der ausgewählten Buchung
-   */
-  onBookingRowClick(booking: Booking): void {
-    this.router.navigate(['/user-dashboard/bookings', booking.id]);
+  getStatusSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+    return this.userBookingsService.getStatusSeverity(status as any);
   }
 }
+

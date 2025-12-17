@@ -16,7 +16,9 @@ import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
-import { TableComponent, ColumnDef } from '../../shared/table/table.component';
+import { ColumnDef } from '../../shared/table/table.component';
+import { ProductListItemComponent } from './components/product-list-item/product-list-item.component';
+import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-admin-item-instance',
@@ -26,12 +28,13 @@ import { TableComponent, ColumnDef } from '../../shared/table/table.component';
     CardModule,
     ButtonModule,
     InputTextModule,
-    TableComponent,
     IconFieldModule,
     InputIconModule,
     ConfirmDialogModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    ProductListItemComponent,
+    SearchBarComponent
   ],
   templateUrl: './admin-item-instance-dashboard.component.html',
   styleUrls: ['./admin-item-instance-dashboard.component.scss'],

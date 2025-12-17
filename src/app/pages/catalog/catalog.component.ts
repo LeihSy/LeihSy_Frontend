@@ -17,28 +17,11 @@ import { BadgeModule } from 'primeng/badge';
 // Services & Models
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
-import { Location } from '../../models/location.model';
 
-// Pipe
-import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
+// Components
+import { CatalogSearchFiltersComponent } from './components/catalog-search-filters.component';
+import { DeviceCardComponent, Device } from '../../shared/device-card/device-card.component';
 
-// Device Interface (für UI)
-interface Device {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  availability: {
-    available: number;
-    total: number;
-  };
-  loanConditions: {
-    loanPeriod: string;
-  };
-  location: string;
-  availableItems: number;
-  imageUrl: string | null;  // NEU: Bild-URL
-}
 
 @Component({
   selector: 'app-catalog-page',
@@ -55,7 +38,8 @@ interface Device {
     IconFieldModule,
     InputIconModule,
     BadgeModule,
-    DeviceIconPipe
+    CatalogSearchFiltersComponent,
+    DeviceCardComponent
   ],
   templateUrl: './catalog.component.html',
 })

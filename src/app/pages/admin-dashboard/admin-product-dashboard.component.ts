@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { TableComponent, ColumnDef } from '../../shared/table/table.component';
+import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,7 +28,8 @@ import { TableComponent, ColumnDef } from '../../shared/table/table.component';
     IconFieldModule,
     InputIconModule,
     ConfirmDialogModule,
-    ToastModule
+    ToastModule,
+    SearchBarComponent
   ],
   templateUrl: './admin-product-dashboard.component.html',
   styleUrls: ['./admin-product-dashboard.component.scss'],

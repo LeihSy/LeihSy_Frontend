@@ -13,6 +13,8 @@ import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
 import { BackButtonComponent } from '../../components/back-button/back-button.component';
+import { BookingHeaderComponent } from './components/booking-header/booking-header.component';
+import { InfoCardComponent, InfoItem } from '../../shared/info-card/info-card.component';
 
 interface TimelineEvent {
   status: string;
@@ -33,7 +35,9 @@ interface TimelineEvent {
     DividerModule,
     TimelineModule,
     ToastModule,
-    BackButtonComponent
+    BackButtonComponent,
+    BookingHeaderComponent,
+    InfoCardComponent
   ],
   templateUrl: './admin-booking-detail.component.html',
   styleUrls: ['./admin-booking-detail.component.scss'],
@@ -219,6 +223,47 @@ export class AdminBookingDetailComponent implements OnInit {
       month: '2-digit',
       year: 'numeric'
     });
+  }
+
+  getUserInfoItems(): InfoItem[] {
+    const booking = this.booking();
+    if (!booking) return [];
+
+    return [
+      { icon: 'pi-user', label: 'Benutzer', value: booking.userName },
+      { icon: 'pi-id-card', label: 'Benutzer-ID', value: `#${booking.userId}` }
+    ];
+  }
+
+  getLoanPeriodInfoItems(): InfoItem[] {
+    const booking = this.booking();
+    if (!booking) return [];
+
+    return [
+      { icon: 'pi-calendar-plus', label: 'Geplante Abholung', value: this.formatDate(booking.startDate) },
+      { icon: 'pi-calendar-minus', label: 'Geplante Rückgabe', value: this.formatDate(booking.endDate) }
+    ];
+  }
+
+  getLenderInfoItems(): InfoItem[] {
+    const booking = this.booking();
+    if (!booking) return [];
+
+    return [
+      { icon: 'pi-user', label: 'Name', value: booking.lenderName },
+      { icon: 'pi-id-card', label: 'Verleiher-ID', value: `#${booking.lenderId}` }
+    ];
+  }
+
+  getItemInfoItems(): InfoItem[] {
+    const booking = this.booking();
+    if (!booking) return [];
+
+    return [
+      { icon: 'pi-box', label: 'Produkt', value: booking.productName },
+      { icon: 'pi-hashtag', label: 'Inventarnummer', value: booking.itemInvNumber },
+      { icon: 'pi-tag', label: 'Produkt-ID', value: `#${booking.productId}` }
+    ];
   }
 
   goBack(): void {

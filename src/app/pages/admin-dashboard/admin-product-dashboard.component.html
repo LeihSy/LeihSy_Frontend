@@ -17,12 +17,11 @@
   <p-card header="Vorhandene Produkte">
 
     <div class="mb-4">
-      <p-iconfield iconPosition="left">
-        <p-inputicon styleClass="pi pi-search"></p-inputicon>
-        <input type="text" pInputText placeholder="Suche nach Name, Beschreibung, Kategorie..."
-               (input)="onSearchChange($any($event.target).value)"
-               class="w-full" />
-      </p-iconfield>
+      <app-search-bar
+        [placeholder]="'Suche nach Name, Beschreibung, Kategorie...'"
+        [(value)]="searchQuery"
+        (valueChange)="onSearchChange($event)">
+      </app-search-bar>
     </div>
 
     <app-table

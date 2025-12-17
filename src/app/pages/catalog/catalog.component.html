@@ -1,156 +1,32 @@
 <!-- Hauptcontainer für die Medienkatalog-Ansicht -->
 <div class="container mx-auto px-4 py-8 max-w-6xl">
-  <!-- Kopfbereich mit Titel, Beschreibung und Such-/Filterleiste -->
-  <div class="mb-8">
-    <h1 class="mb-2 text-3xl text-[#253359] font-semibold">Medienkatalog durchsuchen</h1>
-    <p class="text-sm text-gray-600 mb-6">
-      Nutzen Sie nach Stichworten, Geräten oder Verleihmedien
-    </p>
 
-    <!-- Freitextsuche + Datumsbereich -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <!-- Suchfeld nach Stichworten -->
-      <p-iconField iconPosition="left" class="flex-1">
-        <p-inputIcon class="pi pi-search text-gray-400"></p-inputIcon>
-        <input
-          pInputText
-          id="search"
-          placeholder="Suche nach Stichworten..."
-          class="w-full"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="applyFilters()"
-        />
-      </p-iconField>
+  <app-catalog-search-filters
+    [(searchQuery)]="searchQuery"
+    [(selectedCategory)]="selectedCategory"
+    [(selectedCampus)]="selectedCampus"
+    [(availabilityFilter)]="availabilityFilter"
+    [(dateRange)]="dateRange"
+    [categories]="categories"
+    [campuses]="campuses"
+    [availabilityOptions]="availabilityOptions"
+    [tomorrow]="tomorrow"
+    [monthsToShow]="monthsToShow"
+    [resultCount]="filteredDevices().length"
+    [formattedDateRange]="formattedDateRange()"
+    (applyFilters)="applyFilters()">
+  </app-catalog-search-filters>
 
-      <!-- Datumsbereich-Auswahl -->
-      <p-datePicker
-        [(ngModel)]="dateRange"
-        (ngModelChange)="applyFilters()"
-        selectionMode="range"
-        [showIcon]="true"
-        inputId="daterange"
-        placeholder="Zeitraum wählen"
-        [minDate]="tomorrow"
-        [showClear]="true"
-        (onClear)="applyFilters()"
-        styleClass="sm:min-w-[280px] w-full sm:w-auto"
-        [inputStyleClass]="!dateRange[0] ? 'text-gray-500' : ''"
-        [numberOfMonths]="monthsToShow"
-      ></p-datePicker>
-
-      <!-- Suchen-Button -->
-      <button pButton label="Suchen" class="w-full sm:w-auto bg-[#253359] hover:bg-[#1f2d56] border-[#253359]"></button>
-    </div>
-
-    <!-- Filterbereich -->
-    <div class="flex flex-col sm:flex-row items-center gap-3">
-      <i class="pi pi-filter w-5 h-5 text-gray-500 shrink-0 hidden sm:block"></i>
-
-      <!-- Filter: Kategorie -->
-      <p-select
-        [(ngModel)]="selectedCategory"
-        (onChange)="applyFilters()"
-        [options]="categories"
-        placeholder="Alle Kategorien"
-        styleClass="flex-1 w-full"
-        [showClear]="true"
-      ></p-select>
-
-      <!-- Filter: Campus -->
-      <p-select
-        [(ngModel)]="selectedCampus"
-        (onChange)="applyFilters()"
-        [options]="campuses"
-        placeholder="Alle Campus"
-        styleClass="flex-1 w-full"
-        [showClear]="true"
-      ></p-select>
-
-      <!-- Filter: Verfügbarkeit -->
-      <p-select
-        [(ngModel)]="availabilityFilter"
-        (onChange)="applyFilters()"
-        [options]="availabilityOptions"
-        placeholder="Verfügbarkeit"
-        styleClass="flex-1 w-full"
-        [showClear]="true"
-      ></p-select>
-    </div>
-  </div>
-
-  <!-- Ergebniszusammenfassung -->
-  <div class="mb-6">
-    <div class="flex items-center gap-3 flex-wrap">
-      <p class="text-sm text-slate-800">{{ filteredDevices().length }} Ergebnisse gefunden</p>
-      @if (dateRange[0]) {
-        <p-badge
-          [value]="formattedDateRange()"
-          styleClass="bg-blue-50 text-blue-700 border-blue-200"
-        ></p-badge>
-      }
-    </div>
-  </div>
 
   <!-- Ergebnisliste -->
   <div class="space-y-4">
     @for (device of filteredDevices(); track device.id) {
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-        <div class="flex flex-col sm:flex-row">
-          <!-- Bild-Container (Links) -->
-          <div class="sm:w-48 sm:h-48 w-full h-40 bg-gray-50 flex items-center justify-center shrink-0 relative overflow-hidden">
-            @if (getImageUrl(device.id)) {
-              <img
-                [src]="getImageUrl(device.id)"
-                [alt]="device.name"
-                class="w-full h-full object-cover"
-                loading="lazy"
-                (error)="onImageError($event, device)"
-              />
-            } @else {
-              <!-- Fallback: Icon -->
-              <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl">
-                {{ device.category | deviceIcon }}
-              </div>
-            }
-          </div>
-
-          <!-- Content (Rechts) -->
-          <div class="flex-1 p-6">
-            <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
-              <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-semibold text-[#253359] mb-1">{{ device.name }}</h3>
-                <p class="text-sm text-gray-600">{{ device.category }}</p>
-              </div>
-
-              <button
-                pButton
-                (click)="onViewDevice(device.id)"
-                label="Details ansehen"
-                icon="pi pi-chevron-right"
-                iconPos="right"
-                class="p-button-text p-button-plain text-[#253359] hover:text-[#1f2d56] shrink-0 sm:ml-auto"
-              ></button>
-            </div>
-
-            <div class="flex items-center gap-2 text-sm mb-3">
-              <i class="pi pi-box text-gray-500"></i>
-              <span class="text-slate-800 font-medium">Exemplare:</span>
-              <p-tag
-                [value]="device.availability.available + ' / ' + device.availability.total"
-                [severity]="device.availability.available > 0 ? 'success' : 'danger'"
-                [styleClass]="device.availability.available > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'"
-              ></p-tag>
-              <span class="text-gray-400">|</span>
-              <i class="pi pi-clock text-gray-500"></i>
-              <span class="text-gray-600">Max. {{ device.loanConditions.loanPeriod }}</span>
-            </div>
-
-            <p class="text-sm text-gray-600 leading-relaxed line-clamp-2">
-              {{ device.description }}
-            </p>
-          </div>
-        </div>
-      </div>
+      <app-device-card
+        [device]="device"
+        [imageUrl]="getImageUrl(device.id)"
+        (viewDevice)="onViewDevice($event)"
+        (imageError)="onImageError($event.event, $event.device)">
+      </app-device-card>
     }
   </div>
 

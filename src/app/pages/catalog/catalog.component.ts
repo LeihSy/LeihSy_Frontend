@@ -17,6 +17,7 @@ import { BadgeModule } from 'primeng/badge';
 // Services & Models
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { CatalogService } from './services/catalog.service';
 
 // Components
 import { CatalogSearchFiltersComponent } from './components/catalog-search-filters.component';
@@ -41,18 +42,21 @@ import { DeviceCardComponent, Device } from '../../shared/device-card/device-car
     CatalogSearchFiltersComponent,
     DeviceCardComponent
   ],
+  providers: [CatalogService],
   templateUrl: './catalog.component.html',
 })
 export class CatalogComponent implements OnInit {
-  private productService = inject(ProductService);
+  private catalogService = inject(CatalogService);
   private router = inject(Router);
 
-  // State
-  products = signal<Product[]>([]);
-  devices = signal<Device[]>([]);
+  // Use service signals
+  products = this.catalogService.products;
+  devices = this.catalogService.devices;
+  isLoading = this.catalogService.isLoading;
+  errorMessage = this.catalogService.errorMessage;
+
+  // Local component state
   filteredDevices = signal<Device[]>([]);
-  isLoading = signal(true);
-  errorMessage = signal<string | null>(null);
 
   // Image Error Tracking (um Endlos-Reload zu vermeiden)
   private imageErrorMap = new Map<number, boolean>();
@@ -95,102 +99,33 @@ export class CatalogComponent implements OnInit {
 
   // Lade alle Produkte vom Backend mit expandierten Kategorien
   loadProducts() {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
+    this.catalogService.loadProducts();
 
-    this.productService.getProductsWithCategories().subscribe({
-      next: (products: Product[]) => {
-        console.log('Products with categories loaded:', products);
-        this.products.set(products);
-
-        // Konvertiere Products → Devices
-        const devices = this.mapProductsToDevices(products);
-        this.devices.set(devices);
-        this.filteredDevices.set(devices);
-
-        this.extractCategories(products);
-        this.isLoading.set(false);
-      },
-      error: (error: any) => {
-        console.error('Error loading products:', error);
-        this.errorMessage.set('Fehler beim Laden der Produkte.');
-        this.isLoading.set(false);
-      }
-    });
+    // Update categories and filteredDevices after load
+    setTimeout(() => {
+      this.categories = this.catalogService.categories();
+      this.filteredDevices.set(this.devices());
+    }, 100);
   }
 
-  // Konvertiere Backend Products zu Frontend Devices
-  private mapProductsToDevices(products: Product[]): Device[] {
-    return products.map(p => ({
-      id: p.id,
-      name: p.name,
-      category: p.category?.name || 'Unbekannt',
-      description: p.description,
-      availability: {
-        available: p.availableItemCount || 0,
-        total: p.totalItemCount || 0
-      },
-      loanConditions: {
-        loanPeriod: `${p.expiryDate} Tage`
-      },
-      location: p.location?.roomNr || 'N/A',
-      availableItems: p.availableItemCount || 0,
-      imageUrl: p.imageUrl
-    }));
-  }
-
-  // Extrahiere eindeutige Kategorien
-  private extractCategories(products: Product[]) {
-    const uniqueCategories = [...new Set(products.map(p => p.category?.name || 'Unbekannt'))];
-    this.categories = uniqueCategories;
-  }
 
   // Filter anwenden
   applyFilters() {
-    let filtered = this.devices();
-
-    // Suche
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(d =>
-        d.name.toLowerCase().includes(query) ||
-        d.description.toLowerCase().includes(query) ||
-        d.category.toLowerCase().includes(query)
-      );
-    }
-
-    // Kategorie
-    if (this.selectedCategory) {
-      filtered = filtered.filter(d => d.category === this.selectedCategory);
-    }
-
-    // Campus
-    if (this.selectedCampus) {
-      filtered = filtered.filter(d => {
-        const location = d.location.toLowerCase();
-        if (this.selectedCampus.includes('Flandernstraße')) {
-          return location.includes('flandernstra') || location.startsWith('f');
-        }
-        if (this.selectedCampus.includes('Stadtmitte')) {
-          return location.includes('stadtmitte') || location.startsWith('s');
-        }
-        return true;
-      });
-    }
-
-    // Verfügbarkeit
-    if (this.availabilityFilter === 'available') {
-      filtered = filtered.filter(d => d.availableItems > 0);
-    } else if (this.availabilityFilter === 'borrowed') {
-      filtered = filtered.filter(d => d.availableItems === 0);
-    }
+    const filtered = this.catalogService.applyFilters(
+      this.devices(),
+      this.searchQuery,
+      this.selectedCategory,
+      this.selectedCampus,
+      this.availabilityFilter,
+      this.dateRange
+    );
 
     this.filteredDevices.set(filtered);
   }
 
   // Navigiere zu Detailseite
   onViewDevice(deviceId: number) {
-    this.router.navigate(['/device', deviceId]);
+    this.catalogService.navigateToDevice(deviceId);
   }
 
   /**
@@ -198,34 +133,9 @@ export class CatalogComponent implements OnInit {
    */
   getImageUrl(deviceId: number): string | null {
     const device = this.devices().find(d => d.id === deviceId);
-    if (!device || !device.imageUrl) {
-      return null;
-    }
+    if (!device) return null;
 
-    if (this.imageErrorMap.get(deviceId)) {
-      return null;
-    }
-
-    const imageUrl = device.imageUrl;
-
-    // Fall 1: Absolute URL
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-
-    // Fall 2: Backend API Pfad (/api/images/...)
-    if (imageUrl.startsWith('/api/images/')) {
-      return `http://localhost:8080${imageUrl}`;
-    }
-
-    // Fall 3: Legacy Assets (/assets/...) → Backend
-    if (imageUrl.startsWith('/assets/images/')) {
-      const filename = imageUrl.replace('/assets/images/', '');
-      return `http://localhost:8080/api/images/${filename}`;
-    }
-
-    // Fall 4: Nur Filename
-    return `http://localhost:8080/api/images/${imageUrl}`;
+    return this.catalogService.getImageUrl(deviceId, device.imageUrl, this.imageErrorMap);
   }
 
   /**
@@ -235,8 +145,7 @@ export class CatalogComponent implements OnInit {
   onImageError(event: Event, device: Device): void {
     console.warn(`Image load error for device ${device.id}:`, device.imageUrl);
 
-    // Markiere als fehlerhaft → Template zeigt Icon
-    this.imageErrorMap.set(device.id, true);
+    this.catalogService.handleImageError(device.id, this.imageErrorMap);
 
     // Verhindere weiteren Reload-Versuch
     const img = event.target as HTMLImageElement;

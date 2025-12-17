@@ -1,4 +1,4 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
@@ -11,10 +11,10 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { CommonModule } from '@angular/common';
-import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { TableComponent, ColumnDef } from '../../shared/table/table.component';
 import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
+import { AdminProductDashboardService } from './services/admin-product-dashboard.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -33,9 +33,11 @@ import { SearchBarComponent } from '../../shared/search-bar/search-bar.component
   ],
   templateUrl: './admin-product-dashboard.component.html',
   styleUrls: ['./admin-product-dashboard.component.scss'],
-  providers: [ConfirmationService, MessageService]
+  providers: [ConfirmationService, MessageService, AdminProductDashboardService]
 })
-export class AdminProductDashboardComponent {
+export class AdminProductDashboardComponent implements OnInit {
+
+  private pageService = inject(AdminProductDashboardService);
 
   // Spalten-Definition für die Produkt-Tabelle
   columns: ColumnDef[] = [
@@ -46,9 +48,9 @@ export class AdminProductDashboardComponent {
     { field: 'price', header: 'Preis/Tag', type: 'currency', sortable: true, width: '120px' }
   ];
 
-  // Signals
-  allProducts = signal<Product[]>([]);
-  isLoading = signal(false);
+  // Use service signals
+  allProducts = this.pageService.products;
+  isLoading = this.pageService.isLoading;
   searchQuery = signal('');
 
   filteredProducts = computed(() => {
@@ -71,80 +73,32 @@ export class AdminProductDashboardComponent {
     );
   });
 
-  constructor(
-    private readonly router: Router,
-    private readonly productService: ProductService,
-    private readonly confirmationService: ConfirmationService,
-    private readonly messageService: MessageService
-  ) {
+  ngOnInit(): void {
     this.loadProducts();
   }
 
   loadProducts(): void {
-    this.isLoading.set(true);
-
-    this.productService.getProductsWithCategories().subscribe({
-      next: (products: Product[]) => {
-        this.allProducts.set(products);
-        this.isLoading.set(false);
-      },
-      error: (err: any) => {
-        console.error('Fehler beim Laden der Produkte:', err);
-
-        this.productService.getProducts().subscribe({
-          next: (products: Product[]) => {
-            this.allProducts.set(products);
-            this.isLoading.set(false);
-          },
-          error: (fallbackErr: any) => {
-            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Produkte konnten nicht geladen werden.'
-            });
-            this.isLoading.set(false);
-          }
-        });
-      }
-    });
+    this.pageService.loadProducts();
   }
 
   navigateToNewProduct(): void {
-    this.router.navigate(['/admin/products/new']);
+    this.pageService.navigateToNewProduct();
   }
 
   editProduct(product: Product): void {
-    this.router.navigate(['/admin/products', product.id, 'edit']);
+    this.pageService.navigateToEditProduct(product.id);
   }
 
   deleteProduct(product: Product): void {
-    this.confirmationService.confirm({
-      message: `Möchten Sie das Produkt "${product.name}" wirklich löschen?`,
-      header: 'Löschen bestätigen',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Ja, löschen',
-      rejectLabel: 'Abbrechen',
-      accept: () => {
-        this.productService.deleteProduct(product.id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Gelöscht',
-              detail: 'Produkt wurde gelöscht.'
-            });
-            this.loadProducts();
-          },
-          error: (err: any) => {
-            console.error(err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Produkt konnte nicht gelöscht werden.'
-            });
-          }
-        });
-      }
+    this.pageService.confirmDeleteProduct(product, () => {
+      this.pageService.deleteProduct(product.id).subscribe({
+        next: () => {
+          this.loadProducts();
+        },
+        error: () => {
+          // Error handling is done in service
+        }
+      });
     });
   }
 

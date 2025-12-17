@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -12,13 +12,12 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
-import { ItemService } from '../../services/item.service';
-import { ProductService } from '../../services/product.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { ColumnDef } from '../../shared/table/table.component';
 import { ProductListItemComponent } from './components/product-list-item/product-list-item.component';
 import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
+import { AdminItemInstanceDashboardService } from './services/admin-item-instance-dashboard.service';
 
 @Component({
   selector: 'app-admin-item-instance',
@@ -38,9 +37,12 @@ import { SearchBarComponent } from '../../shared/search-bar/search-bar.component
   ],
   templateUrl: './admin-item-instance-dashboard.component.html',
   styleUrls: ['./admin-item-instance-dashboard.component.scss'],
-  providers: [ConfirmationService, MessageService]
+  providers: [ConfirmationService, MessageService, AdminItemInstanceDashboardService]
 })
 export class AdminItemInstanceComponent implements OnInit {
+  private router = inject(Router);
+  private pageService = inject(AdminItemInstanceDashboardService);
+
   itemColumns: ColumnDef[] = [
     { field: 'invNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
     { field: 'owner', header: 'Besitzer', sortable: true },
@@ -48,21 +50,15 @@ export class AdminItemInstanceComponent implements OnInit {
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  allItems = signal<Item[]>([]);
-  allProducts = signal<Product[]>([]);
-  isLoading = signal(true);
+  // Use service signals
+  allItems = this.pageService.items;
+  allProducts = this.pageService.products;
+  isLoading = this.pageService.isLoading;
+
+  // Local component signals
   searchQuery = signal('');
   expandedProductIds = signal<Set<number>>(new Set());
   userIdToNameMap = signal<Map<number, string>>(new Map());
-
-  constructor(
-    private readonly router: Router,
-    private readonly itemService: ItemService,
-    private readonly productService: ProductService,
-    private readonly confirmationService: ConfirmationService,
-    private readonly messageService: MessageService
-  ) {}
-
 
   ngOnInit(): void {
     this.loadProducts();
@@ -101,43 +97,11 @@ export class AdminItemInstanceComponent implements OnInit {
   });
 
   loadProducts(): void {
-    this.isLoading.set(true);
-
-    this.productService.getProductsWithCategories().subscribe({
-      next: (products) => {
-        this.allProducts.set(products);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-
-        console.error('Fehler beim Laden der Produkte (Fallback):', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Fehler beim Laden der Produkte.'
-        });
-        this.isLoading.set(false);
-      }
-    });
+    this.pageService.loadProducts();
   }
 
   loadItems(): void {
-    this.isLoading.set(true);
-    this.itemService.getAllItems().subscribe({
-      next: (items) => {
-        this.allItems.set(items);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Fehler beim Laden der Items:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Fehler',
-          detail: 'Fehler beim Laden der Gegenstände.'
-        });
-        this.isLoading.set(false);
-      }
-    });
+    this.pageService.loadItems();
   }
 
   getLenderDisplay(lenderId: number | undefined): string {
@@ -146,34 +110,16 @@ export class AdminItemInstanceComponent implements OnInit {
     return userName ? `${userName}` : lenderId.toString();
   }
 
-
   deleteItem(item: Item): void {
-    this.confirmationService.confirm({
-      message: `Möchten Sie den Gegenstand "${item.productName}" (${item.invNumber}) wirklich löschen?`,
-      header: 'Löschen bestätigen',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Ja, löschen',
-      rejectLabel: 'Abbrechen',
-      accept: () => {
-        this.itemService.deleteItem(item.id).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Gelöscht',
-              detail: 'Gegenstand wurde gelöscht.'
-            });
-            this.loadItems();
-          },
-          error: (err) => {
-            console.error(err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Gegenstand konnte nicht gelöscht werden.'
-            });
-          }
-        });
-      }
+    this.pageService.confirmDeleteItem(item, () => {
+      this.pageService.deleteItem(item.id).subscribe({
+        next: () => {
+          this.loadItems();
+        },
+        error: () => {
+          // Error handling is done in service
+        }
+      });
     });
   }
 
@@ -199,14 +145,11 @@ export class AdminItemInstanceComponent implements OnInit {
   }
 
   addItemForProduct(product: Product): void {
-    this.router.navigate(['/admin/items/new'], {
-      queryParams: { productId: product.id }
-    });
+    this.pageService.navigateToAddItem(product);
   }
 
   editItem(item: Item): void {
-    this.router.navigate(['/admin/items', item.id, 'edit']);
+    this.pageService.navigateToEditItem(item.id);
   }
 
 }
-

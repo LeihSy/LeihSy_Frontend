@@ -12,11 +12,11 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { Item } from '../../models/item.model';
-import { ColumnDef } from '../../shared/table/table.component';
+import { ColumnDef } from '../../components/table/table.component';
 import { LenderItemsService } from './services/lender-items.service';
 import { LenderStatsCardsComponent, StatCard } from './components/lender-stats-cards.component';
 import { LenderProductItemListComponent } from './components/lender-product-item-list.component';
-import { SearchBarComponent } from '../../shared/search-bar/search-bar.component';
+import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-lender-items',

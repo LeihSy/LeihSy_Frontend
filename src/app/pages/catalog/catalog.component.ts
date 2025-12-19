@@ -21,7 +21,7 @@ import { CatalogService } from './services/catalog.service';
 
 // Components
 import { CatalogSearchFiltersComponent } from './components/catalog-search-filters.component';
-import { DeviceCardComponent, Device } from '../../shared/device-card/device-card.component';
+import { DeviceCardComponent, Device } from '../../components/device-card/device-card.component';
 
 
 @Component({

@@ -5,7 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 
 import { ProductService } from '../../../services/product.service';
 import { Product } from '../../../models/product.model';
-import { Device } from '../../../shared/device-card/device-card.component';
+import { Device } from '../../../components/device-card/device-card.component';
 
 @Injectable()
 export class CatalogService {

@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Product } from '../../../models/product.model';
 import { Item } from '../../../models/item.model';
-import { TableComponent, ColumnDef } from '../../../shared/table/table.component';
+import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 
 export interface ProductWithItems {
   product: Product;

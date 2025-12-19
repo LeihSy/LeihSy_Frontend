@@ -14,7 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { Location } from '../../models/location.model';
-import { TableComponent, ColumnDef } from '../../shared/table/table.component';
+import { TableComponent, ColumnDef } from '../../components/table/table.component';
 
 @Component({
   selector: 'app-item-detail',

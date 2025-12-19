@@ -1,0 +1,138 @@
+<div class="statistics-container">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-back-button routerLink="/admin/bookings"></app-back-button>
+
+  <div class="header-section">
+    <div class="header-content">
+      <div>
+        <h1 class="header-title">Buchungsstatistiken</h1>
+        <p class="header-subtitle">
+          Auslastung und Analysen Ihrer Buchungen
+        </p>
+      </div>
+      <button
+        pButton
+        icon="pi pi-refresh"
+        label="Aktualisieren"
+        class="p-button-outlined"
+        (click)="refreshData()"
+        pTooltip="Daten neu laden">
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <p class="loading-text">Lade Statistiken...</p>
+    </div>
+  } @else {
+    <div class="overview-cards">
+      <p-card class="stat-overview-card">
+        <div class="stat-overview-content">
+          <i class="pi pi-chart-bar stat-overview-icon" style="color: #000080;"></i>
+          <div class="stat-overview-details">
+            <div class="stat-overview-value">{{ bookings().length }}</div>
+            <div class="stat-overview-label">Gesamt Buchungen</div>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card class="stat-overview-card">
+        <div class="stat-overview-content">
+          <i class="pi pi-box stat-overview-icon" style="color: #0080ff;"></i>
+          <div class="stat-overview-details">
+            <div class="stat-overview-value">{{ topProducts().length }}</div>
+            <div class="stat-overview-label">Verschiedene Produkte</div>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card class="stat-overview-card">
+        <div class="stat-overview-content">
+          <i class="pi pi-star-fill stat-overview-icon" style="color: #ffd700;"></i>
+          <div class="stat-overview-details">
+            <div class="stat-overview-value">{{ topProducts().length > 0 ? topProducts()[0].count : 0 }}</div>
+            <div class="stat-overview-label">Top Produkt Ausleihen</div>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <p-card class="chart-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="pi pi-chart-pie"></i>
+            Buchungen nach Status
+          </h2>
+        </div>
+      </ng-template>
+
+      <div class="chart-container">
+        <p-chart
+          type="doughnut"
+          [data]="statusChartData()"
+          [options]="chartOptions"
+          [style]="{ height: '400px' }">
+        </p-chart>
+      </div>
+
+      <div class="stats-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th class="text-center">Anzahl</th>
+              <th class="text-center">Anteil</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (stat of statusStats(); track stat.statusName) {
+              <tr>
+                <td class="category-name">
+                  <span class="status-dot" [style.background-color]="stat.color"></span>
+                  {{ stat.statusName }}
+                </td>
+                <td class="text-center">{{ stat.count }}</td>
+                <td class="text-center">
+                  {{ ((stat.count / bookings().length) * 100).toFixed(1) }}%
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="text-center empty-message">Keine Status-Daten vorhanden</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </p-card>
+
+    <p-card class="mb-8 border-2 border-gray-200">
+      <ng-template pTemplate="header">
+        <div class="flex justify-between items-center p-6 border-b-2 border-gray-200 bg-gray-50">
+          <h2 class="text-2xl font-bold text-[#000080] flex items-center gap-3 m-0">
+            <i class="pi pi-star text-2xl"></i>
+            Top 10 ausgeliehene Produkte
+          </h2>
+        </div>
+      </ng-template>
+
+      <div class="p-8 bg-gray-50 rounded-lg mb-8">
+        <p-chart
+          type="bar"
+          [data]="topProductsChartData()"
+          [options]="chartOptions"
+          [style]="{ height: '400px' }">
+        </p-chart>
+      </div>
+
+      <app-ranking-list
+        [rankings]="topProducts()">
+      </app-ranking-list>
+    </p-card>
+  }
+</div>
+

@@ -1,0 +1,62 @@
+<div class="rounded-lg overflow-hidden bg-white">
+
+  <button
+    type="button"
+    class="product-header flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors w-full text-left"
+    (click)="onToggleExpansion()">
+
+    <div class="flex items-center gap-3 flex-1">
+
+      <i [class]="isExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+         class="text-gray-500"></i>
+
+      <div>
+        <h3 class="text-lg font-bold">{{ productData.product.name }}</h3>
+        <p class="text-xs text-gray-600">
+          <strong>Kategorie:</strong> {{ productData.product.category?.name || 'N/A' }} |
+          <strong>Standort:</strong> {{ productData.product.location?.roomNr || 'N/A' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="badge badge-info">
+        {{ productData.availableCount }} / {{ productData.totalCount }} verfügbar
+      </span>
+      <button pButton icon="pi pi-plus"
+              type="button"
+              class="p-button-sm p-button-rounded bg-blue-900 border-none"
+              (click)="onAddItem($event)"
+              pTooltip="Neue Instanz hinzufügen"></button>
+    </div>
+  </button>
+
+  @if (isExpanded) {
+    <div class="border-t p-4 bg-gray-50">
+      @if (productData.product.description) {
+        <p class="text-sm text-gray-500 mb-3">{{ productData.product.description }}</p>
+      }
+
+      @if (productData.items.length > 0) {
+        <app-table
+          [columns]="itemColumns"
+          [data]="productData.items"
+          [showActions]="true"
+          [rows]="5"
+          [paginator]="true"
+          [scrollable]="false"
+          (edit)="onEditItem($event)"
+          (remove)="onDeleteItem($event)"
+          emptyMessage="Keine Instanzen vorhanden">
+        </app-table>
+      } @else {
+        <div class="text-center text-gray-500 py-4 bg-white rounded border">
+          <p class="text-sm">Noch keine Instanzen für dieses Produkt angelegt.</p>
+          <p class="text-xs mt-1">Klicken Sie auf das Plus-Symbol, um die erste Instanz zu erstellen.</p>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+

@@ -1,0 +1,14 @@
+<p-card [header]="header" styleClass="info-card">
+  <div class="info-grid">
+    @for (item of items; track item.label) {
+      <div class="info-item">
+        <i [class]="'pi ' + item.icon + ' info-icon'"></i>
+        <div>
+          <p class="info-label">{{ item.label }}</p>
+          <p class="info-value">{{ item.value }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</p-card>
+

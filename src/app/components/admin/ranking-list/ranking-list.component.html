@@ -1,0 +1,29 @@
+<div class="mt-8">
+  @for (product of rankings; track product.productId; let i = $index) {
+    <div class="grid grid-cols-[60px_1fr_200px] gap-4 items-center p-4 border-b border-gray-200 transition-all duration-200 hover:bg-gray-50 hover:translate-x-1 last:border-b-0">
+      <div
+        [class]="'w-12 h-12 flex items-center justify-center rounded-full font-bold text-xl ' +
+                 (i === 0 ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-400/30' : '') +
+                 (i === 1 ? 'bg-gray-300 text-gray-700 shadow-lg shadow-gray-300/30' : '') +
+                 (i === 2 ? 'bg-orange-400 text-white shadow-lg shadow-orange-400/30' : '') +
+                 (i > 2 ? 'bg-gray-200 text-gray-600' : '')">
+        {{ i + 1 }}
+      </div>
+      <div class="flex-1">
+        <div class="font-semibold text-gray-900 text-base mb-1">{{ product.productName }}</div>
+        <div class="text-gray-600 text-sm">{{ product.count }} Ausleihen</div>
+      </div>
+      <div class="w-full h-6 bg-gray-200 rounded-xl overflow-hidden">
+        <div
+          class="h-full bg-[#000080] rounded-xl transition-all duration-500"
+          [style.width.%]="rankings.length > 0 ? (product.count / rankings[0].count) * 100 : 0">
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="text-center p-8 text-gray-600 italic">
+      Keine Produkt-Daten vorhanden
+    </div>
+  }
+</div>
+

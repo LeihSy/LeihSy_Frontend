@@ -1,0 +1,12 @@
+<p-card
+  [class]="'cursor-pointer transition-all duration-300 ease-in-out flex-shrink-0 min-w-[200px] hover:transform hover:-translate-y-0.5 hover:shadow-lg ' + (isActive ? 'border-[#000080] shadow-lg shadow-[#000080]/20' : '')"
+  (click)="onClick()">
+  <div class="flex items-center gap-4 p-4">
+    <i [class]="icon + ' ' + iconColor + ' text-[2rem]'"></i>
+    <div class="flex-1">
+      <div class="text-[1.75rem] font-bold text-[#000080] leading-none mb-1">{{ value }}</div>
+      <div class="text-sm text-gray-600 leading-tight">{{ label }}</div>
+    </div>
+  </div>
+</p-card>
+

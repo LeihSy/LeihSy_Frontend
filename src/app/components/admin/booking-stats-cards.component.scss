@@ -1,0 +1,79 @@
+// Statistik-Karten HBox (Horizontal Box)
+.stats-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #000080;
+    border-radius: 4px;
+    &:hover {
+      background: #000066;
+    }
+  }
+}
+.stat-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 0 0 auto;
+  min-width: 200px;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  &.active {
+    border-color: #000080;
+    box-shadow: 0 4px 12px rgba(0, 0, 128, 0.2);
+  }
+  ::ng-deep .p-card-body {
+    padding: 1rem;
+  }
+}
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.stat-icon {
+  font-size: 2rem;
+}
+.stat-details {
+  flex: 1;
+}
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #000080;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.2;
+}
+@media (max-width: 768px) {
+  .stats-grid {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .stat-card {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 150px;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  .stat-icon {
+    font-size: 1.5rem;
+  }
+}

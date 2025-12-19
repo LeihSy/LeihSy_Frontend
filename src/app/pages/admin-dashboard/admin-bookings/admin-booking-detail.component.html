@@ -1,0 +1,119 @@
+<div class="booking-detail-container">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-back-button routerLink="/admin/bookings"></app-back-button>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <p class="mt-4 text-gray-600">Lade Buchungsdetails...</p>
+    </div>
+  }
+
+  @if (!isLoading() && booking()) {
+    <div class="detail-grid">
+
+      <div class="header-card">
+        <app-booking-header
+          [bookingId]="booking()!.id"
+          [productName]="booking()!.productName"
+          [itemInvNumber]="booking()!.itemInvNumber"
+          [status]="booking()!.status"
+          [statusLabel]="getStatusLabel(booking()!.status)"
+          [statusSeverity]="getStatusSeverity(booking()!.status)">
+        </app-booking-header>
+      </div>
+
+      <div class="info-section">
+
+        <app-info-card
+          header="Benutzer"
+          [items]="getUserInfoItems()">
+        </app-info-card>
+
+        <app-info-card
+          header="Ausleihzeitraum"
+          [items]="getLoanPeriodInfoItems()">
+        </app-info-card>
+
+        <app-info-card
+          header="Verleiher"
+          [items]="getLenderInfoItems()">
+        </app-info-card>
+
+        <app-info-card
+          header="Gegenstand"
+          [items]="getItemInfoItems()">
+        </app-info-card>
+
+        @if (booking()!.message) {
+          <p-card header="Nachricht" class="border border-gray-200 shadow-sm">
+            <div class="flex gap-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+              <i class="pi pi-comment text-gray-400"></i>
+              <p class="text-blue-900 text-sm leading-relaxed m-0">{{ booking()!.message }}</p>
+            </div>
+          </p-card>
+        }
+
+        <p-card header="Termine & Daten" class="border border-gray-200 shadow-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @if (booking()!.proposedPickups) {
+              <app-info-item
+                icon="pi pi-calendar"
+                iconColor="text-[#000080]"
+                label="Vorgeschlagene Abholtermine"
+                [value]="booking()!.proposedPickups">
+              </app-info-item>
+            }
+            @if (booking()!.confirmedPickup) {
+              <app-info-item
+                icon="pi pi-check-circle"
+                iconColor="text-green-600"
+                label="Bestätigter Abholtermin"
+                [value]="formatDateTime(booking()!.confirmedPickup)">
+              </app-info-item>
+            }
+            @if (booking()!.distributionDate) {
+              <app-info-item
+                icon="pi pi-sign-out"
+                iconColor="text-orange-600"
+                label="Tatsächliche Ausgabe"
+                [value]="formatDateTime(booking()!.distributionDate)">
+              </app-info-item>
+            }
+            @if (booking()!.returnDate) {
+              <app-info-item
+                icon="pi pi-sign-in"
+                iconColor="text-green-600"
+                label="Tatsächliche Rückgabe"
+                [value]="formatDateTime(booking()!.returnDate)">
+              </app-info-item>
+            }
+            <app-info-item
+              icon="pi pi-clock"
+              iconColor="text-[#000080]"
+              label="Erstellt am"
+              [value]="formatDateTime(booking()!.createdAt)">
+            </app-info-item>
+            <app-info-item
+              icon="pi pi-history"
+              iconColor="text-[#000080]"
+              label="Zuletzt aktualisiert"
+              [value]="formatDateTime(booking()!.updatedAt)">
+            </app-info-item>
+          </div>
+        </p-card>
+
+      </div>
+
+      <div class="lg:row-start-2">
+        <app-booking-timeline
+          [events]="timelineEvents()"
+          [formatDateTime]="formatDateTime.bind(this)">
+        </app-booking-timeline>
+      </div>
+
+    </div>
+  }
+</div>
+

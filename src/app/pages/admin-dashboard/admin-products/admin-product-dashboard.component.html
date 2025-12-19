@@ -1,0 +1,41 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <app-page-header
+    title="Produktgruppen verwalten"
+    subtitle="Erstelle, bearbeite oder lösche Produktgruppen"
+    buttonLabel="Neues Produkt"
+    buttonIcon="pi pi-plus"
+    [showButton]="true"
+    (buttonClick)="navigateToNewProduct()">
+  </app-page-header>
+
+
+  <p-card header="Vorhandene Produkte">
+
+    <div class="mb-4">
+      <app-search-bar
+        [placeholder]="'Suche nach Name, Beschreibung, Kategorie...'"
+        [(value)]="searchQuery"
+        (valueChange)="onSearchChange($event)">
+      </app-search-bar>
+    </div>
+
+    <app-table
+      [columns]="columns"
+      [data]="filteredProducts()"
+      [loading]="isLoading()"
+      [showActions]="true"
+      [rows]="10"
+      [paginator]="true"
+      [scrollable]="true"
+      [scrollHeight]="'600px'"
+      (edit)="editProduct($event)"
+      (remove)="deleteProduct($event)"
+      emptyMessage="Keine Produkte vorhanden">
+    </app-table>
+
+  </p-card>
+</div>
+

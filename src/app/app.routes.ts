@@ -93,6 +93,22 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/all-items',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-item-overview/admin-all-items.component')
+        .then(m => m.AdminAllItemsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/detail/:id',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-item-overview/admin-item-detail.component')
+        .then(m => m.AdminItemDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'admin/items',
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-items/admin-item-instance-dashboard.component')

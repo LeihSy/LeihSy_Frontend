@@ -1,7 +1,7 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -11,12 +11,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { Item } from '../../models/item.model';
-import { ColumnDef } from '../../components/table/table.component';
-import { LenderItemsService } from './services/lender-items.service';
-import { LenderStatsCardsComponent, StatCard } from '../../components/lender/lender-stats-cards.component';
-import { LenderProductItemListComponent } from '../../components/lender/lender-product-item-list.component';
-import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
+import { Item } from '../../../models/item.model';
+import { ColumnDef } from '../../../components/table/table.component';
+import { LenderItemsService } from './service/admin-product-item-overview.service';
+import { LenderStatsCardsComponent, StatCard } from '../../../components/lender/lender-stats-cards.component';
+import { LenderProductItemListComponent } from '../../../components/lender/lender-product-item-list.component';
+import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-lender-items',
@@ -35,11 +35,11 @@ import { SearchBarComponent } from '../../components/search-bar/search-bar.compo
     LenderProductItemListComponent,
     SearchBarComponent
   ],
-  templateUrl: './lender-items.component.html',
-  styleUrls: ['./lender-items.component.scss'],
+  templateUrl: './admin-all-items.component.html',
+  styleUrls: ['./admin-all-items.component.scss'],
   providers: [MessageService, LenderItemsService]
 })
-export class LenderItemsComponent implements OnInit {
+export class AdminAllItemsComponent implements OnInit {
   private lenderService = inject(LenderItemsService);
 
   // Spalten-Definition für die Item-Tabelle

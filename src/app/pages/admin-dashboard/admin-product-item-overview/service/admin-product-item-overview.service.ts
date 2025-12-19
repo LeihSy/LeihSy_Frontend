@@ -2,13 +2,13 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 
-import { ItemService } from '../../../services/item.service';
-import { ProductService } from '../../../services/product.service';
-import { AuthService } from '../../../services/auth.service';
-import { UserService } from '../../../services/user.service';
-import { Item } from '../../../models/item.model';
-import { Product } from '../../../models/product.model';
-import { User } from '../../../models/user.model';
+import { ItemService } from '../../../../services/item.service';
+import { ProductService } from '../../../../services/product.service';
+import { AuthService } from '../../../../services/auth.service';
+import { UserService } from '../../../../services/user.service';
+import { Item } from '../../../../models/item.model';
+import { Product } from '../../../../models/product.model';
+import { User } from '../../../../models/user.model';
 
 export interface ProductWithItems {
   product: Product;

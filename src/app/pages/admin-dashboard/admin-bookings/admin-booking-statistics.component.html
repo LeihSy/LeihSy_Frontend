@@ -1,138 +1,189 @@
-<div class="statistics-container">
+<div class="statistics-container max-w-[1400px] mx-auto p-6 space-y-8">
   <p-toast position="bottom-right"></p-toast>
 
-  <app-back-button routerLink="/admin/bookings"></app-back-button>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+    <div>
+      <app-back-button routerLink="/admin/bookings" class="mb-2 block"></app-back-button>
+      <h1 class="text-3xl font-bold text-[#000080]">Buchungsstatistiken</h1>
+      <p class="text-gray-500 mt-1">Auslastung und Analysen Ihrer Buchungen</p>
+    </div>
 
-  <div class="header-section">
-    <div class="header-content">
-      <div>
-        <h1 class="header-title">Buchungsstatistiken</h1>
-        <p class="header-subtitle">
-          Auslastung und Analysen Ihrer Buchungen
-        </p>
-      </div>
+    <div class="flex items-center gap-3">
       <button
         pButton
-        icon="pi pi-refresh"
-        label="Aktualisieren"
-        class="p-button-outlined"
         (click)="refreshData()"
-        pTooltip="Daten neu laden">
+        class="p-button-outlined p-button-secondary">
       </button>
+      <app-export-buttons
+        [isLoading]="isLoading()"
+        (exportPdf)="exportStatisticsAsPdf()"
+        (exportHtml)="exportStatistics()"
+        (refresh)="refreshData()">
+      </app-export-buttons>
     </div>
   </div>
 
+  <div class="px-2">
+    <p-card styleClass="shadow-sm border border-gray-100">
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i class="pi pi-filter text-[#000080]"></i>
+          Filter & Zeitraum wählen
+        </h2>
+      </div>
+
+      <div class="flex flex-wrap items-end gap-6">
+        <div class="flex flex-col gap-2">
+          <label for="datePreset" class="text-sm font-medium text-gray-600">Zeitraum</label>
+          <p-select
+            inputId="datePreset"
+            [options]="dateFilterOptions"
+            [(ngModel)]="dateFilterPreset"
+            (onChange)="onDateFilterPresetChange()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Zeitraum wählen"
+            class="w-64">
+          </p-select>
+        </div>
+
+        @if (dateFilterPreset() === 'custom') {
+          <div class="flex flex-wrap gap-6 items-end">
+            <div class="flex flex-col gap-2">
+              <label for="dateStart" class="text-sm font-medium text-gray-600">Von</label>
+              <p-datepicker
+                inputId="dateStart"
+                [(ngModel)]="dateRangeStart"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                placeholder="Startdatum">
+              </p-datepicker>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label for="dateEnd" class="text-sm font-medium text-gray-600">Bis</label>
+              <p-datepicker
+                inputId="dateEnd"
+                [(ngModel)]="dateRangeEnd"
+                dateFormat="dd.mm.yy"
+                [showIcon]="true"
+                placeholder="Enddatum">
+              </p-datepicker>
+            </div>
+          </div>
+        }
+
+        @if (dateRangeStart() || dateRangeEnd()) {
+          <button
+            pButton
+            icon="pi pi-times"
+            label="Zurücksetzen"
+            class="p-button-text p-button-sm mb-1"
+            (click)="clearDateFilter()">
+          </button>
+        }
+
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2 ml-auto">
+          <i class="pi pi-info-circle"></i>
+          <span>{{ filteredBookings().length }} von {{ bookings().length }} Buchungen</span>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
   @if (isLoading()) {
-    <div class="loading-state">
-      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
-      <p class="loading-text">Lade Statistiken...</p>
+    <div class="flex flex-col items-center justify-center py-20">
+      <i class="pi pi-spin pi-spinner text-5xl text-[#000080]"></i>
+      <p class="mt-4 text-gray-500 font-medium">Lade Statistiken...</p>
     </div>
   } @else {
-    <div class="overview-cards">
-      <p-card class="stat-overview-card">
-        <div class="stat-overview-content">
-          <i class="pi pi-chart-bar stat-overview-icon" style="color: #000080;"></i>
-          <div class="stat-overview-details">
-            <div class="stat-overview-value">{{ bookings().length }}</div>
-            <div class="stat-overview-label">Gesamt Buchungen</div>
-          </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
+      <app-overview-stat-card
+        icon="pi pi-chart-bar"
+        iconColor="#000080"
+        [value]="filteredBookings().length"
+        label="Gesamt Buchungen">
+      </app-overview-stat-card>
+
+      <app-overview-stat-card
+        icon="pi pi-box"
+        iconColor="#0080ff"
+        [value]="topProducts().length"
+        label="Verschiedene Produkte">
+      </app-overview-stat-card>
+
+      <app-overview-stat-card
+        icon="pi pi-star-fill"
+        iconColor="#ffd700"
+        [value]="topProducts().length > 0 ? topProducts()[0].count : 0"
+        label="Top Produkt Ausleihen">
+      </app-overview-stat-card>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 px-2">
+
+      <p-card styleClass="h-full shadow-sm border border-gray-100">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="pi pi-chart-pie text-xl text-[#000080]"></i>
+          <h2 class="text-xl font-bold text-gray-800">Buchungen nach Status</h2>
+        </div>
+
+        <div class="chart-container flex justify-center">
+          <p-chart
+            type="doughnut"
+            [data]="statusChartData()"
+            [options]="chartOptions"
+            [style]="{ width: '100%', maxWidth: '300px' }">
+          </p-chart>
+        </div>
+
+        <div class="mt-8 border-t pt-4">
+          <table class="w-full text-sm">
+            <thead class="text-gray-400 text-left">
+            <tr>
+              <th class="pb-2 font-medium">Status</th>
+              <th class="pb-2 text-center font-medium">Anzahl</th>
+              <th class="pb-2 text-right font-medium">Anteil</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              @for (stat of statusStats(); track stat.statusName) {
+                <tr>
+                  <td class="py-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full" [style.background-color]="stat.color"></span>
+                    {{ stat.statusName }}
+                  </td>
+                  <td class="py-2 text-center text-gray-600">{{ stat.count }}</td>
+                  <td class="py-2 text-right font-semibold">
+                    {{ ((stat.count / filteredBookings().length) * 100).toFixed(1) }}%
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       </p-card>
 
-      <p-card class="stat-overview-card">
-        <div class="stat-overview-content">
-          <i class="pi pi-box stat-overview-icon" style="color: #0080ff;"></i>
-          <div class="stat-overview-details">
-            <div class="stat-overview-value">{{ topProducts().length }}</div>
-            <div class="stat-overview-label">Verschiedene Produkte</div>
-          </div>
+      <p-card styleClass="h-full shadow-sm border border-gray-100">
+        <div class="flex items-center gap-3 mb-6">
+          <i class="pi pi-star text-xl text-[#000080]"></i>
+          <h2 class="text-xl font-bold text-gray-800">Top 10 Produkte</h2>
         </div>
-      </p-card>
 
-      <p-card class="stat-overview-card">
-        <div class="stat-overview-content">
-          <i class="pi pi-star-fill stat-overview-icon" style="color: #ffd700;"></i>
-          <div class="stat-overview-details">
-            <div class="stat-overview-value">{{ topProducts().length > 0 ? topProducts()[0].count : 0 }}</div>
-            <div class="stat-overview-label">Top Produkt Ausleihen</div>
-          </div>
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <p-chart
+            type="bar"
+            [data]="topProductsChartData()"
+            [options]="chartOptions"
+            [style]="{ height: '300px' }">
+          </p-chart>
+        </div>
+
+        <div class="mt-6">
+          <app-ranking-list [rankings]="topProducts()"></app-ranking-list>
         </div>
       </p-card>
     </div>
-
-    <p-card class="chart-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <h2 class="card-title">
-            <i class="pi pi-chart-pie"></i>
-            Buchungen nach Status
-          </h2>
-        </div>
-      </ng-template>
-
-      <div class="chart-container">
-        <p-chart
-          type="doughnut"
-          [data]="statusChartData()"
-          [options]="chartOptions"
-          [style]="{ height: '400px' }">
-        </p-chart>
-      </div>
-
-      <div class="stats-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Status</th>
-              <th class="text-center">Anzahl</th>
-              <th class="text-center">Anteil</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (stat of statusStats(); track stat.statusName) {
-              <tr>
-                <td class="category-name">
-                  <span class="status-dot" [style.background-color]="stat.color"></span>
-                  {{ stat.statusName }}
-                </td>
-                <td class="text-center">{{ stat.count }}</td>
-                <td class="text-center">
-                  {{ ((stat.count / bookings().length) * 100).toFixed(1) }}%
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="3" class="text-center empty-message">Keine Status-Daten vorhanden</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </p-card>
-
-    <p-card class="mb-8 border-2 border-gray-200">
-      <ng-template pTemplate="header">
-        <div class="flex justify-between items-center p-6 border-b-2 border-gray-200 bg-gray-50">
-          <h2 class="text-2xl font-bold text-[#000080] flex items-center gap-3 m-0">
-            <i class="pi pi-star text-2xl"></i>
-            Top 10 ausgeliehene Produkte
-          </h2>
-        </div>
-      </ng-template>
-
-      <div class="p-8 bg-gray-50 rounded-lg mb-8">
-        <p-chart
-          type="bar"
-          [data]="topProductsChartData()"
-          [options]="chartOptions"
-          [style]="{ height: '400px' }">
-        </p-chart>
-      </div>
-
-      <app-ranking-list
-        [rankings]="topProducts()">
-      </app-ranking-list>
-    </p-card>
   }
 </div>
-

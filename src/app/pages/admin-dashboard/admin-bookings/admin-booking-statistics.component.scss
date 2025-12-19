@@ -1,5 +1,5 @@
 .statistics-container {
-  padding: 2rem;
+  padding: 2em;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -7,9 +7,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2rem;
+  margin-bottom: 2em;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 2em;
 }
 .header-content {
   flex: 1;
@@ -28,6 +28,69 @@
   color: #6b7280;
   font-size: 1rem;
 }
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-section {
+  margin-bottom: 2em;
+}
+
+.filter-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: #000080;
+  font-size: 0.9rem;
+}
+
+.filter-dropdown,
+.filter-calendar {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f0f7ff;
+  border-radius: 6px;
+  color: #000080;
+  font-weight: 500;
+  margin-left: auto;
+
+  i {
+    font-size: 1.2rem;
+  }
+}
+
+.export-section {
+  margin-bottom: 2em;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -44,8 +107,8 @@
 .overview-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 2em;
+  margin-bottom: 2em;
 }
 .stat-overview-card {
   border: 2px solid transparent;
@@ -87,7 +150,7 @@
   letter-spacing: 0.5px;
 }
 .chart-card {
-  margin-bottom: 2rem;
+  margin-bottom: 2em;
   border: 2px solid #e5e7eb;
   ::ng-deep .p-card-header {
     padding: 1.5rem;
@@ -246,7 +309,7 @@
 }
 @media (max-width: 768px) {
   .statistics-container {
-    padding: 1rem;
+    padding: 1em;
   }
   .header-title {
     font-size: 1.5rem;
@@ -254,6 +317,28 @@
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .filter-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-group {
+    min-width: 100%;
+  }
+  .filter-info {
+    margin-left: 0;
+    width: 100%;
+  }
+  .export-section {
+    justify-content: stretch;
+  }
+  .export-buttons {
+    width: 100%;
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
   }
   .overview-cards {
     grid-template-columns: 1fr;

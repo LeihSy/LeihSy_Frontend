@@ -1,11 +1,14 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { DatePicker } from 'primeng/datepicker';
+import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
@@ -15,18 +18,15 @@ import { StatisticsHeaderComponent } from '../../../components/admin/statistics-
 import { OverviewStatCardComponent } from '../../../components/admin/overview-stat-card/overview-stat-card.component';
 import { StatsTableComponent, StatusStat } from '../../../components/admin/stats-table/stats-table.component';
 import { RankingListComponent, ProductRanking } from '../../../components/admin/ranking-list/ranking-list.component';
-
-interface ProductStats {
-  productName: string;
-  productId: number;
-  count: number;
-}
+import { BookingStatisticsExportService } from './services/booking-statistics-export.service';
+import { ExportButtonsComponent } from './components/export-buttons/export-buttons.component';
 
 @Component({
   selector: 'app-admin-booking-statistics',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     CardModule,
     ChartModule,
     ToastModule,
@@ -34,10 +34,13 @@ interface ProductStats {
     ButtonModule,
     RouterLink,
     TooltipModule,
+    DatePicker,
+    Select,
     StatisticsHeaderComponent,
     OverviewStatCardComponent,
     StatsTableComponent,
-    RankingListComponent
+    RankingListComponent,
+    ExportButtonsComponent
   ],
   providers: [MessageService],
   templateUrl: './admin-booking-statistics.component.html'
@@ -45,6 +48,45 @@ interface ProductStats {
 export class AdminBookingStatisticsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   bookings = signal<Booking[]>([]);
+
+  // Zeitraum-Filter
+  dateRangeStart = signal<Date | null>(null);
+  dateRangeEnd = signal<Date | null>(null);
+  dateFilterPreset = signal<string>('all');
+
+  dateFilterOptions = [
+    { label: 'Alle Buchungen', value: 'all' },
+    { label: 'Letzten 7 Tage', value: 'last7days' },
+    { label: 'Letzten 30 Tage', value: 'last30days' },
+    { label: 'Diesen Monat', value: 'thisMonth' },
+    { label: 'Letzten Monat', value: 'lastMonth' },
+    { label: 'Dieses Jahr', value: 'thisYear' },
+    { label: 'Benutzerdefiniert', value: 'custom' }
+  ];
+
+  // Gefilterte Buchungen basierend auf Zeitraum
+  filteredBookings = computed(() => {
+    const start = this.dateRangeStart();
+    const end = this.dateRangeEnd();
+    const allBookings = this.bookings();
+
+    if (!start && !end) {
+      return allBookings;
+    }
+
+    return allBookings.filter(booking => {
+      const bookingDate = new Date(booking.createdAt);
+
+      if (start && bookingDate < start) return false;
+      if (end) {
+        const endOfDay = new Date(end);
+        endOfDay.setHours(23, 59, 59, 999);
+        if (bookingDate > endOfDay) return false;
+      }
+
+      return true;
+    });
+  });
 
   chartOptions = {
     responsive: true,
@@ -72,7 +114,7 @@ export class AdminBookingStatisticsComponent implements OnInit {
   statusStats = computed(() => {
     const stats = new Map<string, number>();
 
-    this.bookings().forEach(booking => {
+    this.filteredBookings().forEach(booking => {
       const status = this.getStatusLabel(booking.status);
       stats.set(status, (stats.get(status) || 0) + 1);
     });
@@ -99,7 +141,7 @@ export class AdminBookingStatisticsComponent implements OnInit {
   topProducts = computed(() => {
     const productMap = new Map<number, { name: string; count: number }>();
 
-    this.bookings().forEach(booking => {
+    this.filteredBookings().forEach(booking => {
       if (!booking.productId || !booking.productName) return;
 
       const existing = productMap.get(booking.productId);
@@ -169,7 +211,8 @@ export class AdminBookingStatisticsComponent implements OnInit {
 
   constructor(
     private readonly bookingService: BookingService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly exportService: BookingStatisticsExportService
   ) {}
 
   ngOnInit(): void {
@@ -198,6 +241,89 @@ export class AdminBookingStatisticsComponent implements OnInit {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  exportStatistics(): void {
+    const dateRange = this.dateRangeStart() && this.dateRangeEnd()
+      ? { start: this.dateRangeStart()!, end: this.dateRangeEnd()! }
+      : undefined;
+
+    this.exportService.exportAsHtml({
+      totalBookings: this.filteredBookings().length,
+      statusStats: this.statusStats(),
+      topProducts: this.topProducts(),
+      exportDate: new Date(),
+      dateRange
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Export erfolgreich',
+      detail: 'Die Statistiken wurden als HTML-Datei exportiert.'
+    });
+  }
+
+  exportStatisticsAsPdf(): void {
+    const dateRange = this.dateRangeStart() && this.dateRangeEnd()
+      ? { start: this.dateRangeStart()!, end: this.dateRangeEnd()! }
+      : undefined;
+
+    this.exportService.exportAsPdf({
+      totalBookings: this.filteredBookings().length,
+      statusStats: this.statusStats(),
+      topProducts: this.topProducts(),
+      exportDate: new Date(),
+      dateRange
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Export erfolgreich',
+      detail: 'Die Statistiken wurden als PDF-Datei exportiert.'
+    });
+  }
+
+  onDateFilterPresetChange(): void {
+    const preset = this.dateFilterPreset();
+    const now = new Date();
+
+    switch (preset) {
+      case 'all':
+        this.dateRangeStart.set(null);
+        this.dateRangeEnd.set(null);
+        break;
+      case 'last7days':
+        this.dateRangeStart.set(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
+        this.dateRangeEnd.set(now);
+        break;
+      case 'last30days':
+        this.dateRangeStart.set(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000));
+        this.dateRangeEnd.set(now);
+        break;
+      case 'thisMonth':
+        this.dateRangeStart.set(new Date(now.getFullYear(), now.getMonth(), 1));
+        this.dateRangeEnd.set(now);
+        break;
+      case 'lastMonth':
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        this.dateRangeStart.set(lastMonth);
+        this.dateRangeEnd.set(lastMonthEnd);
+        break;
+      case 'thisYear':
+        this.dateRangeStart.set(new Date(now.getFullYear(), 0, 1));
+        this.dateRangeEnd.set(now);
+        break;
+      case 'custom':
+        // Benutzer kann manuell Daten wählen
+        break;
+    }
+  }
+
+  clearDateFilter(): void {
+    this.dateRangeStart.set(null);
+    this.dateRangeEnd.set(null);
+    this.dateFilterPreset.set('all');
   }
 
   private getStatusLabel(status: string | null): string {

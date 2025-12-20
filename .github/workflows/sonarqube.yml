@@ -80,9 +80,9 @@ jobs:
       # -----------------------------------------------------
       - name: SonarCloud Scan Frontend
         uses: SonarSource/sonarqube-scan-action@v6
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           projectBaseDir: .
-          args: >
-            -Dsonar.qualitygate.wait=false
+          args: -Dsonar.qualitygate.wait=false

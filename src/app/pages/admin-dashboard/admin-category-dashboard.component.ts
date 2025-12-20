@@ -12,7 +12,7 @@ import { MessageService } from 'primeng/api';
 
 // Datenmodell: Kategorie
 interface Category {
-  id: string;          // eindeutige ID
+  id: string;          
   name: string;        // Anzeigename
   icon: string;        // Emoji/Icon
   deviceCount: number; // Anzahl Geräte
@@ -75,9 +75,9 @@ export class AdminCategoryDashboardComponent {
   // --- Abgeleitete Daten ---------------------------------
 
   get filteredCategories(): Category[] { // Rückgabe: gefilterte Liste
-    const query = this.searchQuery.toLowerCase().trim(); // normalisieren
-    if (!query) return this.categories; // kein Filter
-    return this.categories.filter(cat =>    
+    const query = this.searchQuery.toLowerCase().trim(); // säubert
+    if (!query) return this.categories; // kein Filter, wenn leer
+    return this.categories.filter(cat =>      //filtert bzw neue Liste mit den Elementen, die passen  
       cat.name.toLowerCase().includes(query) // Name enthält Suchtext
     );
   }
@@ -99,7 +99,7 @@ export class AdminCategoryDashboardComponent {
   }
   // Dialog fürs Löschen öffnen
   openDeleteDialog(category: Category) {
-    this.selectedCategory = category; // Auswahl setzen
+    this.selectedCategory = category; // speichern in selected Category
     this.isDeleteDialogOpen = true;  // Dialog öffnen
   }
 
@@ -147,7 +147,7 @@ export class AdminCategoryDashboardComponent {
 
     this.categories = this.categories.map(cat => // neue Liste mit geänderten Daten
       cat.id === this.selectedCategory!.id      //id vergleichen
-        ? {
+        ? {                                     //if-else, wenn IDs übereinstimmen
             ...cat, // Rest behalten
             name: this.newCategoryName.trim(),    //überschreiben
             icon: this.newCategoryIcon || '📦'
@@ -170,7 +170,7 @@ export class AdminCategoryDashboardComponent {
   handleDeleteCategory() {
     if (!this.selectedCategory) return; 
 
-    if (this.selectedCategory.deviceCount > 0) { //nur leere Kategorien löschen
+    if (this.selectedCategory.deviceCount > 0) { //nur leere Kategorien löschen disbale deleted nochmal setzten statt >0
       this.messageService.add({
         severity: 'error',
         summary: 'Löschen nicht möglich',
@@ -180,11 +180,11 @@ export class AdminCategoryDashboardComponent {
     }
 
     this.categories = this.categories.filter( // ID nachschauen und entfernen
-      cat => cat.id !== this.selectedCategory!.id
+      cat => cat.id !== this.selectedCategory!.id   //wird entfernt/bleibt drin 
     );
 
     this.isDeleteDialogOpen = false; // Dialog schließen
-    this.selectedCategory = null;    // Auswahl löschen
+    this.selectedCategory = null;    // leeren
 
     this.messageService.add({ // Meldung: Erfolg
       severity: 'success',

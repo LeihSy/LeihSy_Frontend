@@ -13,7 +13,9 @@
       <div class="flex flex-col sm:flex-row gap-3 mb-6">
         <!-- Gerätesuche -->
         <div class="flex-1 relative">
-          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <i
+            class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+          ></i>
           <input
             pInputText
             type="text"
@@ -37,7 +39,9 @@
 
         <!-- Verleiher-Filter -->
         <div class="relative w-full sm:w-[240px]">
-          <i class="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <i
+            class="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+          ></i>
           <input
             pInputText
             type="text"
@@ -58,85 +62,88 @@
       </p>
     </div>
 
-    <!-- Geräteliste -->
-    <div class="space-y-4" *ngIf="filteredDevices().length > 0; else emptyState">
-      <div
-        *ngFor="let device of filteredDevices()"
-        class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-      >
-        <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
-          <!-- Icon -->
-          <div class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 text-2xl">
-            {{ device.category | deviceIcon }}
-          </div>
-
-          <!-- Infos -->
-          <div class="flex-1 min-w-0">
-            <h3 class="text-lg font-semibold text-gray-900 mb-1">
-              {{ device.name }}
-            </h3>
-            <p class="text-sm text-gray-600 mb-2">
-              {{ device.category }} • {{ device.inventoryNumber }}
-            </p>
-
-            <div class="flex items-center gap-2 text-sm">
-              <span class="bg-[#2c3e7a] text-white px-2 py-0.5 rounded text-xs">
-                {{ device.availability.available }} von {{ device.availability.total }} verfügbar
-              </span>
-            </div>
-          </div>
-
-          <!-- Bearbeiten -->
-          <button
-            pButton
-            type="button"
-            (click)="openEditDialog(device)"
-            class="p-button-text p-button-plain text-[#2c3e7a] hover:text-[#1f2d56] hover:bg-blue-50 flex-shrink-0"
+    <!-- Geräteliste / Empty State -->
+    @if (filteredDevices().length > 0) {
+      <div class="space-y-4">
+        @for (device of filteredDevices(); track device.id) {
+          <div
+            class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
           >
-            <i class="pi pi-pencil mr-2 text-sm"></i>
-            <span>Bearbeiten</span>
-          </button>
-        </div>
+            <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
+              <!-- Icon -->
+              <div
+                class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 text-2xl"
+              >
+                {{ device.category | deviceIcon }}
+              </div>
 
-        <!-- Verleiher-Zuordnung -->
-        <div class="border-t border-gray-100 pt-4 mt-4">
-          <div class="flex items-start gap-3">
-            <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-900 mb-1">
-                Zugewiesener Verleiher:
-              </p>
-
-              <ng-container *ngIf="device.assignedLender; else noLender">
-                <p class="text-sm text-gray-700 font-medium">
-                  {{ device.assignedLender }}
+              <!-- Infos -->
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                  {{ device.name }}
+                </h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  {{ device.category }} • {{ device.inventoryNumber }}
                 </p>
 
-                <div class="flex items-center gap-2 mt-1" *ngIf="device.lenderLocation">
-                  <i class="pi pi-map-marker text-gray-400 text-sm"></i>
-                  <p class="text-sm text-gray-600">
-                    {{ device.lenderLocation }}
-                  </p>
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="bg-[#2c3e7a] text-white px-2 py-0.5 rounded text-xs">
+                    {{ device.availability.available }} von {{ device.availability.total }} verfügbar
+                  </span>
                 </div>
-              </ng-container>
+              </div>
 
-              <ng-template #noLender>
-                <p class="text-sm text-gray-500 italic">
-                  Kein Verleiher zugeordnet
-                </p>
-              </ng-template>
+              <!-- Bearbeiten -->
+              <button
+                pButton
+                type="button"
+                (click)="openEditDialog(device)"
+                class="p-button-text p-button-plain text-[#2c3e7a] hover:text-[#1f2d56] hover:bg-blue-50 flex-shrink-0"
+              >
+                <i class="pi pi-pencil mr-2 text-sm"></i>
+                <span>Bearbeiten</span>
+              </button>
+            </div>
+
+            <!-- Verleiher-Zuordnung -->
+            <div class="border-t border-gray-100 pt-4 mt-4">
+              <div class="flex items-start gap-3">
+                <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
+
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900 mb-1">
+                    Zugewiesener Verleiher:
+                  </p>
+
+                  @if (device.assignedLender) {
+                    <p class="text-sm text-gray-700 font-medium">
+                      {{ device.assignedLender }}
+                    </p>
+
+                    @if (device.lenderLocation) {
+                      <div class="flex items-center gap-2 mt-1">
+                        <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                        <p class="text-sm text-gray-600">
+                          {{ device.lenderLocation }}
+                        </p>
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-sm text-gray-500 italic">
+                      Kein Verleiher zugeordnet
+                    </p>
+                  }
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
-    </div>
-
-    <!-- Leerer Zustand -->
-    <ng-template #emptyState>
+    } @else {
       <div class="bg-white border border-gray-200 rounded-lg p-12 text-center">
         <p class="text-gray-500">Keine Geräte gefunden</p>
       </div>
-    </ng-template>
+    }
   </main>
 
   <!-- Dialog -->
@@ -151,16 +158,13 @@
     [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
     header="Gerät bearbeiten"
   >
-    <ng-container *ngIf="selectedDevice() as device">
+    @if (selectedDevice(); as device) {
       <p class="text-sm text-gray-600 mb-4">
         {{ device.name }} ({{ device.inventoryNumber }})
       </p>
 
-      <!-- ✅ Tabs (ohne two-way binding auf signal) -->
-      <p-tabs
-        [value]="activeDialogTab()"
-        (valueChange)="setActiveDialogTab($event)"
-      >
+      <!-- Tabs -->
+      <p-tabs [value]="activeDialogTab()" (valueChange)="setActiveDialogTab($event)">
         <p-tablist>
           <p-tab value="lender">Verleiher</p-tab>
           <p-tab value="related">Zusatzgegenstände</p-tab>
@@ -196,7 +200,9 @@
                 </small>
 
                 <datalist id="lender-suggestions">
-                  <option *ngFor="let lender of uniqueLenders()" [value]="lender"></option>
+                  @for (lender of uniqueLenders(); track lender) {
+                    <option [value]="lender"></option>
+                  }
                 </datalist>
               </div>
 
@@ -215,26 +221,25 @@
                 />
               </div>
 
-              <div
-                class="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                *ngIf="assignedLender().trim() && lenderLocation().trim()"
-              >
-                <div class="flex items-start gap-3">
-                  <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 mb-1">Zuordnung:</p>
-                    <p class="text-sm text-gray-700 font-medium">
-                      {{ assignedLender() }}
-                    </p>
-                    <div class="flex items-center gap-2 mt-1">
-                      <i class="pi pi-map-marker text-gray-400 text-sm"></i>
-                      <p class="text-sm text-gray-600">
-                        {{ lenderLocation() }}
+              @if (assignedLender().trim() && lenderLocation().trim()) {
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div class="flex items-start gap-3">
+                    <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 mb-1">Zuordnung:</p>
+                      <p class="text-sm text-gray-700 font-medium">
+                        {{ assignedLender() }}
                       </p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                        <p class="text-sm text-gray-600">
+                          {{ lenderLocation() }}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              }
             </div>
           </p-tabpanel>
 
@@ -249,7 +254,9 @@
 
             <!-- Suche -->
             <div class="relative mb-4">
-              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <i
+                class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+              ></i>
               <input
                 pInputText
                 type="text"
@@ -261,138 +268,140 @@
             </div>
 
             <!-- Ausgewählte Zusatzgegenstände -->
-            <div class="space-y-2 mb-4" *ngIf="selectedRelatedItems().length > 0">
-              <p class="text-sm font-medium text-gray-900">
-                Ausgewählte Zusatzgegenstände ({{ selectedRelatedItems().length }})
-              </p>
+            @if (selectedRelatedItems().length > 0) {
+              <div class="space-y-2 mb-4">
+                <p class="text-sm font-medium text-gray-900">
+                  Ausgewählte Zusatzgegenstände ({{ selectedRelatedItems().length }})
+                </p>
 
-              <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
-                <div
-                  *ngFor="let item of selectedRelatedItems()"
-                  class="flex items-center justify-between gap-2 bg-white p-2 rounded border border-gray-200"
-                >
-                  <ng-container *ngIf="findDeviceById(item.deviceId) as d">
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                      <div class="text-lg flex-shrink-0">{{ d.category | deviceIcon }}</div>
-                      <div class="min-w-0">
-                        <p class="text-sm font-medium truncate">{{ d.name }}</p>
-                        <p class="text-xs text-gray-500">{{ d.inventoryNumber }}</p>
-                      </div>
+                <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  @for (item of selectedRelatedItems(); track item.deviceId) {
+                    <div
+                      class="flex items-center justify-between gap-2 bg-white p-2 rounded border border-gray-200"
+                    >
+                      @if (findDeviceById(item.deviceId); as d) {
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                          <div class="text-lg flex-shrink-0">{{ d.category | deviceIcon }}</div>
+                          <div class="min-w-0">
+                            <p class="text-sm font-medium truncate">{{ d.name }}</p>
+                            <p class="text-xs text-gray-500">{{ d.inventoryNumber }}</p>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                          <p-tag
+                            [value]="relatedTypeLabel(item.type)"
+                            [styleClass]="
+                              item.type === 'required'
+                                ? 'bg-red-100 text-red-700 border border-red-300 text-xs'
+                                : 'bg-blue-100 text-blue-700 border border-blue-300 text-xs'
+                            "
+                          ></p-tag>
+
+                          <div class="flex gap-1">
+                            <button
+                              pButton
+                              type="button"
+                              class="p-button-text h-8 w-8 p-0"
+                              [ngClass]="item.type === 'required' ? 'bg-red-50 text-red-700' : 'text-gray-700'"
+                              (click)="toggleRelatedItem(item.deviceId, 'required')"
+                              title="Erforderlich"
+                            >
+                              <i class="pi pi-exclamation-circle"></i>
+                            </button>
+
+                            <button
+                              pButton
+                              type="button"
+                              class="p-button-text h-8 w-8 p-0"
+                              [ngClass]="item.type === 'recommended' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'"
+                              (click)="toggleRelatedItem(item.deviceId, 'recommended')"
+                              title="Empfohlen"
+                            >
+                              <i class="pi pi-link"></i>
+                            </button>
+
+                            <button
+                              pButton
+                              type="button"
+                              class="p-button-text h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                              (click)="removeRelatedItem(item.deviceId)"
+                              title="Entfernen"
+                            >
+                              <i class="pi pi-times"></i>
+                            </button>
+                          </div>
+                        </div>
+                      }
                     </div>
-
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                      <p-tag
-                        [value]="relatedTypeLabel(item.type)"
-                        [styleClass]="
-                          item.type === 'required'
-                            ? 'bg-red-100 text-red-700 border border-red-300 text-xs'
-                            : 'bg-blue-100 text-blue-700 border border-blue-300 text-xs'
-                        "
-                      ></p-tag>
-
-                      <div class="flex gap-1">
-                        <button
-                          pButton
-                          type="button"
-                          class="p-button-text h-8 w-8 p-0"
-                          [ngClass]="item.type === 'required' ? 'bg-red-50 text-red-700' : 'text-gray-700'"
-                          (click)="toggleRelatedItem(item.deviceId, 'required')"
-                          title="Erforderlich"
-                        >
-                          <i class="pi pi-exclamation-circle"></i>
-                        </button>
-
-                        <button
-                          pButton
-                          type="button"
-                          class="p-button-text h-8 w-8 p-0"
-                          [ngClass]="item.type === 'recommended' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'"
-                          (click)="toggleRelatedItem(item.deviceId, 'recommended')"
-                          title="Empfohlen"
-                        >
-                          <i class="pi pi-link"></i>
-                        </button>
-
-                        <button
-                          pButton
-                          type="button"
-                          class="p-button-text h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                          (click)="removeRelatedItem(item.deviceId)"
-                          title="Entfernen"
-                        >
-                          <i class="pi pi-times"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </ng-container>
+                  }
                 </div>
               </div>
-            </div>
+            }
 
             <!-- Verfügbare Geräte -->
             <div class="space-y-2">
               <p class="text-sm font-medium text-gray-900">Verfügbare Geräte</p>
 
               <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-white">
-                <ng-container *ngIf="availableRelatedDevices().length > 0; else noRelatedDevices">
-                  <div
-                    *ngFor="let d of availableRelatedDevices()"
-                    class="flex items-center justify-between gap-2 p-2 rounded transition-colors"
-                    [ngClass]="
-                      getRelatedItemStatus(d.id)
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-50 border border-transparent'
-                    "
-                  >
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                      <div class="text-lg flex-shrink-0">{{ d.category | deviceIcon }}</div>
-                      <div class="min-w-0">
-                        <p class="text-sm font-medium truncate">{{ d.name }}</p>
-                        <p class="text-xs text-gray-500">
-                          {{ d.category }} • {{ d.inventoryNumber }}
-                        </p>
+                @if (availableRelatedDevices().length > 0) {
+                  @for (d of availableRelatedDevices(); track d.id) {
+                    <div
+                      class="flex items-center justify-between gap-2 p-2 rounded transition-colors"
+                      [ngClass]="
+                        getRelatedItemStatus(d.id)
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'hover:bg-gray-50 border border-transparent'
+                      "
+                    >
+                      <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <div class="text-lg flex-shrink-0">{{ d.category | deviceIcon }}</div>
+                        <div class="min-w-0">
+                          <p class="text-sm font-medium truncate">{{ d.name }}</p>
+                          <p class="text-xs text-gray-500">
+                            {{ d.category }} • {{ d.inventoryNumber }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex gap-1 flex-shrink-0">
+                        <button
+                          pButton
+                          type="button"
+                          class="p-button-outlined h-8 text-xs"
+                          [ngClass]="
+                            getRelatedItemStatus(d.id) === 'required'
+                              ? 'bg-red-50 border-red-300 text-red-700'
+                              : 'hover:bg-red-50'
+                          "
+                          (click)="toggleRelatedItem(d.id, 'required')"
+                        >
+                          <i class="pi pi-exclamation-circle mr-2"></i>
+                          Erforderlich
+                        </button>
+
+                        <button
+                          pButton
+                          type="button"
+                          class="p-button-outlined h-8 text-xs"
+                          [ngClass]="
+                            getRelatedItemStatus(d.id) === 'recommended'
+                              ? 'bg-blue-50 border-blue-300 text-blue-700'
+                              : 'hover:bg-blue-50'
+                          "
+                          (click)="toggleRelatedItem(d.id, 'recommended')"
+                        >
+                          <i class="pi pi-link mr-2"></i>
+                          Empfohlen
+                        </button>
                       </div>
                     </div>
-
-                    <div class="flex gap-1 flex-shrink-0">
-                      <button
-                        pButton
-                        type="button"
-                        class="p-button-outlined h-8 text-xs"
-                        [ngClass]="
-                          getRelatedItemStatus(d.id) === 'required'
-                            ? 'bg-red-50 border-red-300 text-red-700'
-                            : 'hover:bg-red-50'
-                        "
-                        (click)="toggleRelatedItem(d.id, 'required')"
-                      >
-                        <i class="pi pi-exclamation-circle mr-2"></i>
-                        Erforderlich
-                      </button>
-
-                      <button
-                        pButton
-                        type="button"
-                        class="p-button-outlined h-8 text-xs"
-                        [ngClass]="
-                          getRelatedItemStatus(d.id) === 'recommended'
-                            ? 'bg-blue-50 border-blue-300 text-blue-700'
-                            : 'hover:bg-blue-50'
-                        "
-                        (click)="toggleRelatedItem(d.id, 'recommended')"
-                      >
-                        <i class="pi pi-link mr-2"></i>
-                        Empfohlen
-                      </button>
-                    </div>
-                  </div>
-                </ng-container>
-
-                <ng-template #noRelatedDevices>
+                  }
+                } @else {
                   <div class="text-center py-8 text-gray-500 text-sm">
                     {{ relatedItemsSearch().trim() ? 'Keine Geräte gefunden' : 'Keine Geräte verfügbar' }}
                   </div>
-                </ng-template>
+                }
               </div>
             </div>
           </p-tabpanel>
@@ -414,6 +423,6 @@
           Änderungen speichern
         </button>
       </div>
-    </ng-container>
+    }
   </p-dialog>
 </div>

@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { AdminBookingStatisticsComponent } from './admin-booking-statistics.component';
-import { BookingService } from '../../services/booking.service';
+import { BookingService } from '../../../services/booking.service';
 import { MessageService } from 'primeng/api';
 import { of, throwError } from 'rxjs';
-import { Booking } from '../../models/booking.model';
+import { Booking } from '../../../models/booking.model';
 
 describe('AdminBookingStatisticsComponent', () => {
   let component: AdminBookingStatisticsComponent;

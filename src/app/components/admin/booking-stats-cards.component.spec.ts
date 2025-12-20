@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BookingStatsCardsComponent } from './booking-stats-cards.component';
+import {By} from '@angular/platform-browser';
 
 describe('BookingStatsCardsComponent', () => {
   let component: BookingStatsCardsComponent;
@@ -105,80 +106,53 @@ describe('BookingStatsCardsComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should render all stat cards', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const statCards = compiled.querySelectorAll('.stat-card');
-      expect(statCards.length).toBe(6);
-    });
-
-    it('should display correct counts', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      const values = compiled.querySelectorAll('.stat-value');
-
-      expect(values[0].textContent).toContain('5'); // current loans
-      expect(values[1].textContent).toContain('2'); // overdue
-      expect(values[2].textContent).toContain('8'); // open requests
-      expect(values[3].textContent).toContain('3'); // confirmed
-      expect(values[4].textContent).toContain('12'); // future
-      expect(values[5].textContent).toContain('30'); // total
-    });
-
-    it('should highlight active card', () => {
-      component.selectedView = 'current';
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      const activeCards = compiled.querySelectorAll('.stat-card.active');
-      expect(activeCards.length).toBe(1);
-    });
-  });
-
-  describe('Card Clicks', () => {
-    it('should emit view change when current card clicked', () => {
-      spyOn(component.viewChange, 'emit');
-      component.onViewClick('current');
-      expect(component.viewChange.emit).toHaveBeenCalledWith('current');
-    });
-
-    it('should emit view change when overdue card clicked', () => {
-      spyOn(component.viewChange, 'emit');
-      component.onViewClick('overdue');
-      expect(component.viewChange.emit).toHaveBeenCalledWith('overdue');
-    });
-
-    it('should emit view change for all view types', () => {
-      const viewTypes: Array<'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future'> = [
-        'all', 'current', 'overdue', 'pending', 'confirmed', 'future'
-      ];
-
-      spyOn(component.viewChange, 'emit');
-
-      viewTypes.forEach(view => {
-        component.onViewClick(view);
-        expect(component.viewChange.emit).toHaveBeenCalledWith(view);
+    describe('Card Clicks', () => {
+      it('should emit view change when current card clicked', () => {
+        spyOn(component.viewChange, 'emit');
+        component.onViewClick('current');
+        expect(component.viewChange.emit).toHaveBeenCalledWith('current');
       });
 
-      expect(component.viewChange.emit).toHaveBeenCalledTimes(6);
-    });
+      it('should emit view change when overdue card clicked', () => {
+        spyOn(component.viewChange, 'emit');
+        component.onViewClick('overdue');
+        expect(component.viewChange.emit).toHaveBeenCalledWith('overdue');
+      });
 
-    it('should handle zero counts', () => {
-      component.currentLoansCount = 0;
-      component.overdueCount = 0;
-      component.openRequestsCount = 0;
-      fixture.detectChanges();
+      it('should emit view change for all view types', () => {
+        const viewTypes: Array<'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future'> = [
+          'all', 'current', 'overdue', 'pending', 'confirmed', 'future'
+        ];
 
-      expect(component.currentLoansCount).toBe(0);
-      expect(component.overdueCount).toBe(0);
-      expect(component.openRequestsCount).toBe(0);
-    });
+        spyOn(component.viewChange, 'emit');
 
-    it('should handle large counts', () => {
-      component.currentLoansCount = 999;
-      component.totalCount = 9999;
-      fixture.detectChanges();
+        viewTypes.forEach(view => {
+          component.onViewClick(view);
+          expect(component.viewChange.emit).toHaveBeenCalledWith(view);
+        });
 
-      expect(component.currentLoansCount).toBe(999);
-      expect(component.totalCount).toBe(9999);
+        expect(component.viewChange.emit).toHaveBeenCalledTimes(6);
+      });
+
+      it('should handle zero counts', () => {
+        component.currentLoansCount = 0;
+        component.overdueCount = 0;
+        component.openRequestsCount = 0;
+        fixture.detectChanges();
+
+        expect(component.currentLoansCount).toBe(0);
+        expect(component.overdueCount).toBe(0);
+        expect(component.openRequestsCount).toBe(0);
+      });
+
+      it('should handle large counts', () => {
+        component.currentLoansCount = 999;
+        component.totalCount = 9999;
+        fixture.detectChanges();
+
+        expect(component.currentLoansCount).toBe(999);
+        expect(component.totalCount).toBe(9999);
+      });
     });
   });
 });

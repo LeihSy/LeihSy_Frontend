@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AdminProductDashboardComponent } from './admin-product-dashboard.component';
-import { ItemService } from '../../services/item.service';
-import { ProductService } from '../../services/product.service';
-import { CategoryService } from '../../services/category.service';
-import { LocationService } from '../../services/location.service';
+import { ItemService } from '../../../services/item.service';
+import { ProductService } from '../../../services/product.service';
+import { CategoryService } from '../../../services/category.service';
+import { LocationService } from '../../../services/location.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
-import { Product } from '../../models/product.model';
-import { Category } from '../../models/category.model';
-import { Location } from '../../models/location.model';
+import { Product } from '../../../models/product.model';
+import { Category } from '../../../models/category.model';
+import { Location } from '../../../models/location.model';
 
 describe('AdminProductDashboardComponent', () => {
   let component: AdminProductDashboardComponent;

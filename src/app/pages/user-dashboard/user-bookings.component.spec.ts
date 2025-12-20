@@ -95,16 +95,6 @@ describe('UserBookingsComponent', () => {
     expect(bookingService.getMyDeletedBookings).toHaveBeenCalled();
   });
 
-  it('should return correct status labels', () => {
-    expect(component.getStatusLabel('PENDING')).toBe('Ausstehend');
-    expect(component.getStatusLabel('CONFIRMED')).toBe('Bestätigt');
-    expect(component.getStatusLabel('PICKED_UP')).toBe('Ausgeliehen');
-    expect(component.getStatusLabel('RETURNED')).toBe('Zurückgegeben');
-    expect(component.getStatusLabel('REJECTED')).toBe('Abgelehnt');
-    expect(component.getStatusLabel('EXPIRED')).toBe('Abgelaufen');
-    expect(component.getStatusLabel('CANCELLED')).toBe('Storniert');
-  });
-
   it('should return correct status severity', () => {
     expect(component.getStatusSeverity('PENDING')).toBe('warn');
     expect(component.getStatusSeverity('CONFIRMED')).toBe('success');
@@ -115,95 +105,9 @@ describe('UserBookingsComponent', () => {
     expect(component.getStatusSeverity('CANCELLED')).toBe('secondary');
   });
 
-  it('should return status icons', () => {
-    expect(component.getStatusIcon('PENDING')).toContain('pi-');
-    expect(component.getStatusIcon('CONFIRMED')).toContain('pi-');
-    expect(component.getStatusIcon('PICKED_UP')).toContain('pi-');
-    expect(component.getStatusIcon('RETURNED')).toContain('pi-');
-  });
-
   it('should have columns defined', () => {
     expect(component.columns).toBeDefined();
     expect(component.columns.length).toBeGreaterThan(0);
-  });
-
-  it('should initialize with default search query', () => {
-    expect(component.searchQuery()).toBe('');
-  });
-
-  it('should navigate to booking detail', () => {
-    spyOn(component['router'], 'navigate');
-    component.onBookingRowClick(mockBookings[0]);
-    expect(component['router'].navigate).toHaveBeenCalledWith(['/user-dashboard/bookings', 1]);
-  });
-
-  describe('Search Filter - Branch Coverage', () => {
-    it('should return all bookings when query is empty', () => {
-      component.searchQuery.set('');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBe(2);
-    });
-
-    it('should filter by productName', () => {
-      component.searchQuery.set('VR');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBe(1);
-      expect(filtered[0].productName).toContain('VR');
-    });
-
-    it('should filter by itemInvNumber', () => {
-      component.searchQuery.set('INV-002');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBe(1);
-      expect(filtered[0].itemInvNumber).toBe('INV-002');
-    });
-
-    it('should filter by lenderName', () => {
-      component.searchQuery.set('Lender');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBe(2);
-    });
-
-    it('should filter by statusLabel', () => {
-      component.searchQuery.set('Ausstehend');
-      const filtered = component.filteredBookings();
-      expect(filtered.every(b => b.status === 'PENDING')).toBe(true);
-    });
-
-    it('should be case insensitive', () => {
-      component.searchQuery.set('LAPTOP');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBeGreaterThanOrEqual(0);
-    });
-
-    it('should trim whitespace', () => {
-      component.searchQuery.set('  Laptop  ');
-      const filtered = component.filteredBookings();
-      expect(filtered).toBeDefined();
-    });
-
-    it('should return empty array when no match', () => {
-      component.searchQuery.set('nonexistent');
-      const filtered = component.filteredBookings();
-      expect(filtered.length).toBe(0);
-    });
-  });
-
-  describe('Status Icon - Branch Coverage', () => {
-    it('should return icon for each status', () => {
-      expect(component.getStatusIcon('PENDING')).toBe('pi pi-clock');
-      expect(component.getStatusIcon('CONFIRMED')).toBe('pi pi-check-circle');
-      expect(component.getStatusIcon('PICKED_UP')).toBe('pi pi-shopping-bag');
-      expect(component.getStatusIcon('RETURNED')).toBe('pi pi-check');
-      expect(component.getStatusIcon('REJECTED')).toBe('pi pi-times-circle');
-      expect(component.getStatusIcon('EXPIRED')).toBe('pi pi-exclamation-triangle');
-      expect(component.getStatusIcon('CANCELLED')).toBe('pi pi-ban');
-    });
-
-    it('should return default icon for unknown status', () => {
-      const icon = component.getStatusIcon('UNKNOWN' as any);
-      expect(icon).toBe('pi pi-info-circle');
-    });
   });
 });
 

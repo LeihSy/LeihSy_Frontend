@@ -109,7 +109,7 @@ export class AdminItemInstanceDashboardService {
   }
 
   navigateToEditItem(itemId: number): void {
-    this.router.navigate([`/admin/items/edit/${itemId}`]);
+    this.router.navigate(['/admin', 'items', itemId, 'edit']);
   }
 }
 

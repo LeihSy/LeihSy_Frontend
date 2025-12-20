@@ -84,7 +84,7 @@ export class AdminProductDashboardService {
   }
 
   navigateToEditProduct(productId: number): void {
-    this.router.navigate([`/admin/products/edit/${productId}`]);
+    this.router.navigate(['/admin', 'products', productId, 'edit']);
   }
 }
 

@@ -49,107 +49,71 @@ export class CatalogComponent implements OnInit {
   private catalogService = inject(CatalogService);
   private router = inject(Router);
 
-  // Use service signals
-  products = this.catalogService.products;
+  // 1. Daten direkt als Signals aus dem Service beziehen
   devices = this.catalogService.devices;
   isLoading = this.catalogService.isLoading;
+  categories = this.catalogService.categories;
   errorMessage = this.catalogService.errorMessage;
 
-  // Local component state
-  filteredDevices = signal<Device[]>([]);
+  // 2. Filter-Zustände als lokale Signals
+  searchQuery = signal('');
+  selectedCategory = signal('');
+  selectedCampus = signal('');
+  availabilityFilter = signal('');
+  dateRange = signal<Date[]>([]);
 
-  // Image Error Tracking (um Endlos-Reload zu vermeiden)
-  private imageErrorMap = new Map<number, boolean>();
-
-  // Filters
-  searchQuery = '';
-  selectedCategory = '';
-  selectedCampus = '';
-  availabilityFilter = '';
-  dateRange: Date[] = [];
-
-  // Filter Options
-  categories: string[] = [];
+  // Konstanten für die UI
   campuses = ['Campus Stadtmitte', 'Campus Flandernstraße', 'Campus Göppingen'];
   availabilityOptions = [
     { label: 'Verfügbar', value: 'available' },
     { label: 'Ausgeliehen', value: 'borrowed' }
   ];
-
-  // DatePicker
   tomorrow = new Date(Date.now() + 86400000);
-  monthsToShow = 1;
+  monthsToShow = window.innerWidth >= 768 ? 2 : 1;
 
-  // Computed
+  // 3. Automatisches Filtern durch computed
+  filteredDevices = computed(() => {
+    return this.catalogService.applyFilters(
+      this.devices(),
+      this.searchQuery(),
+      this.selectedCategory(),
+      this.selectedCampus(),
+      this.availabilityFilter(),
+      this.dateRange()
+    );
+  });
+
+  // Hilfs-Computed für das Datum-Label
   formattedDateRange = computed(() => {
-    if (!this.dateRange[0]) return '';
-    const start = this.dateRange[0].toLocaleDateString('de-DE');
-    const end = this.dateRange[1]?.toLocaleDateString('de-DE') || start;
+    const range = this.dateRange();
+    if (!range || !range[0]) return '';
+    const start = range[0].toLocaleDateString('de-DE');
+    const end = range[1]?.toLocaleDateString('de-DE') || start;
     return `${start} - ${end}`;
   });
 
   ngOnInit() {
-    this.loadProducts();
-
-    // Responsive months
-    if (window.innerWidth >= 768) {
-      this.monthsToShow = 2;
-    }
-  }
-
-  // Lade alle Produkte vom Backend mit expandierten Kategorien
-  loadProducts() {
     this.catalogService.loadProducts();
-
-    // Update categories and filteredDevices after load
-    setTimeout(() => {
-      this.categories = this.catalogService.categories();
-      this.filteredDevices.set(this.devices());
-    }, 100);
   }
 
-
-  // Filter anwenden
+  // Diese Methode bleibt leer oder kann für Analytics genutzt werden,
+  // da das computed Signal 'filteredDevices' bereits alles erledigt.
   applyFilters() {
-    const filtered = this.catalogService.applyFilters(
-      this.devices(),
-      this.searchQuery,
-      this.selectedCategory,
-      this.selectedCampus,
-      this.availabilityFilter,
-      this.dateRange
-    );
-
-    this.filteredDevices.set(filtered);
+    console.log('Filter wurden angewendet');
   }
 
-  // Navigiere zu Detailseite
   onViewDevice(deviceId: number) {
     this.catalogService.navigateToDevice(deviceId);
   }
 
-  /**
-   * Gibt die vollständige Bild-URL zurück
-   */
   getImageUrl(deviceId: number): string | null {
     const device = this.devices().find(d => d.id === deviceId);
     if (!device) return null;
-
-    return this.catalogService.getImageUrl(deviceId, device.imageUrl, this.imageErrorMap);
+    return this.catalogService.getImageUrl(deviceId, device.imageUrl, new Map());
   }
 
-  /**
-   * Error-Handler wenn Bild nicht geladen werden kann
-   * Setzt Fallback auf Icon und verhindert Endlos-Reload
-   */
-  onImageError(event: Event, device: Device): void {
-    console.warn(`Image load error for device ${device.id}:`, device.imageUrl);
-
-    this.catalogService.handleImageError(device.id, this.imageErrorMap);
-
-    // Verhindere weiteren Reload-Versuch
+  onImageError(event: Event, device: any): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
   }
-
 }

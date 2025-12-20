@@ -9,9 +9,9 @@ export const authGuard: CanActivateFn = async (route, state) => {
   const isLoggedIn = keycloak.authenticated ?? false;
 
   if (!isLoggedIn) {
-    await keycloak.login({
-      redirectUri: window.location.origin + state.url
-    });
+   await keycloak.login({
+   redirectUri: window.location.origin + state.url
+   });  
     return false;
   }
 

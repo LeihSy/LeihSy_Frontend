@@ -44,6 +44,9 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
+
+  // Admin Bereich
+  
   {
     path: 'admin',
     loadComponent: () =>
@@ -76,6 +79,18 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
+
+  //Device Management
+  {
+    path: 'admin/devices',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-device-management.component')
+        .then(m => m.AdminDeviceManagementComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+
+  
   {
     path: 'unauthorized',
     loadComponent: () =>
@@ -86,4 +101,3 @@ export const routes: Routes = [
     redirectTo: 'catalog'
   }
 ];
-

@@ -147,8 +147,8 @@
                   <td>{{ item.owner }}</td>
                   <td>
                     <p-tag
-                      [value]="getStatusLabel(item.available)"
-                      [severity]="getStatusSeverity(item.available)">
+                      [value]="getStatusLabel(item.isAvailable)"
+                      [severity]="getStatusSeverity(item.isAvailable)">
                     </p-tag>
                   </td>
                   <td>
@@ -176,4 +176,3 @@
   }
 
 </div>
-

@@ -47,4 +47,9 @@ export class ItemService {
   getAvailableItems(): Observable<Item[]> {
     return this.http.get<Item[]>(`${this.apiUrl}/available`);
   }
+
+  // GET /api/products/{productId}/items
+  getItemsByProduct(productId: number): Observable<Item[]> {
+    return this.http.get<Item[]>(`http://localhost:8080/api/products/${productId}/items`);
+  }
 }

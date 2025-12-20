@@ -76,7 +76,7 @@ export class LenderItemsComponent implements OnInit {
         return {
           product,
           items: productItems,
-          availableCount: productItems.filter(i => i.available).length,
+          availableCount: productItems.filter(i => i.isAvailable).length,  // GEÄNDERT
           totalCount: productItems.length
         };
       })
@@ -209,7 +209,7 @@ export class LenderItemsComponent implements OnInit {
     const parts2 = name2.toLowerCase().trim().split(/\s+/);
 
     return parts1.every(part => parts2.includes(part)) ||
-           parts2.every(part => parts1.includes(part));
+      parts2.every(part => parts1.includes(part));
   }
 
   loadProducts(): void {
@@ -260,12 +260,11 @@ export class LenderItemsComponent implements OnInit {
     this.searchQuery.set(value);
   }
 
-  getStatusSeverity(available: boolean): 'success' | 'danger' {
-    return available ? 'success' : 'danger';
+  getStatusSeverity(isAvailable: boolean): 'success' | 'danger' {
+    return isAvailable ? 'success' : 'danger';
   }
 
-  getStatusLabel(available: boolean): string {
-    return available ? 'Verfügbar' : 'Ausgeliehen';
+  getStatusLabel(isAvailable: boolean): string {
+    return isAvailable ? 'Verfügbar' : 'Ausgeliehen';
   }
 }
-

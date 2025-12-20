@@ -28,8 +28,8 @@ export class ProductService {
 
   // Products suchen
   searchProducts(query: string): Observable<Product[]> {
-    const params = new HttpParams().set('query', query);
-    return this.http.get<Product[]>(`${this.apiUrl}/search`, { params });
+    const params = new HttpParams().set('search', query);
+    return this.http.get<Product[]>(this.apiUrl, { params });
   }
 
   // Verfügbare Products für Zeitraum abrufen

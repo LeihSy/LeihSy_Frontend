@@ -72,7 +72,7 @@ export class AdminItemInstanceComponent implements OnInit {
       return {
         product,
         items: productItems,
-        availableCount: productItems.filter(i => i.available).length,
+        availableCount: productItems.filter(i => i.isAvailable).length,
         totalCount: productItems.length
       };
     });
@@ -245,7 +245,7 @@ export class AdminItemInstanceComponent implements OnInit {
       invNumber: item.invNumber,
       owner: item.owner,
       productId: item.productId,
-      available: item.available
+      available: item.isAvailable
     });
 
 

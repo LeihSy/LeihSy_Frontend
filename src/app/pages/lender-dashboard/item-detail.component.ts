@@ -86,11 +86,11 @@ export class ItemDetailComponent implements OnInit {
   loadItemDetails(): void {
     if (!this.itemId) return;
 
-    console.log('🔗 API Call: GET /api/items/' + this.itemId);
+    console.log('API Call: GET /api/items/' + this.itemId);
 
     this.itemService.getItemById(this.itemId).subscribe({
       next: (item) => {
-        console.log('✅ GET /api/items/' + this.itemId + ' - Success:', item);
+        console.log('GET /api/items/' + this.itemId + ' - Success:', item);
         this.item.set(item);
 
         // Lade zugehöriges Produkt
@@ -104,7 +104,7 @@ export class ItemDetailComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ GET /api/items/' + this.itemId + ' - Error:', err.status, err.message);
+        console.error('GET /api/items/' + this.itemId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -117,11 +117,11 @@ export class ItemDetailComponent implements OnInit {
   }
 
   loadProduct(productId: number): void {
-    console.log('🔗 API Call: GET /api/products/' + productId);
+    console.log('API Call: GET /api/products/' + productId);
 
     this.productService.getProductById(productId).subscribe({
       next: (product) => {
-        console.log('✅ GET /api/products/' + productId + ' - Success:', product);
+        console.log('GET /api/products/' + productId + ' - Success:', product);
 
         const isAdmin = this.authService.isAdmin();
 
@@ -129,7 +129,7 @@ export class ItemDetailComponent implements OnInit {
           const namesMatch = this.checkNamesMatch(product.lenderName, this.keycloakFullName);
 
           if (!namesMatch) {
-            console.warn('⚠️ Zugriff verweigert: Verleiher-Name stimmt nicht überein');
+            console.warn('Zugriff verweigert: Verleiher-Name stimmt nicht überein');
             console.warn('  Product.lenderName:', product.lenderName);
             console.warn('  Keycloak Name:', this.keycloakFullName);
 
@@ -148,7 +148,7 @@ export class ItemDetailComponent implements OnInit {
         this.product.set(product);
       },
       error: (err) => {
-        console.error('❌ GET /api/products/' + productId + ' - Error:', err.status, err.message);
+        console.error('GET /api/products/' + productId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -174,7 +174,7 @@ export class ItemDetailComponent implements OnInit {
     const parts2 = name2.toLowerCase().trim().split(/\s+/);
 
     return parts1.every(part => parts2.includes(part)) ||
-           parts2.every(part => parts1.includes(part));
+      parts2.every(part => parts1.includes(part));
   }
 
 
@@ -182,12 +182,11 @@ export class ItemDetailComponent implements OnInit {
     this.router.navigate(['/lender/items']);
   }
 
-  getStatusSeverity(available: boolean): 'success' | 'danger' {
-    return available ? 'success' : 'danger';
+  getStatusSeverity(isAvailable: boolean): 'success' | 'danger' {  // GEÄNDERT
+    return isAvailable ? 'success' : 'danger';
   }
 
-  getStatusLabel(available: boolean): string {
-    return available ? 'Verfügbar' : 'Ausgeliehen';
+  getStatusLabel(isAvailable: boolean): string {  // GEÄNDERT
+    return isAvailable ? 'Verfügbar' : 'Ausgeliehen';
   }
 }
-

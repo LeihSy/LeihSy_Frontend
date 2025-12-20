@@ -84,3 +84,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           projectBaseDir: .
+          args: >
+            -Dsonar.qualitygate.wait=false

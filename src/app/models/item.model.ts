@@ -13,7 +13,7 @@ export interface ItemDTO {
   productName: string;
 
   // Status
-  available: boolean;
+  isAvailable: boolean;
 
   // Timestamps
   createdAt: string;            // date-time
@@ -43,7 +43,7 @@ export interface Item {
   lenderName?: string;
 
   // Status
-  available: boolean;
+  isAvailable: boolean;
 
   // Soft Delete
   deleted: boolean;
@@ -64,6 +64,6 @@ export interface ItemCreateRequestDTO {
 
 // Legacy-Support: Alias für bestehenden Code
 export interface ItemCreate extends ItemCreateRequestDTO {
-  available?: boolean;          // Optional für Abwärtskompatibilität
+  isAvailable?: boolean;          // Optional für Abwärtskompatibilität
 }
 

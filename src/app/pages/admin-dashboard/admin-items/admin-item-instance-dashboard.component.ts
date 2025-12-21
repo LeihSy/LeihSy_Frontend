@@ -76,13 +76,13 @@ export class AdminItemInstanceComponent implements OnInit {
       const itemsWithDisplayFields = productItems.map(item => ({
         ...item,
         lenderDisplay: this.getLenderDisplay(item.lenderId),
-        availableLabel: item.available ? 'Verfügbar' : 'Ausgeliehen'
+        availableLabel: item.isAvailable ? 'Verfügbar' : 'Ausgeliehen'
       }));
 
       return {
         product,
         items: itemsWithDisplayFields,
-        availableCount: productItems.filter(i => i.available).length,
+        availableCount: productItems.filter(i => i.isAvailable).length,
         totalCount: productItems.length
       };
     });

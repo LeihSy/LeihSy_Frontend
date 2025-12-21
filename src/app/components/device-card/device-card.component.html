@@ -40,9 +40,9 @@
         <i class="pi pi-box text-gray-500"></i>
         <span class="text-slate-800 font-medium">Exemplare:</span>
         <p-tag
-          [value]="device.availability.available + ' / ' + device.availability.total"
-          [severity]="device.availability.available > 0 ? 'success' : 'danger'"
-          [styleClass]="device.availability.available > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'"
+          [value]="device.availability.isAvailable + ' / ' + device.availability.total"
+          [severity]="device.availability.isAvailable > 0 ? 'success' : 'danger'"
+          [styleClass]="device.availability.isAvailable > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'"
         ></p-tag>
         <span class="text-gray-400">|</span>
         <i class="pi pi-clock text-gray-500"></i>

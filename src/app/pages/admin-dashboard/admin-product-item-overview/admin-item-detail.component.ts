@@ -112,9 +112,9 @@ export class AdminItemDetailComponent implements OnInit {
       { icon: 'pi pi-user', label: 'Besitzer', value: item.owner },
       { icon: 'pi pi-users', label: 'Verleiher', value: item.lender?.name || 'N/A' },
       {
-        icon: item.available ? 'pi pi-check-circle' : 'pi pi-times-circle',
+        icon: item.isAvailable ? 'pi pi-check-circle' : 'pi pi-times-circle',
         label: 'Status',
-        value: item.available ? 'Verfügbar' : 'Ausgeliehen'
+        value: item.isAvailable ? 'Verfügbar' : 'Ausgeliehen'
       }
     ];
   }

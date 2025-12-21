@@ -87,9 +87,9 @@ export class CatalogService {
 
     // 4. Verfügbarkeit
     if (availability === 'available') {
-      filtered = filtered.filter(d => d.availability.available > 0);
+      filtered = filtered.filter(d => d.availability.isAvailable > 0);
     } else if (availability === 'borrowed') {
-      filtered = filtered.filter(d => d.availability.available === 0);
+      filtered = filtered.filter(d => d.availability.isAvailable === 0);
     }
 
     return filtered;
@@ -105,7 +105,7 @@ export class CatalogService {
       category: p.category?.name || 'Unbekannt',
       description: p.description || '',
       availability: {
-        available: p.availableItemCount || 0,
+        isAvailable: p.availableItemCount || 0,
         total: p.totalItemCount || 0
       },
       loanConditions: {

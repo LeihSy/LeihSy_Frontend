@@ -52,13 +52,13 @@ export class LenderItemsService {
         const productItems = filteredItems.filter(item => item.productId === product.id);
         const itemsWithDisplayFields = productItems.map(item => ({
           ...item,
-          availableLabel: item.available ? 'Verfügbar' : 'Ausgeliehen'
+          availableLabel: item.isAvailable ? 'Verfügbar' : 'Ausgeliehen'
         }));
 
         return {
           product,
           items: itemsWithDisplayFields,
-          availableCount: productItems.filter(i => i.available).length,
+          availableCount: productItems.filter(i => i.isAvailable).length,
           totalCount: productItems.length
         };
       })

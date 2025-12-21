@@ -116,7 +116,7 @@ export class ItemFormComponent implements OnInit, OnChanges {
       ownerName: this.item.owner,
       lenderId: this.item.lenderId,
       productId: this.item.productId,
-      available: this.item.available
+      available: this.item.isAvailable
     });
 
     this.updateRadioButtonValue();

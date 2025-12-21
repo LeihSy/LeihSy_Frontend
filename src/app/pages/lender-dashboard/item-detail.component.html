@@ -28,8 +28,8 @@
             <p class="text-lg text-gray-600 mb-4">{{ item()!.productName }}</p>
             <div class="flex items-center gap-3">
               <p-tag
-                [value]="getStatusLabel(item()!.available)"
-                [severity]="getStatusSeverity(item()!.available)"
+                [value]="getStatusLabel(item()!.isAvailable)"
+                [severity]="getStatusSeverity(item()!.isAvailable)"
                 styleClass="text-base">
               </p-tag>
             </div>
@@ -62,8 +62,8 @@
                 <span class="w-40 text-gray-600 font-medium">Status:</span>
                 <span class="flex-1">
                   <p-tag
-                    [value]="getStatusLabel(item()!.available)"
-                    [severity]="getStatusSeverity(item()!.available)">
+                    [value]="getStatusLabel(item()!.isAvailable)"
+                    [severity]="getStatusSeverity(item()!.isAvailable)">
                   </p-tag>
                 </span>
               </div>

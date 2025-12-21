@@ -37,7 +37,7 @@ export class AdminAllItemsService {
     return productList
       .map(product => {
         const productItems = itemList.filter(item => item.productId === product.id);
-        const availableCount = productItems.filter(item => item.available).length;
+        const availableCount = productItems.filter(item => item.isAvailable).length;
 
         return {
           product,
@@ -66,11 +66,11 @@ export class AdminAllItemsService {
   );
 
   totalAvailable = computed(() =>
-    this.items().filter(item => item.available).length
+    this.items().filter(item => item.isAvailable).length
   );
 
   totalBorrowed = computed(() =>
-    this.items().filter(item => !item.available).length
+    this.items().filter(item => !item.isAvailable).length
   );
 
   totalProducts = computed(() =>

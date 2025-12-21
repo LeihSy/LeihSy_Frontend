@@ -10,7 +10,7 @@ export interface Device {
   category: string;
   description: string;
   availability: {
-    available: number;
+    isAvailable: number;
     total: number;
   };
   loanConditions: {

@@ -131,8 +131,8 @@ export class ItemDetailComponent implements OnInit {
         // Falls Kategorie nicht expandiert ist, lade sie nach
         if (product.categoryId && !product.category) {
           this.productService.getProductsWithCategories().subscribe({
-            next: (products) => {
-              const productWithCategory = products.find(p => p.id === productId);
+            next: (products: Product[]) => {
+              const productWithCategory = products.find((p: Product) => p.id === productId);
               if (productWithCategory) {
                 this.product.set(productWithCategory);
               } else {

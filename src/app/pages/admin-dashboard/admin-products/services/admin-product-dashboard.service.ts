@@ -22,10 +22,10 @@ export class AdminProductDashboardService {
     this.isLoading.set(true);
 
     this.productService.getProductsWithCategories().pipe(
-      catchError((err) => {
+      catchError((err: any) => {
         console.error('Fehler beim Laden der Produkte:', err);
         return this.productService.getProducts().pipe(
-          catchError((fallbackErr) => {
+          catchError((fallbackErr: any) => {
             console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
             this.messageService.add({
               severity: 'error',
@@ -37,7 +37,7 @@ export class AdminProductDashboardService {
         );
       })
     ).subscribe({
-      next: (products) => {
+      next: (products: Product[]) => {
         this.products.set(products);
         this.isLoading.set(false);
       },

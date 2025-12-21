@@ -1,59 +1,39 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly apiUrl = 'http://localhost:8080/api/users';
+  private readonly apiUrl = 'http://localhost:8080/api';
 
-  constructor(private readonly http: HttpClient) {
-  }
+  constructor(private readonly http: HttpClient) {}
 
-  /**
-   * GET /api/users/{id} - User per ID abrufen
-   */
+  // GET /api/users/{id} (User per ID abrufen)
   getUserById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
+    return this.http.get<User>(`${this.apiUrl}/users/${id}`);
   }
 
-  /**
-   * GET /api/users - Alle User abrufen
-   */
-  getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
-  }
-
-  /**
-   * Gibt den Namen eines Users basierend auf seiner ID zurück
-   * @param userId - Die ID des Users
-   * @returns Observable<string> - Der Name des Users oder 'N/A' bei Fehler
-   */
-  getUserNameById(userId: number | undefined): Observable<string> {
-    if (!userId) {
-      return of('N/A');
-    }
-
-    return this.getUserById(userId).pipe(
-      map(user => user.name),
-      catchError(() => of(userId.toString()))
-    );
-  }
-
-  /**
-   * GET /api/users/names/{name} - User per Benutzername abrufen
-   */
-  getUserByName(name: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/names/${name}`);
-  }
-
-  /**
-   * GET /api/users/me - Aktuellen User abrufen (basierend auf Keycloak Token)
-   */
+  // GET /api/users/me (Aktuellen User abrufen)
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`);
+    return this.http.get<User>(`${this.apiUrl}/users/me`);
+  }
+
+  // GET /api/users/{userID}/bookings (Get bookings of a user)
+  getUserBookings(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/users/${userId}/bookings`);
+  }
+
+  // GET /api/lenders/{lenderID}/bookings (Get bookings of a lender)
+  getLenderBookings(lenderId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/lenders/${lenderId}/bookings`);
+  }
+
+  // GET /api/users?name={name} (User nach Name suchen)
+  getUserByName(name: string): Observable<User> {
+    const params = new HttpParams().set('name', name);
+    return this.http.get<User>(`${this.apiUrl}/users`, { params });
   }
 }

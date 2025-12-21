@@ -26,7 +26,7 @@ export class AdminItemInstanceDashboardService {
     this.isLoading.set(true);
 
     this.productService.getProductsWithCategories().pipe(
-      catchError((err) => {
+      catchError((err: any) => {
         console.error('Fehler beim Laden der Produkte (Fallback):', err);
         this.messageService.add({
           severity: 'error',
@@ -36,7 +36,7 @@ export class AdminItemInstanceDashboardService {
         return of([]);
       })
     ).subscribe({
-      next: (products) => {
+      next: (products: Product[]) => {
         this.products.set(products);
         this.isLoading.set(false);
       },

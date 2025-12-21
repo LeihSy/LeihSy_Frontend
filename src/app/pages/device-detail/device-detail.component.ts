@@ -120,8 +120,8 @@ export class DeviceDetailPageComponent implements OnInit {
         if (product.categoryId && !product.category) {
           console.log('Kategorie nicht expandiert, lade nach...');
           this.productService.getProductsWithCategories().subscribe({
-            next: (products) => {
-              const productWithCategory = products.find(p => p.id === id);
+            next: (products: Product[]) => {
+              const productWithCategory = products.find((p: Product) => p.id === id);
               if (productWithCategory) {
                 this.device = this.mapProductToDevice(productWithCategory);
               } else {

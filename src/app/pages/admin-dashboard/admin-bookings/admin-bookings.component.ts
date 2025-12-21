@@ -137,12 +137,12 @@ export class AdminBookingsComponent implements OnInit {
   private loadAllBookings(): void {
     this.isLoading.set(true);
 
-    this.bookingService.getAllBookings().subscribe({
-      next: (bookings) => {
+    this.bookingService.getBookings().subscribe({
+      next: (bookings: Booking[]) => {
         this.bookings.set(bookings);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Fehler beim Laden der Buchungen:', error);
         this.messageService.add({
           severity: 'error',
@@ -155,11 +155,11 @@ export class AdminBookingsComponent implements OnInit {
   }
 
   private loadOverdueBookings(): void {
-    this.bookingService.getOverdueBookings().subscribe({
-      next: (bookings) => {
+    this.bookingService.getBookings('overdue').subscribe({
+      next: (bookings: Booking[]) => {
         this.overdueBookings.set(bookings);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Fehler beim Laden der überfälligen Buchungen:', error);
         this.messageService.add({
           severity: 'error',

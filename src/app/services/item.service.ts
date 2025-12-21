@@ -11,45 +11,28 @@ export class ItemService {
 
   constructor(private http: HttpClient) {}
 
-  // GET /api/items
-  getAllItems(): Observable<Item[]> {
-    return this.http.get<Item[]>(this.apiUrl);
-  }
-
-  // GET /api/items/{id}
+  // GET /api/items/{id} (Get item by ID)
   getItemById(id: number): Observable<Item> {
     return this.http.get<Item>(`${this.apiUrl}/${id}`);
   }
 
-  // POST /api/items
-  createItem(item: ItemCreate): Observable<Item> {
-    return this.http.post<Item>(this.apiUrl, item);
-  }
-
-  // PUT /api/items/{id}
+  // PUT /api/items/{id} (Update an item)
   updateItem(id: number, item: ItemCreate): Observable<Item> {
     return this.http.put<Item>(`${this.apiUrl}/${id}`, item);
   }
 
-  // DELETE /api/items/{id}
+  // DELETE /api/items/{id} (Delete an item)
   deleteItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // GET /api/items/search?keyword=...
-  searchItems(keyword: string): Observable<Item[]> {
-    return this.http.get<Item[]>(`${this.apiUrl}/search`, {
-      params: { keyword }
-    });
+  // GET /api/items (Get all items)
+  getAllItems(): Observable<Item[]> {
+    return this.http.get<Item[]>(this.apiUrl);
   }
 
-  // GET /api/items/available - Gibt nur verfügbare Items zurück
-  getAvailableItems(): Observable<Item[]> {
-    return this.http.get<Item[]>(`${this.apiUrl}/available`);
-  }
-
-  // GET /api/items/deleted - Gibt nur gelöschte Items zurück
-  getDeletedItems(): Observable<Item[]> {
-    return this.http.get<Item[]>(`${this.apiUrl}/deleted`);
+  // POST /api/items (Create a new item)
+  createItem(item: ItemCreate): Observable<Item> {
+    return this.http.post<Item>(this.apiUrl, item);
   }
 }

@@ -27,12 +27,12 @@ export class CatalogService {
     this.errorMessage.set(null);
 
     this.productService.getProductsWithCategories().pipe(
-      catchError((error) => {
+      catchError((error: any) => {
         console.error('Fehler beim Laden der Produkte:', error);
         this.errorMessage.set('Produkte konnten nicht geladen werden.');
         return of([]);
       })
-    ).subscribe((products) => {
+    ).subscribe((products: Product[]) => {
       this.products.set(products);
 
       const mappedDevices = this.mapProductsToDevices(products);

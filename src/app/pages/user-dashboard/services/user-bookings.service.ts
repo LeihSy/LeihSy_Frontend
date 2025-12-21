@@ -1,15 +1,16 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { forkJoin } from 'rxjs';
 
 import { BookingService } from '../../../services/booking.service';
 import { Booking, BookingStatus } from '../../../models/booking.model';
+import { UserService } from '../../../services/user.service';
 
 @Injectable()
 export class UserBookingsService {
   private bookingService = inject(BookingService);
   private messageService = inject(MessageService);
+  private UserService = inject(UserService);
   private router = inject(Router);
 
   // Signals for state management
@@ -49,26 +50,32 @@ export class UserBookingsService {
   loadUserBookings(): void {
     this.isLoading.set(true);
 
-    forkJoin({
-      activeBookings: this.bookingService.getMyBookings(),
-      deletedBookings: this.bookingService.getMyDeletedBookings()
-    }).subscribe({
-      next: ({ activeBookings, deletedBookings }) => {
-        const deletedWithStatus = deletedBookings.map(booking => ({
-          ...booking,
-          status: 'CANCELLED' as BookingStatus
-        }));
-
-        const allBookings = [...activeBookings, ...deletedWithStatus];
-        this.bookings.set(allBookings);
-        this.isLoading.set(false);
+    // Zuerst den aktuellen User laden, um die User-ID zu erhalten
+    this.UserService.getCurrentUser().subscribe({
+      next: (currentUser) => {
+        // Mit der User-ID die Buchungen abrufen
+        this.UserService.getUserBookings(currentUser.id).subscribe({
+          next: (bookings) => {
+            this.bookings.set(bookings);
+            this.isLoading.set(false);
+          },
+          error: (error) => {
+            console.error('Fehler beim Laden der Buchungen:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fehler',
+              detail: 'Die Buchungen konnten nicht geladen werden.'
+            });
+            this.isLoading.set(false);
+          }
+        });
       },
       error: (error) => {
-        console.error('Fehler beim Laden der Buchungen:', error);
+        console.error('Fehler beim Laden des Benutzers:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
-          detail: 'Die Buchungen konnten nicht geladen werden.'
+          detail: 'Der Benutzer konnte nicht geladen werden.'
         });
         this.isLoading.set(false);
       }

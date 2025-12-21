@@ -222,12 +222,12 @@ export class AdminBookingStatisticsComponent implements OnInit {
   private loadData(): void {
     this.isLoading.set(true);
 
-    this.bookingService.getAllBookings().subscribe({
-      next: (bookings) => {
+    this.bookingService.getBookings().subscribe({
+      next: (bookings: Booking[]) => {
         this.bookings.set(bookings);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Fehler beim Laden der Daten:', error);
         this.messageService.add({
           severity: 'error',

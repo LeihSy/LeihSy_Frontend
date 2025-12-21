@@ -9,11 +9,7 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <button
-        pButton
-        (click)="refreshData()"
-        class="p-button-outlined p-button-secondary">
-      </button>
+
       <app-export-buttons
         [isLoading]="isLoading()"
         (exportPdf)="exportStatisticsAsPdf()"

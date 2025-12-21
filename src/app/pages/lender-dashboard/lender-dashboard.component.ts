@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
+import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
 
 @Component({
   selector: 'app-lender-dashboard',
@@ -11,7 +12,8 @@ import { ButtonModule } from 'primeng/button';
     CommonModule,
     RouterModule,
     CardModule,
-    ButtonModule
+    ButtonModule,
+    MenuCardComponent
   ],
   templateUrl: './lender-dashboard.component.html',
   styleUrls: ['./lender-dashboard.component.scss']

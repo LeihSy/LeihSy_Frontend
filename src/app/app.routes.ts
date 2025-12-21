@@ -33,6 +33,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/bookings',
+    loadComponent: () => import('./pages/user-dashboard/user-bookings.component').then(m => m.UserBookingsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/bookings/:id',
+    loadComponent: () => import('./pages/user-dashboard/booking-detail.component').then(m => m.BookingDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'lender',
     loadComponent: () => import('./pages/lender-dashboard/lender-dashboard.component').then(m => m.LenderDashboardComponent),
     canActivate: [authGuard],
@@ -61,16 +71,88 @@ export const routes: Routes = [
   {
     path: 'admin/products',
     loadComponent: () =>
-      import('./pages/admin-dashboard/admin-product-dashboard.component')
+      import('./pages/admin-dashboard/admin-products/admin-product-dashboard.component')
         .then(m => m.AdminProductDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/products/new',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-products/admin-product-form-page.component')
+        .then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/products/:id/edit',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-products/admin-product-form-page.component')
+        .then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/all-items',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-item-overview/admin-all-items.component')
+        .then(m => m.AdminAllItemsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/detail/:id',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-product-item-overview/admin-item-detail.component')
+        .then(m => m.AdminItemDetailComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
   {
     path: 'admin/items',
     loadComponent: () =>
-      import('./pages/admin-dashboard/admin-item-instance-dashboard.component')
+      import('./pages/admin-dashboard/admin-items/admin-item-instance-dashboard.component')
         .then(m => m.AdminItemInstanceComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/new',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-items/admin-item-form-page.component')
+        .then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/items/:id/edit',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-items/admin-item-form-page.component')
+        .then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/bookings',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-bookings/admin-bookings.component')
+        .then(m => m.AdminBookingsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/bookings/statistics',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-bookings/admin-booking-statistics.component')
+        .then(m => m.AdminBookingStatisticsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/bookings/:id',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-bookings/admin-booking-detail.component')
+        .then(m => m.AdminBookingDetailComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

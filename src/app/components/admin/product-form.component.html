@@ -1,0 +1,153 @@
+<p-card [header]="isEditMode ? 'Produkt bearbeiten' : 'Neues Produkt anlegen'" class="mb-6">
+  <form [formGroup]="itemForm" (ngSubmit)="submitForm()">
+
+    <p-tabs value="0">
+      <p-tablist>
+        <p-tab value="0">Allgemeine Informationen</p-tab>
+        <p-tab value="1">Produkt Details</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <p-tabpanel value="0">
+          <div class="grid gap-4 mt-4">
+
+            <app-form-row [columns]="2">
+              <app-form-input-field label="Name" [required]="true" [fullWidth]="true">
+                <input pInputText formControlName="name" class="w-full"
+                       placeholder="z.B. Canon EOS R5" />
+              </app-form-input-field>
+
+              <app-form-input-field label="Kategorie" [required]="true" [fullWidth]="true">
+                <p-select
+                  [options]="categories"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Kategorie wählen"
+                  formControlName="categoryId"
+                  class="w-full">
+                </p-select>
+                @if (categories.length === 0) {
+                  <app-validation-message
+                    [message]="'Keine Kategorien verfügbar. Bitte Backend überprüfen oder Kategorien in der Datenbank anlegen.'"
+                    [isError]="true">
+                  </app-validation-message>
+                }
+              </app-form-input-field>
+            </app-form-row>
+
+            <app-form-input-field label="Beschreibung" [fullWidth]="true">
+              <textarea rows="4" formControlName="description" class="w-full"
+                        placeholder="Detaillierte Beschreibung des Produkts..."
+                        style="border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem;"></textarea>
+            </app-form-input-field>
+
+            <app-form-input-field label="Produktbild" [fullWidth]="true">
+              @if (imagePreview()) {
+                <div class="mb-3">
+                  <img [src]="imagePreview()" alt="Preview"
+                       class="max-w-xs rounded border border-gray-300" />
+                  <button pButton icon="pi pi-times"
+                          label="Bild entfernen"
+                          class="p-button-sm p-button-danger mt-2"
+                          type="button"
+                          (click)="removeImage()"></button>
+                </div>
+              }
+
+              <input type="file"
+                     accept="image/jpeg,image/png,image/webp"
+                     (change)="onFileSelected($event)"
+                     class="block w-full text-sm text-gray-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-blue-50 file:text-blue-700
+                          hover:file:bg-blue-100
+                          cursor-pointer" />
+              <app-validation-message
+                [message]="'JPG, PNG oder WebP, max. 5MB'">
+              </app-validation-message>
+            </app-form-input-field>
+
+            <app-form-input-field label="Zubehör" [fullWidth]="true">
+              <input pInputText formControlName="accessories" class="w-full"
+                     placeholder='["Controller", "Kabel", "Netzteil"]' />
+            </app-form-input-field>
+
+          </div>
+        </p-tabpanel>
+
+        <p-tabpanel value="1">
+          <div class="grid gap-4 mt-4">
+
+            <app-form-row [columns]="2">
+              <app-form-input-field label="Max. Ausleihdauer (Tage)" [required]="true" [fullWidth]="true">
+                <p-inputNumber formControlName="expiryDate"
+                               [min]="1"
+                               [showButtons]="true"
+                               class="w-full"
+                               placeholder="z.B. 7">
+                </p-inputNumber>
+              </app-form-input-field>
+
+              <app-form-input-field label="Preis / Tagessatz (€)" [required]="true" [fullWidth]="true">
+                <p-inputNumber formControlName="price"
+                               [min]="0"
+                               [minFractionDigits]="2"
+                               [maxFractionDigits]="2"
+                               mode="currency"
+                               currency="EUR"
+                               [showButtons]="true"
+                               class="w-full">
+                </p-inputNumber>
+              </app-form-input-field>
+            </app-form-row>
+
+            <app-form-row [columns]="2">
+              <app-form-input-field label="Raumnummer" [required]="true" [fullWidth]="true">
+                <input pInputText formControlName="locationRoomNr"
+                       class="w-full"
+                       placeholder="z.B. F01.204"
+                       (input)="onLocationRoomNrChange()" />
+                @if (locationDisplayValue()) {
+                  <app-validation-message
+                    [message]="locationDisplayValue() + (locationExists() ? ' (Existiert bereits)' : ' (Wird neu angelegt)')"
+                    [isLoading]="isLoadingLocation()"
+                    [isSuccess]="!isLoadingLocation()">
+                  </app-validation-message>
+                }
+              </app-form-input-field>
+
+              <app-form-input-field label="Location ID" [fullWidth]="true">
+                <p-inputNumber formControlName="locationId"
+                               [useGrouping]="false"
+                               class="w-full"
+                               [disabled]="true"
+                               placeholder="Wird automatisch gesetzt">
+                </p-inputNumber>
+                <app-validation-message
+                  [message]="'Wird automatisch aus Raumnummer ermittelt'">
+                </app-validation-message>
+              </app-form-input-field>
+            </app-form-row>
+
+            <div class="flex gap-2 mt-6">
+              <button pButton type="submit"
+                      [label]="isEditMode ? 'Aktualisieren' : 'Erstellen'"
+                      [disabled]="itemForm.invalid"></button>
+
+              @if (isEditMode) {
+                <button pButton type="button" label="Abbrechen"
+                        class="p-button-secondary" (click)="resetForm()"></button>
+              }
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+
+  </form>
+</p-card>
+

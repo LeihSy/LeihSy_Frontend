@@ -1,0 +1,37 @@
+<div class="mt-8 overflow-x-auto">
+  <table class="w-full border-collapse">
+    <thead>
+      <tr class="text-black">
+        <th class="p-4 text-left font-semibold text-sm uppercase tracking-wide">Status</th>
+        <th class="p-4 text-center font-semibold text-sm uppercase tracking-wide">Anzahl</th>
+        <th class="p-4 text-center font-semibold text-sm uppercase tracking-wide">Anteil</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (stat of stats; track stat.statusName) {
+        <tr class="border-b border-gray-200 transition-colors duration-200 hover:bg-gray-50">
+          <td class="p-4">
+            <div class="flex items-center gap-2 font-semibold text-black">
+              <span
+                class="inline-block w-3 h-3 rounded-full"
+                [style.background-color]="stat.color">
+              </span>
+              {{ stat.statusName }}
+            </div>
+          </td>
+          <td class="p-4 text-center">{{ stat.count }}</td>
+          <td class="p-4 text-center">
+            {{ totalCount > 0 ? ((stat.count / totalCount) * 100).toFixed(1) : 0 }}%
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="3" class="text-center p-8 text-gray-600 italic">
+            Keine Status-Daten vorhanden
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+

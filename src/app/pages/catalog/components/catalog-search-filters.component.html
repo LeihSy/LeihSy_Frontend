@@ -1,0 +1,90 @@
+<div class="mb-8">
+  <h1 class="mb-2 text-3xl text-[#253359] font-semibold">Medienkatalog durchsuchen</h1>
+  <p class="text-sm text-gray-600 mb-6">
+    Nutzen Sie nach Stichworten, Geräten oder Verleihmedien
+  </p>
+
+  <!-- Freitextsuche + Datumsbereich -->
+  <div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <!-- Suchfeld nach Stichworten -->
+    <p-iconField iconPosition="left" class="flex-1">
+      <p-inputIcon class="pi pi-search text-gray-400"></p-inputIcon>
+      <input
+        pInputText
+        id="search"
+        placeholder="Suche nach Stichworten..."
+        class="w-full"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchQueryChange($event)"
+      />
+    </p-iconField>
+
+    <!-- Datumsbereich-Auswahl -->
+    <p-datePicker
+      [(ngModel)]="dateRange"
+      (ngModelChange)="onDateRangeChange()"
+      selectionMode="range"
+      [showIcon]="true"
+      inputId="daterange"
+      placeholder="Zeitraum wählen"
+      [minDate]="tomorrow"
+      [showClear]="true"
+      (onClear)="onDateClear()"
+      styleClass="sm:min-w-[280px] w-full sm:w-auto"
+      [inputStyleClass]="!dateRange[0] ? 'text-gray-500' : ''"
+      [numberOfMonths]="monthsToShow"
+    ></p-datePicker>
+
+    <!-- Suchen-Button -->
+    <button pButton label="Suchen" class="w-full sm:w-auto bg-[#253359] hover:bg-[#1f2d56] border-[#253359]"></button>
+  </div>
+
+  <!-- Filterbereich -->
+  <div class="flex flex-col sm:flex-row items-center gap-3">
+    <i class="pi pi-filter w-5 h-5 text-gray-500 shrink-0 hidden sm:block"></i>
+
+    <!-- Filter: Kategorie -->
+    <p-select
+      [(ngModel)]="selectedCategory"
+      (onChange)="onCategoryChange()"
+      [options]="categories"
+      placeholder="Alle Kategorien"
+      styleClass="flex-1 w-full"
+      [showClear]="true"
+    ></p-select>
+
+    <!-- Filter: Campus -->
+    <p-select
+      [(ngModel)]="selectedCampus"
+      (onChange)="onCampusChange()"
+      [options]="campuses"
+      placeholder="Alle Campus"
+      styleClass="flex-1 w-full"
+      [showClear]="true"
+    ></p-select>
+
+    <!-- Filter: Verfügbarkeit -->
+    <p-select
+      [(ngModel)]="availabilityFilter"
+      (onChange)="onAvailabilityChange()"
+      [options]="availabilityOptions"
+      placeholder="Verfügbarkeit"
+      styleClass="flex-1 w-full"
+      [showClear]="true"
+    ></p-select>
+  </div>
+</div>
+
+<!-- Ergebniszusammenfassung -->
+<div class="mb-6">
+  <div class="flex items-center gap-3 flex-wrap">
+    <p class="text-sm text-slate-800">{{ resultCount }} Ergebnisse gefunden</p>
+    @if (dateRange[0]) {
+      <p-badge
+        [value]="formattedDateRange"
+        styleClass="bg-blue-50 text-blue-700 border-blue-200"
+      ></p-badge>
+    }
+  </div>
+</div>
+

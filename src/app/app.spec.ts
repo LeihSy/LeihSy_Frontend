@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app';
 import Keycloak from 'keycloak-js';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('AppComponent', () => {
   let mockKeycloak: Partial<Keycloak>;
@@ -25,7 +26,8 @@ describe('AppComponent', () => {
       imports: [AppComponent],
       providers: [
         { provide: Keycloak, useValue: mockKeycloak },
-        provideRouter([])
+        provideRouter([]),
+        provideHttpClient()
       ]
     }).compileComponents();
   });

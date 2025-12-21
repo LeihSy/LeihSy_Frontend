@@ -1,0 +1,21 @@
+<div class="search-bar-wrapper">
+  <p-iconfield iconPosition="left" class="w-full">
+    <p-inputicon styleClass="pi pi-search"></p-inputicon>
+    <input
+      type="text"
+      pInputText
+      [placeholder]="placeholder"
+      [(ngModel)]="value"
+      (ngModelChange)="onInputChange($event)"
+      class="w-full" />
+  </p-iconfield>
+  @if (showClearButton && value) {
+    <button
+      pButton
+      icon="pi pi-times"
+      class="p-button-text p-button-rounded clear-button"
+      (click)="onClear()">
+    </button>
+  }
+</div>
+

@@ -1,0 +1,51 @@
+<div class="bookings-container p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">Meine Buchungen</h1>
+    <p class="text-gray-600">
+      Übersicht über alle Ihre Buchungen und Ausleihen
+    </p>
+  </div>
+
+  <app-user-stats-cards [stats]="statsCards()"></app-user-stats-cards>
+
+  <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+    <app-search-bar
+      [placeholder]="'Suche nach Produkt, Inventarnummer, Verleiher oder Status...'"
+      (valueChange)="onSearchChange($event)">
+    </app-search-bar>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <p class="mt-4 text-gray-600">Lade Buchungen...</p>
+    </div>
+  }
+
+  @if (!isLoading() && filteredBookings().length === 0) {
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+      <p class="text-gray-600">Keine Buchungen gefunden</p>
+    </div>
+  }
+
+  @if (!isLoading() && filteredBookings().length > 0) {
+    <div class="bg-white border border-gray-200 rounded-lg">
+      <app-table
+        [columns]="columns"
+        [data]="filteredBookings()"
+        [loading]="isLoading()"
+        [showActions]="false"
+        [rows]="10"
+        [paginator]="true"
+        [scrollable]="false"
+        [rowClickable]="true"
+        (rowSelect)="viewBookingDetail($event)"
+        emptyMessage="Keine Buchungen vorhanden">
+      </app-table>
+    </div>
+  }
+</div>
+

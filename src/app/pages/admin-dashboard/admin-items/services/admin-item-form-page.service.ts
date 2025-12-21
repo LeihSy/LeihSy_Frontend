@@ -76,10 +76,10 @@ export class AdminItemFormPageService {
 
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getProductsWithCategories().pipe(
+    this.productService.getProductsWithItems().pipe(
       catchError((err: any) => {
         console.error('Fehler beim Laden der Produkte:', err);
-        return this.productService.getProducts();
+        return of([]);
       })
     ).subscribe({
       next: (products: Product[]) => {

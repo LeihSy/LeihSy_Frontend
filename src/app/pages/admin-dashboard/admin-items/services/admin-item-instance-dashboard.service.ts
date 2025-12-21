@@ -25,7 +25,7 @@ export class AdminItemInstanceDashboardService {
   loadProducts(): void {
     this.isLoading.set(true);
 
-    this.productService.getProductsWithCategories().pipe(
+    this.productService.getProductsWithItems().pipe(
       catchError((err: any) => {
         console.error('Fehler beim Laden der Produkte (Fallback):', err);
         this.messageService.add({

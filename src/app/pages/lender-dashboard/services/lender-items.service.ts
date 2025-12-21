@@ -119,7 +119,7 @@ export class LenderItemsService {
 
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getProductsWithCategories().subscribe({
+    this.productService.getProductsWithItems().subscribe({
       next: (products: Product[]) => {
         this.products.set(products);
         this.isLoading.set(false);

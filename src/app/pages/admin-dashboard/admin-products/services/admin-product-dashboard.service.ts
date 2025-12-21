@@ -21,20 +21,15 @@ export class AdminProductDashboardService {
   loadProducts(): void {
     this.isLoading.set(true);
 
-    this.productService.getProductsWithCategories().pipe(
+    this.productService.getProductsWithItems().pipe(
       catchError((err: any) => {
         console.error('Fehler beim Laden der Produkte:', err);
-        return this.productService.getProducts().pipe(
-          catchError((fallbackErr: any) => {
-            console.error('Fehler beim Laden der Produkte (Fallback):', fallbackErr);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Fehler',
-              detail: 'Fehler beim Laden der Produkte.'
-            });
-            return of([]);
-          })
-        );
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Fehler beim Laden der Produkte.'
+        });
+        return of([]);
       })
     ).subscribe({
       next: (products: Product[]) => {

@@ -1,6 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -10,10 +12,11 @@ import { MessageService } from 'primeng/api';
 
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
-import { Location } from '../../models/location.model';
 import { TableComponent, ColumnDef } from '../../components/table/table.component';
 
 @Component({
@@ -55,6 +58,8 @@ export class ItemDetailComponent implements OnInit {
     private readonly router: Router,
     private readonly itemService: ItemService,
     private readonly productService: ProductService,
+    private readonly categoryService: CategoryService,
+    private readonly locationService: LocationService,
     private readonly authService: AuthService,
     private readonly messageService: MessageService
   ) {}
@@ -123,30 +128,42 @@ export class ItemDetailComponent implements OnInit {
   }
 
   loadProduct(productId: number): void {
-
-
     this.productService.getProductById(productId).subscribe({
       next: (product) => {
+        // Lade Items, Category und Location parallel
+        forkJoin({
+          items: this.productService.getProductItems(productId).pipe(catchError(() => of([]))),
+          category: product.categoryId
+            ? this.categoryService.getCategoryById(product.categoryId).pipe(catchError(() => of(null)))
+            : of(null),
+          location: product.locationId
+            ? this.locationService.getLocationById(product.locationId).pipe(catchError(() => of(null)))
+            : of(null)
+        }).subscribe({
+          next: ({ items, category, location }) => {
+            // Berechne Item Counts
+            const totalItemCount = items.length;
+            const availableItemCount = items.filter((item: any) =>
+              item.isAvailable === true || item.available === true
+            ).length;
 
-        // Falls Kategorie nicht expandiert ist, lade sie nach
-        if (product.categoryId && !product.category) {
-          this.productService.getProductsWithCategories().subscribe({
-            next: (products: Product[]) => {
-              const productWithCategory = products.find((p: Product) => p.id === productId);
-              if (productWithCategory) {
-                this.product.set(productWithCategory);
-              } else {
-                this.product.set(product);
-              }
-            },
-            error: () => {
-              // Fallback: Verwende Produkt ohne Kategorie
-              this.product.set(product);
-            }
-          });
-        } else {
-          this.product.set(product);
-        }
+            // Erweitere Produkt mit allen Daten
+            const enrichedProduct: Product = {
+              ...product,
+              totalItemCount,
+              availableItemCount,
+              category: category || undefined,
+              location: location || undefined
+            };
+
+            this.product.set(enrichedProduct);
+          },
+          error: (err: any) => {
+            console.error('Error loading additional data:', err);
+            // Fallback: Verwende Produkt ohne zusätzliche Daten
+            this.product.set(product);
+          }
+        });
       },
       error: (err) => {
         this.messageService.add({

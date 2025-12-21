@@ -93,6 +93,12 @@ export class ProductFormComponent implements OnInit, OnChanges {
       locationRoomNr: this.product.location?.roomNr || ''
     });
 
+    // Setze locationDisplayValue wenn Location vorhanden ist
+    if (this.product.location?.roomNr) {
+      this.locationDisplayValue.set(`Location gefunden: ID ${this.product.locationId}`);
+      this.locationExists.set(true);
+    }
+
     if (this.product.imageUrl) {
       this.imagePreview.set('http://localhost:8080' + this.product.imageUrl);
     }

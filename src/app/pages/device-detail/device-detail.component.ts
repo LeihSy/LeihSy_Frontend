@@ -2,11 +2,14 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, Location as AngularLocation } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 // Import Product Service & Models
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
-import { Location } from '../../models/location.model';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
@@ -73,6 +76,8 @@ export class DeviceDetailPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private location = inject(AngularLocation);
   private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  private locationService = inject(LocationService);
   private primeng = inject(PrimeNG);
 
   // --- State ---
@@ -116,29 +121,45 @@ export class DeviceDetailPageComponent implements OnInit {
       next: (product: Product) => {
         console.log('Product loaded:', product);
 
-        // Falls Kategorie nicht expandiert ist, lade sie nach
-        if (product.categoryId && !product.category) {
-          console.log('Kategorie nicht expandiert, lade nach...');
-          this.productService.getProductsWithCategories().subscribe({
-            next: (products: Product[]) => {
-              const productWithCategory = products.find((p: Product) => p.id === id);
-              if (productWithCategory) {
-                this.device = this.mapProductToDevice(productWithCategory);
-              } else {
-                this.device = this.mapProductToDevice(product);
-              }
-              this.setupDeviceData();
-            },
-            error: () => {
-              // Fallback: Verwende Produkt ohne Kategorie
-              this.device = this.mapProductToDevice(product);
-              this.setupDeviceData();
-            }
-          });
-        } else {
-          this.device = this.mapProductToDevice(product);
-          this.setupDeviceData();
-        }
+        // Lade Items, Category und Location parallel
+        forkJoin({
+          items: this.productService.getProductItems(id).pipe(catchError(() => of([]))),
+          category: product.categoryId
+            ? this.categoryService.getCategoryById(product.categoryId).pipe(catchError(() => of(null)))
+            : of(null),
+          location: product.locationId
+            ? this.locationService.getLocationById(product.locationId).pipe(catchError(() => of(null)))
+            : of(null)
+        }).subscribe({
+          next: ({ items, category, location }) => {
+            // Berechne Counts basierend auf Items
+            const totalItemCount = items.length;
+            const availableItemCount = items.filter((item: any) =>
+              item.isAvailable === true || item.available === true
+            ).length;
+
+            // Erweitere Produkt mit allen Daten
+            const enrichedProduct: Product = {
+              ...product,
+              totalItemCount,
+              availableItemCount,
+              category: category || undefined,
+              location: location || undefined
+            };
+
+            // Konvertiere zu Device und zeige an
+            this.device = this.mapProductToDevice(enrichedProduct);
+            this.setupDeviceData();
+          },
+          error: (err: any) => {
+            console.error('Error loading additional data:', err);
+            // Fallback: Verwende Produkt ohne zusätzliche Daten
+            product.totalItemCount = 0;
+            product.availableItemCount = 0;
+            this.device = this.mapProductToDevice(product);
+            this.setupDeviceData();
+          }
+        });
       },
       error: (err: any) => {
         console.error('Error loading product:', err);

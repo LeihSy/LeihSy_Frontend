@@ -26,7 +26,7 @@ export class CatalogService {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.productService.getProductsWithCategories().pipe(
+    this.productService.getProductsWithItems().pipe(
       catchError((error: any) => {
         console.error('Fehler beim Laden der Produkte:', error);
         this.errorMessage.set('Produkte konnten nicht geladen werden.');

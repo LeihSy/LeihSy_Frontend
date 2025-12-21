@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
@@ -85,7 +87,31 @@ export class AdminProductFormPageComponent implements OnInit {
 
     this.productService.getProductById(this.productId).subscribe({
       next: (product) => {
-        this.product.set(product);
+        // Lade Category und Location parallel, falls IDs vorhanden sind
+        forkJoin({
+          category: product.categoryId
+            ? this.categoryService.getCategoryById(product.categoryId).pipe(catchError(() => of(null)))
+            : of(null),
+          location: product.locationId
+            ? this.locationService.getLocationById(product.locationId).pipe(catchError(() => of(null)))
+            : of(null)
+        }).subscribe({
+          next: ({ category, location }) => {
+            // Erweitere Produkt mit Category und Location Daten
+            const enrichedProduct: Product = {
+              ...product,
+              category: category || undefined,
+              location: location || undefined
+            };
+
+            this.product.set(enrichedProduct);
+          },
+          error: (err) => {
+            console.error('Fehler beim Laden zusätzlicher Produktdaten:', err);
+            // Fallback: Verwende Produkt ohne erweiterte Daten
+            this.product.set(product);
+          }
+        });
       },
       error: (err) => {
         console.error('Fehler beim Laden des Produkts:', err);

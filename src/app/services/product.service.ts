@@ -1,13 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Product, ProductCreateDTO } from '../models/product.model';
+import { Item } from '../models/item.model';
+import { CategoryService } from './category.service';
+import { LocationService } from './location.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private readonly apiUrl = 'http://localhost:8080/api/products';
+  private categoryService = inject(CategoryService);
+  private locationService = inject(LocationService);
 
   constructor(private http: HttpClient) {}
 
@@ -74,5 +80,54 @@ export class ProductService {
   // Alias für getProducts() - für Kompatibilität mit bestehendem Code
   getProductsWithCategories(): Observable<Product[]> {
     return this.getProducts();
+  }
+
+  // Lädt Produkte mit Items und berechnet availableItemCount und totalItemCount
+  // Lädt auch Categories und Locations für jedes Produkt
+  getProductsWithItems(): Observable<Product[]> {
+    return forkJoin({
+      products: this.getProducts(),
+      categories: this.categoryService.getAllCategories().pipe(catchError(() => of([]))),
+      locations: this.locationService.getAllLocations().pipe(catchError(() => of([])))
+    }).pipe(
+      switchMap(({ products, categories, locations }) => {
+        if (products.length === 0) {
+          return of([]);
+        }
+
+        // Erstelle Maps für schnellen Zugriff
+        const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+        const locationMap = new Map(locations.map(loc => [loc.id, loc]));
+
+        // Für jedes Produkt Items laden und Category/Location zuordnen
+        const productRequests = products.map(product =>
+          this.getProductItems(product.id).pipe(
+            map((items: any[]) => {
+              const totalCount = items.length;
+              const availableCount = items.filter(item =>
+                item.isAvailable === true || item.available === true
+              ).length;
+
+              return {
+                ...product,
+                totalItemCount: totalCount,
+                availableItemCount: availableCount,
+                category: product.categoryId ? categoryMap.get(product.categoryId) : undefined,
+                location: product.locationId ? locationMap.get(product.locationId) : undefined
+              };
+            }),
+            catchError(() => of({
+              ...product,
+              totalItemCount: 0,
+              availableItemCount: 0,
+              category: product.categoryId ? categoryMap.get(product.categoryId) : undefined,
+              location: product.locationId ? locationMap.get(product.locationId) : undefined
+            }))
+          )
+        );
+
+        return forkJoin(productRequests);
+      })
+    );
   }
 }

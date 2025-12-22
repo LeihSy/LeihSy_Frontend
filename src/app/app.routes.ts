@@ -89,7 +89,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
-
+  //loan-Ausleihübersicht
+  {
+    path: 'admin/loan',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-loan-dashboard.component')
+        .then(m => m.AdminLoanDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] },
+  },
   
   {
     path: 'unauthorized',

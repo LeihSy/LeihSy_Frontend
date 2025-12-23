@@ -197,7 +197,7 @@ sortBy: SortBy= 'date';
           return d.getTime() === today.getTime();
         }).length;
       }
-  }
+  
   //Filtering & sorting
   get filteredAndSortedLoans(): ActiveLoan[] {
     const q = this.searchQuery.trim().toLowerCase();
@@ -285,5 +285,4 @@ sortBy: SortBy= 'date';
       summary: 'Ausgabe bestätigt',
       detail: `${pickup.deviceName} (${pickup.inventoryNumber})`,
     });
-  }
-}
+

@@ -54,6 +54,7 @@ interface PendingPickup {
       SelectModule,
       TagModule,
       TableModule,
+      ToastModule
     ],
     providers: [MessageService],
     templateUrl: './admin-loan-dashboard.component.html',

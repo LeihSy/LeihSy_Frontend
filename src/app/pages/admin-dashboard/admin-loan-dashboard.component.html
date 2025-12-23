@@ -24,3 +24,54 @@
       </div>
     </div>
   </div>
+  
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+              <i class="pi pi-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-semibold text-slate-900">{{ activeCount }}</p>
+              <p class="text-xs text-gray-600">Aktive Ausleihen</p>
+            </div>
+          </div>
+        </div>
+    
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+              <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-semibold text-slate-900">{{ overdueCount }}</p>
+              <p class="text-xs text-gray-600">Überfällig</p>
+            </div>
+          </div>
+        </div>
+    
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+              <i class="pi pi-clock text-orange-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-semibold text-slate-900">{{ dueTodayCount }}</p>
+              <p class="text-xs text-gray-600">Heute fällig</p>
+            </div>
+          </div>
+        </div>
+    
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+              <i class="pi pi-box text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-semibold text-slate-900">{{ pendingCount }}</p>
+              <p class="text-xs text-gray-600">Ausstehend</p>
+            </div>
+          </div>
+        </div>
+      </div>

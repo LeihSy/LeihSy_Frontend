@@ -81,3 +81,29 @@ sortBy: SortBy= 'date';
     { label: 'Nach Student', value: 'student' },
     { label: 'Nach Gerät', value: 'device' },
   ];
+  //Mock-daten
+
+    //Stats
+    get overdueCount(): number {
+        return this.activeLoans.filter(l => l.status === 'overdue').length;
+      }
+    
+      get activeCount(): number {
+        return this.activeLoans.filter(l => l.status === 'active').length;
+      }
+    
+      get pendingCount(): number {
+        return this.pendingPickups.length;
+      }
+    
+      get dueTodayCount(): number {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+    
+        return this.activeLoans.filter(loan => {
+          const d = new Date(loan.dueDate);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === today.getTime();
+        }).length;
+      }
+    

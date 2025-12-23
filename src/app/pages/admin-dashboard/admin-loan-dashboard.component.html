@@ -339,11 +339,24 @@
     <tr>
       <td>
         <div>
-          <p class="font-medium text-slate-900">{{ pickup.studentName }</p> 
+          <p class="font-medium text-slate-900">{{ pickup.studentName }}</p> 
           <p class="text-sm text-gray-600">{{ pickup.studentId }}</p>
         </div>
       </td>
-      ...
+      <td class="text-slate-900">{{ pickup.deviceName }}</td>
+
+                <td>
+                  <code class="bg-gray-100 px-2 py-1 rounded text-sm">
+                    {{ pickup.inventoryNumber }}
+                  </code>
+                </td>
+
+                <td class="text-slate-900">
+                  <span class="inline-flex items-center gap-2">
+                    <i class="pi pi-calendar text-gray-500"></i>
+                    {{ formatDate(pickup.pickupDate) }}
+                  </span>
+                </td>
     </tr>
   </ng-template>
   

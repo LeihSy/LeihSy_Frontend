@@ -296,7 +296,7 @@
                   Rückgabe verarbeiten
                 </button>
               </div>
-              
+
               @if (filteredAndSortedLoans.length === 0) {
                 <div class="text-center py-10 text-gray-500">
                   <i class="pi pi-inbox text-4xl opacity-60"></i>
@@ -308,4 +308,15 @@
           </div>
         </div>
       }
+      @if (tab === 'pending') {
+        <div>
+          <div class="p-4 sm:p-6">
+            <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Ausstehende Abholungen</h2>
+            <p class="text-xs sm:text-sm text-gray-600">
+              Bestätigte Reservierungen, die noch nicht abgeholt wurden
+            </p>
+          </div>
+        </div>
+      }
+      
   

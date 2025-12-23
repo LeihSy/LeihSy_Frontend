@@ -169,7 +169,7 @@
                       <p-tag
                         [value]="(loan.daysOverdue || 0) + ' Tag(e) überfällig'"
                         styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
-                      ></p-tag>
+                      ></p-tag> 
                     } @else {
                       <p-tag
                         value="Aktiv"
@@ -230,4 +230,75 @@
             </ng-template>
           </p-table>
         </div>
-
+         <!-- Aktive Ausleihen -->
+         <div class="lg:hidden space-y-3 p-4">
+            @for (loan of filteredAndSortedLoans; track loan.id) {
+              <div
+                class="border rounded-lg p-4"
+                [ngClass]="loan.status === 'overdue' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'"
+              >
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-user text-gray-500"></i>
+                      <span class="font-medium text-slate-900">{{ loan.studentName }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600">{{ loan.studentId }}</p>
+                  </div>
+  
+                  @if (loan.status === 'overdue') {
+                    <p-tag
+                      [value]="(loan.daysOverdue || 0) + 'd überfällig'"
+                      styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                    ></p-tag>
+                  } @else {
+                    <p-tag
+                      value="Aktiv"
+                      styleClass="bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                    ></p-tag>
+                  }
+                </div>
+  
+                <div class="bg-white rounded-lg p-3 space-y-2 text-sm mb-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-gray-600">Gerät:</span>
+                    <span class="font-medium text-slate-900 text-right">{{ loan.deviceName }}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-gray-600">Inventar-Nr.:</span>
+                    <code class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ loan.inventoryNumber }}</code>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-gray-600">Ausgeliehen:</span>
+                    <span class="text-slate-900">{{ formatDate(loan.borrowedDate) }}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-gray-600">Rückgabe:</span>
+                    <span [ngClass]="loan.status === 'overdue' ? 'font-semibold text-red-600' : 'text-slate-900'">
+                      {{ formatDate(loan.dueDate) }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-gray-600">Campus:</span>
+                    <span class="inline-flex items-center gap-2 text-slate-900">
+                      <i class="pi pi-map-marker text-gray-500"></i>
+                      {{ campusShort(loan.campus) }}
+                    </span>
+                  </div>
+                </div>
+  
+                <button
+                  pButton
+                  type="button"
+                  class="w-full bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
+                  (click)="processReturn(loan.id)"
+                >
+                  Rückgabe verarbeiten
+                </button>
+              </div>
+            }
+  
+          </div>
+        </div>
+      }
+  

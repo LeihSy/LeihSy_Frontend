@@ -65,4 +65,4 @@ interface PendingPickup {
 tab: ViewTab = 'active';
 searchQuery = '';
 campusFilter = 'all';
-sortBy= 'date';
+sortBy: SortBy= 'date';

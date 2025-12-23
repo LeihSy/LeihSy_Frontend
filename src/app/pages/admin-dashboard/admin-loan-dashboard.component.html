@@ -318,5 +318,22 @@
           </div>
         </div>
       }
-      
+      <!-- Desktop -->
+<div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
+    <p-table [value]="filteredAndSortedPickups" [tableStyle]="{ 'min-width': '60rem' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Student</th>
+          <th>Gerät</th>
+          <th>Inventar-Nr.</th>
+          <th>Abholtermin</th>
+          <th>Zeitfenster</th>
+          <th>Campus</th>
+          <th>Bestätigt am</th>
+          <th>Aktion</th>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  
   

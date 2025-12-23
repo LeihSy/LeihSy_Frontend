@@ -61,8 +61,23 @@ interface PendingPickup {
   })
   export class AdminLoanDashboardComponent {
     private readonly messageService = inject(MessageService);
+
 // UI state
 tab: ViewTab = 'active';
 searchQuery = '';
 campusFilter = 'all';
 sortBy: SortBy= 'date';
+
+// Options (p-select)
+  campusOptions = [
+    { label: 'Alle Campus', value: 'all' },
+    { label: 'Flandernstraße', value: 'Campus Esslingen Flandernstraße' },
+    { label: 'Stadtmitte', value: 'Campus Esslingen Stadtmitte' },
+    { label: 'Göppingen', value: 'Campus Göppingen' },
+  ];
+
+  sortOptions = [
+    { label: 'Nach Datum', value: 'date' },
+    { label: 'Nach Student', value: 'student' },
+    { label: 'Nach Gerät', value: 'device' },
+  ];

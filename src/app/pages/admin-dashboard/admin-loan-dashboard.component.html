@@ -370,6 +370,18 @@
                       <span class="whitespace-nowrap">{{ campusShort(pickup.campus) }}</span>
                     </span>
                   </td>
-    </tr>
-  </ng-template>
+                  <td class="text-sm text-gray-600">{{ formatDate(pickup.confirmedDate) }}</td>
+
+                  <td>
+                    <button
+                      pButton
+                      type="button"
+                      class="bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
+                      (click)="processPickup(pickup.id)"
+                    >
+                      Ausgeben
+                    </button>
+                  </td>
+            </tr>
+            </ng-template>
   

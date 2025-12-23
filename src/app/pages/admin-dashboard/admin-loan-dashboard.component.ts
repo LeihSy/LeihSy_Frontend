@@ -198,3 +198,53 @@ sortBy: SortBy= 'date';
         }).length;
       }
   }
+  //Filtering & sorting
+  get filteredAndSortedLoans(): ActiveLoan[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    const campus = this.campusFilter;
+
+    const filtered = this.activeLoans.filter(loan => {
+      const matchesSearch =
+        !q ||
+        loan.studentName.toLowerCase().includes(q) ||
+        loan.studentId.toLowerCase().includes(q) ||
+        loan.deviceName.toLowerCase().includes(q) ||
+        loan.inventoryNumber.toLowerCase().includes(q);
+
+      const matchesCampus = campus === 'all' || loan.campus === campus;
+      return matchesSearch && matchesCampus;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (this.sortBy === 'date') {
+        if (a.status === 'overdue' && b.status !== 'overdue') return -1;
+        if (a.status !== 'overdue' && b.status === 'overdue') return 1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (this.sortBy === 'student') return a.studentName.localeCompare(b.studentName);
+      return a.deviceName.localeCompare(b.deviceName);
+    });
+  }
+
+  get filteredAndSortedPickups(): PendingPickup[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    const campus = this.campusFilter;
+
+    const filtered = this.pendingPickups.filter(p => {
+      const matchesSearch =
+        !q ||
+        p.studentName.toLowerCase().includes(q) ||
+        p.studentId.toLowerCase().includes(q) ||
+        p.deviceName.toLowerCase().includes(q) ||
+        p.inventoryNumber.toLowerCase().includes(q);
+
+      const matchesCampus = campus === 'all' || p.campus === campus;
+      return matchesSearch && matchesCampus;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (this.sortBy === 'date') return new Date(a.pickupDate).getTime() - new Date(b.pickupDate).getTime();
+      if (this.sortBy === 'student') return a.studentName.localeCompare(b.studentName);
+      return a.deviceName.localeCompare(b.deviceName);
+    });
+  }

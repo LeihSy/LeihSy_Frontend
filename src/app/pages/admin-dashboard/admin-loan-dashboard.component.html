@@ -99,3 +99,49 @@
         placeholder="Alle Campus"
         styleClass="w-full"
       ></p-select>
+
+      <p-select
+        [(ngModel)]="sortBy"
+        [options]="sortOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Sortierung"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+  </div>
+  <!-- Tabs -->
+  <div class="bg-white border border-gray-200 rounded-lg">
+    <!-- Tab Header -->
+    <div class="border-b border-gray-200 p-3">
+      <div class="grid grid-cols-2 gap-2">
+        <button
+          pButton
+          type="button"
+          (click)="tab='active'"
+          [ngClass]="tab === 'active' ? 'bg-[#253359] border-[#253359] text-white' : 'p-button-outlined'"
+          class="w-full justify-center"
+        >
+          Aktive Ausleihen ({{ filteredAndSortedLoans.length }})
+        </button>
+
+        <button
+          pButton
+          type="button"
+          (click)="tab='pending'"
+          [ngClass]="tab === 'pending' ? 'bg-[#253359] border-[#253359] text-white' : 'p-button-outlined'"
+          class="w-full justify-center"
+        >
+          Ausstehende Abholungen ({{ filteredAndSortedPickups.length }})
+        </button>
+      </div>
+    </div>
+      <!-- ACTIVE -->
+      @if (tab === 'active') {
+        <div>
+          <div class="p-4 sm:p-6">
+            <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Aktive Ausleihen</h2>
+            <p class="text-xs sm:text-sm text-gray-600">
+              Übersicht aller aktuell ausgeliehenen Geräte
+            </p>
+          </div>

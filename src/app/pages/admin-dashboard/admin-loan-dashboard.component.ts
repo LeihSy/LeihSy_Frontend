@@ -61,4 +61,8 @@ interface PendingPickup {
   })
   export class AdminLoanDashboardComponent {
     private readonly messageService = inject(MessageService);
-  
+// UI state
+tab: ViewTab = 'active';
+searchQuery = '';
+campusFilter = 'all';
+sortBy= 'date';

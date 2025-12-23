@@ -335,5 +335,15 @@
       </ng-template>
     </p-table>
   </div>
-  
+  <ng-template pTemplate="body" let-pickup>
+    <tr>
+      <td>
+        <div>
+          <p class="font-medium text-slate-900">{{ pickup.studentName }</p> 
+          <p class="text-sm text-gray-600">{{ pickup.studentId }}</p>
+        </div>
+      </td>
+      ...
+    </tr>
+  </ng-template>
   

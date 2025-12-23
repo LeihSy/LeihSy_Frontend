@@ -357,6 +357,19 @@
                     {{ formatDate(pickup.pickupDate) }}
                   </span>
                 </td>
+                <td class="text-slate-900">
+                    <span class="inline-flex items-center gap-2">
+                      <i class="pi pi-clock text-gray-500"></i>
+                      {{ pickup.pickupTime }}
+                    </span>
+                  </td>
+  
+                  <td class="text-slate-900">
+                    <span class="inline-flex items-center gap-2">
+                      <i class="pi pi-map-marker text-gray-500"></i>
+                      <span class="whitespace-nowrap">{{ campusShort(pickup.campus) }}</span>
+                    </span>
+                  </td>
     </tr>
   </ng-template>
   

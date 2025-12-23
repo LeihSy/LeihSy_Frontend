@@ -285,4 +285,6 @@ sortBy: SortBy= 'date';
       summary: 'Ausgabe bestätigt',
       detail: `${pickup.deviceName} (${pickup.inventoryNumber})`,
     });
+  }
 
+} 

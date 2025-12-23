@@ -248,3 +248,42 @@ sortBy: SortBy= 'date';
       return a.deviceName.localeCompare(b.deviceName);
     });
   }
+    //Helpers
+    formatDate(dateString: string): string {
+        return new Date(dateString).toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      }
+    
+      campusShort(campus: string): string {
+        return campus.replace('Campus Esslingen ', '').replace('Campus ', '');
+      }
+      //Actions (Mock)
+  processReturn(id: string) {
+    const loan = this.activeLoans.find(l => l.id === id);
+    if (!loan) return;
+
+    this.activeLoans = this.activeLoans.filter(l => l.id !== id);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Rückgabe verbucht',
+      detail: `${loan.deviceName} (${loan.inventoryNumber})`,
+    });
+  }
+
+  processPickup(id: string) {
+    const pickup = this.pendingPickups.find(p => p.id === id);
+    if (!pickup) return;
+
+    this.pendingPickups = this.pendingPickups.filter(p => p.id !== id);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Ausgabe bestätigt',
+      detail: `${pickup.deviceName} (${pickup.inventoryNumber})`,
+    });
+  }
+}

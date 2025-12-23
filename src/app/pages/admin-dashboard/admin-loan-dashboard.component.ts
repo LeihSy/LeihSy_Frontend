@@ -28,3 +28,36 @@ interface ActiveLoan {
   status: 'active' | 'overdue';
   daysOverdue?: number;
 }
+interface PendingPickup {
+    id: string;
+    studentName: string;
+    studentId: string;
+    studentEmail: string;
+    deviceName: string;
+    inventoryNumber: string;
+    pickupDate: string;   // YYYY-MM-DD
+    pickupTime: string;
+    campus: string;
+    confirmedDate: string; // YYYY-MM-DD
+  }
+  
+  @Component({
+    selector: 'app-admin-loan-dashboard',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      NgClass,
+      RouterLink,
+      ButtonModule,
+      InputTextModule,
+      SelectModule,
+      TagModule,
+      TableModule,
+    ],
+    providers: [MessageService],
+    templateUrl: './admin-loan-dashboard.component.html',
+  })
+  export class AdminLoanDashboardComponent {
+    private readonly messageService = inject(MessageService);
+  

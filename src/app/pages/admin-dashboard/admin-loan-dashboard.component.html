@@ -384,6 +384,14 @@
                   </td>
             </tr>
             </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="8" class="text-center text-gray-500 py-8">
+                    Keine ausstehenden Abholungen gefunden
+                  </td>
+                </tr>
+              </ng-template>
+          </div>
             <!--Außenstehende Abholungen-->
             <div class="lg:hidden space-y-3 p-4">
                 @for (pickup of filteredAndSortedPickups; track pickup.id) {
@@ -455,6 +463,6 @@
         </div>
       </div>
     
-  </div>
+
 
   

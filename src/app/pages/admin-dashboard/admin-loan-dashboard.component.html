@@ -315,7 +315,7 @@
             <p class="text-xs sm:text-sm text-gray-600">
               Bestätigte Reservierungen, die noch nicht abgeholt wurden
             </p>
-        
+        </div>
       <!-- Desktop -->
 <div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
     <p-table [value]="filteredAndSortedPickups" [tableStyle]="{ 'min-width': '60rem' }">
@@ -332,7 +332,7 @@
         </tr>
       </ng-template>
     
-  </div>
+  
   <ng-template pTemplate="body" let-pickup>
     <tr>
       <td>
@@ -463,4 +463,4 @@
           }
         </div>
       </div>
-    
+      }

@@ -86,21 +86,7 @@ export class AdminDeviceManagementComponent implements OnInit {
   resultCount = computed(() => this.filteredDevices().length);
 
   // Devices für Zusatzgegenstände (exclude current device, mit Suche)
-  availableRelatedDevices = computed(() => {
-    const current = this.selectedDevice();
-    const q = this.relatedItemsSearch().toLowerCase().trim();
-
-    return this.devices().filter(d => {
-      if (!current) return false;
-      if (d.id === current.id) return false;
-
-      if (!q) return true;
-      return (
-        d.name.toLowerCase().includes(q) ||
-        d.inventoryNumber.toLowerCase().includes(q)
-      );
-    });
-  });
+//
 
   ngOnInit(): void {
     this.loadDevices();

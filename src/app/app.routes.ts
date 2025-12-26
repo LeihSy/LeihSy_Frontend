@@ -157,6 +157,14 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/locations',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-locations/admin-locations.component')
+        .then(m => m.AdminLocationsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

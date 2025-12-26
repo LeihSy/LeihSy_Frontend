@@ -1,0 +1,21 @@
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
+
+<div class="p-6 max-w-4xl mx-auto">
+  <h2 class="text-2xl font-semibold mb-4">Standorte verwalten</h2>
+
+  <div class="mb-6">
+    <div class="flex gap-2 items-center">
+      <input pInputText type="text" placeholder="Standort" [(ngModel)]="newLocation.roomNr" class="flex-1 p-2 border rounded" />
+      <button pButton label="Erstellen" (click)="create()" class="p-button p-button-primary"></button>
+    </div>
+  </div>
+
+
+  <app-table [columns]="columns"
+             [data]="locations()"
+             [loading]="isLoading()"
+             [rows]="10"
+             [showActions]="true"
+             [showEditButton]="false" (remove)="onRemove($event)"></app-table>
+</div>

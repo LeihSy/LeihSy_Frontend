@@ -200,7 +200,7 @@ export class AdminDeviceManagementComponent implements OnInit {
 
     device.assignedLender = lender;
     device.lenderLocation = location;
-    device.relatedItems = [...this.selectedRelatedItems()];
+  //
 
     this.devices.set([...this.devices()]);
     this.applyFilters();

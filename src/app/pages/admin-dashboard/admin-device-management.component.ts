@@ -56,9 +56,6 @@ export class AdminDeviceManagementComponent implements OnInit {
   assignedLender = signal('');
   lenderLocation = signal('');
 
-  // Related items state
-
-
   // Kategorien (für Select)
   categoryOptions = signal<{ label: string; value: string }[]>([
     { label: 'Alle Kategorien', value: 'all' }
@@ -177,14 +174,10 @@ export class AdminDeviceManagementComponent implements OnInit {
       alert('Bitte geben Sie einen Standort an.');
       return;
     }
-
     device.assignedLender = lender;
     device.lenderLocation = location;
-  //
-
     this.devices.set([...this.devices()]);
     this.applyFilters();
-
     alert('Änderungen wurden erfolgreich gespeichert.');
     this.closeDialog();
   }

@@ -85,9 +85,6 @@ export class AdminDeviceManagementComponent implements OnInit {
   // Gefilterte Geräte-Anzahl
   resultCount = computed(() => this.filteredDevices().length);
 
-// Devices für Zusatzgegenstände (exclude current device, mit Suche)
-//Hier//
-
   ngOnInit(): void {
     this.loadDevices();
   }
@@ -152,25 +149,16 @@ export class AdminDeviceManagementComponent implements OnInit {
     this.selectedDevice.set(device);
     this.assignedLender.set(device.assignedLender || '');
     this.lenderLocation.set(device.lenderLocation || '');
-
-//
-    this.activeDialogTab.set('lender');
-
     this.isEditDialogOpen.set(true);
   }
 
   closeDialog(): void {
     this.isEditDialogOpen.set(false);
     this.selectedDevice.set(null);
-    this.activeDialogTab.set('lender');
     this.assignedLender.set('');
     this.lenderLocation.set('');
-//
+
   }
-
-
-  // ---------- Related Items Logic ----------
-
 
   // ---------- Save ----------
   handleSaveAssignment(): void {

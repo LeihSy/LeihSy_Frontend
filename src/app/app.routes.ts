@@ -76,7 +76,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
-    //Device Management
+  //Device Management
     {
       path: 'admin/devices',
       loadComponent: () =>

@@ -170,7 +170,7 @@ export class AdminDeviceManagementComponent implements OnInit {
 
   // ✅ Wichtig: PrimeNG valueChange ist nicht sauber typisiert -> validieren wir hier
   setActiveDialogTab(value: unknown): void {
-    if (value === 'lender' || value === 'related') {
+    if (value === 'lender') {
       this.activeDialogTab.set(value);
       return;
     }

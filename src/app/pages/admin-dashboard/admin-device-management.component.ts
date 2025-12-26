@@ -68,7 +68,7 @@ export class AdminDeviceManagementComponent implements OnInit {
   relatedItemsSearch = signal('');
 
   // Kategorien (für Select)
-  categoryOptions = signal<{ label: string; value: string }[]>([
+  
     { label: 'Alle Kategorien', value: 'all' }
   ]);
 

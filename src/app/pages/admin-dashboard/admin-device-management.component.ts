@@ -50,7 +50,7 @@ export class AdminDeviceManagementComponent implements OnInit {
 
   // UI-State Dialog
   isEditDialogOpen = signal(false);
-  activeDialogTab = signal<'lender' | 'related'>('lender');
+  activeDialogTab = signal<'lender'>('lender');
 
   selectedDevice = signal<DeviceWithLender | null>(null);
   assignedLender = signal('');

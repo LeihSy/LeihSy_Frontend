@@ -18,7 +18,6 @@ import { TabsModule } from 'primeng/tabs';
 interface DeviceWithLender extends Device {
   assignedLender?: string;
   lenderLocation?: string;
-  relatedItems?: RelatedItem[];
 }
 
 @Component({
@@ -58,8 +57,7 @@ export class AdminDeviceManagementComponent implements OnInit {
   lenderLocation = signal('');
 
   // Related items state
-  selectedRelatedItems = signal<RelatedItem[]>([]);
-  relatedItemsSearch = signal('');
+
 
   // Kategorien (für Select)
   categoryOptions = signal<{ label: string; value: string }[]>([

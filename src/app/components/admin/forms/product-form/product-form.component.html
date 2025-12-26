@@ -105,15 +105,19 @@
 
             <app-form-row [columns]="2">
               <app-form-input-field label="Raumnummer" [required]="true" [fullWidth]="true">
-                <input pInputText formControlName="locationRoomNr"
-                       class="w-full"
-                       placeholder="z.B. F01.204"
-                       (input)="onLocationRoomNrChange()" />
-                @if (locationDisplayValue()) {
+                <p-select
+                  [options]="locations"
+                  optionLabel="roomNr"
+                  optionValue="id"
+                  placeholder="Location wählen"
+                  formControlName="locationId"
+                  class="w-full"
+                  (onChange)="onLocationSelect($event)">
+                </p-select>
+                @if (locations.length === 0) {
                   <app-validation-message
-                    [message]="locationDisplayValue() + (locationExists() ? ' (Existiert bereits)' : ' (Wird neu angelegt)')"
-                    [isLoading]="isLoadingLocation()"
-                    [isSuccess]="!isLoadingLocation()">
+                    [message]="'Keine Standorte verfügbar. Bitte Standorte im System anlegen.'"
+                    [isError]="true">
                   </app-validation-message>
                 }
               </app-form-input-field>
@@ -126,7 +130,7 @@
                                placeholder="Wird automatisch gesetzt">
                 </p-inputNumber>
                 <app-validation-message
-                  [message]="'Wird automatisch aus Raumnummer ermittelt'">
+                  [message]="'Wird automatisch aus der Auswahl ermittelt'">
                 </app-validation-message>
               </app-form-input-field>
             </app-form-row>

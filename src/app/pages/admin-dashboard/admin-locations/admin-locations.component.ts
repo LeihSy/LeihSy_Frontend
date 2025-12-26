@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { AdminLocationsService } from './admin-locations.service';
@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-locations',
@@ -25,6 +26,8 @@ export class AdminLocationsComponent implements OnInit {
   // expose service signals via getters to avoid using pageService before it's initialized
   get locations() { return this.pageService.locations; }
   get isLoading() { return this.pageService.isLoading; }
+
+  private router = inject(Router);
 
   constructor(private readonly pageService: AdminLocationsService) {}
 
@@ -58,5 +61,9 @@ export class AdminLocationsComponent implements OnInit {
         error: (err) => console.error('Fehler beim Löschen', err)
       });
     });
+  }
+
+  onRowSelect(row: Location): void {
+    this.router.navigate(['/admin', 'locations', row.id]);
   }
 }

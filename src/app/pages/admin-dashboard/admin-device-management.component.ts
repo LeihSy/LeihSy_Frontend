@@ -85,8 +85,8 @@ export class AdminDeviceManagementComponent implements OnInit {
   // Gefilterte Geräte-Anzahl
   resultCount = computed(() => this.filteredDevices().length);
 
-  // Devices für Zusatzgegenstände (exclude current device, mit Suche)
-//
+// Devices für Zusatzgegenstände (exclude current device, mit Suche)
+//Hier//
 
   ngOnInit(): void {
     this.loadDevices();
@@ -153,8 +153,7 @@ export class AdminDeviceManagementComponent implements OnInit {
     this.assignedLender.set(device.assignedLender || '');
     this.lenderLocation.set(device.lenderLocation || '');
 
-    this.selectedRelatedItems.set(device.relatedItems ? [...device.relatedItems] : []);
-    this.relatedItemsSearch.set('');
+//
     this.activeDialogTab.set('lender');
 
     this.isEditDialogOpen.set(true);
@@ -166,8 +165,7 @@ export class AdminDeviceManagementComponent implements OnInit {
     this.activeDialogTab.set('lender');
     this.assignedLender.set('');
     this.lenderLocation.set('');
-    this.selectedRelatedItems.set([]);
-    this.relatedItemsSearch.set('');
+//
   }
 
   // ✅ Wichtig: PrimeNG valueChange ist nicht sauber typisiert -> validieren wir hier

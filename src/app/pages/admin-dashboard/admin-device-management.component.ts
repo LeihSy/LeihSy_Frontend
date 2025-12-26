@@ -178,42 +178,7 @@ export class AdminDeviceManagementComponent implements OnInit {
   }
 
   // ---------- Related Items Logic ----------
-  getRelatedItemStatus(deviceId: string): RelatedItemType | null {
-    const item = this.selectedRelatedItems().find(x => x.deviceId === deviceId);
-    return item ? item.type : null;
-  }
 
-  toggleRelatedItem(deviceId: string, type: RelatedItemType): void {
-    const items = this.selectedRelatedItems();
-    const existing = items.find(x => x.deviceId === deviceId);
-
-    if (existing) {
-      if (existing.type === type) {
-        this.selectedRelatedItems.set(items.filter(x => x.deviceId !== deviceId));
-      } else {
-        this.selectedRelatedItems.set(
-          items.map(x => (x.deviceId === deviceId ? { ...x, type } : x))
-        );
-      }
-      return;
-    }
-
-    this.selectedRelatedItems.set([...items, { deviceId, type }]);
-  }
-
-  removeRelatedItem(deviceId: string): void {
-    this.selectedRelatedItems.set(
-      this.selectedRelatedItems().filter(x => x.deviceId !== deviceId)
-    );
-  }
-
-  relatedTypeLabel(type: RelatedItemType): string {
-    return type === 'required' ? 'Erforderlich' : 'Empfohlen';
-  }
-
-  findDeviceById(id: string): DeviceWithLender | undefined {
-    return this.devices().find(d => d.id === id);
-  }
 
   // ---------- Save ----------
   handleSaveAssignment(): void {

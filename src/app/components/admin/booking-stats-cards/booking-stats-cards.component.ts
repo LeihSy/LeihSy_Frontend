@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
-import { StatCardComponent } from './stat-card/stat-card.component';
+import { StatCardComponent } from '../stat-card/stat-card.component';
 
 export type BookingView = 'all' | 'current' | 'overdue' | 'pending' | 'confirmed' | 'future';
 

@@ -16,7 +16,7 @@ import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
-import { BookingStatsCardsComponent } from '../../../components/admin/booking-stats-cards.component';
+import { BookingStatsCardsComponent } from '../../../components/admin/booking-stats-cards/booking-stats-cards.component';
 import { BookingsHeaderComponent } from '../../../components/admin/bookings-header/bookings-header.component';
 
 @Component({

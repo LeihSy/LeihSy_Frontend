@@ -8,7 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
-import { ProductFormComponent } from '../../../components/admin/product-form.component';
+import { ProductFormComponent } from '../../../components/admin/forms/product-form/product-form.component';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { LocationService } from '../../../services/location.service';

@@ -14,12 +14,6 @@ import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { TabsModule } from 'primeng/tabs';
 
-type RelatedItemType = 'required' | 'recommended';
-
-interface RelatedItem {
-  deviceId: string;
-  type: RelatedItemType;
-}
 
 interface DeviceWithLender extends Device {
   assignedLender?: string;
@@ -68,7 +62,7 @@ export class AdminDeviceManagementComponent implements OnInit {
   relatedItemsSearch = signal('');
 
   // Kategorien (für Select)
-  
+  categoryOptions = signal<{ label: string; value: string }[]>([
     { label: 'Alle Kategorien', value: 'all' }
   ]);
 

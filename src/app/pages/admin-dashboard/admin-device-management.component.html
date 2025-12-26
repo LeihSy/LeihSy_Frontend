@@ -167,7 +167,6 @@
       <p-tabs [value]="activeDialogTab()" (valueChange)="setActiveDialogTab($event)">
         <p-tablist>
           <p-tab value="lender">Verleiher</p-tab>
-          <p-tab value="related">Zusatzgegenstände</p-tab>
         </p-tablist>
 
         <p-tabpanels class="mt-4">
@@ -242,15 +241,6 @@
               }
             </div>
           </p-tabpanel>
-
-          <!-- Tab: Zusatzgegenstände -->
-          <p-tabpanel value="related">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p class="text-sm text-blue-800">
-                <strong>Zusatzgegenstände:</strong>
-                Wählen Sie Geräte aus, die als „erforderlich“ oder „empfohlen“ angezeigt werden sollen.
-              </p>
-            </div>
 
             <!-- Suche -->
             <div class="relative mb-4">

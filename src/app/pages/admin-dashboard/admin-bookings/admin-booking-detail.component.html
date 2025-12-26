@@ -5,7 +5,7 @@
   <nav class="flex items-center">
     <app-back-button
       routerLink="/admin/bookings"
-      class="hover:translate-x-[-4px] transition-transform duration-200">
+      class="hover:-translate-x-1 transition-transform duration-200">
     </app-back-button>
   </nav>
 
@@ -36,24 +36,27 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <app-info-card header="Benutzer" [items]="getUserInfoItems()"></app-info-card>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <app-info-card header="Ausleihzeitraum" [items]="getLoanPeriodInfoItems()"></app-info-card>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <app-info-card header="Verleiher" [items]="getLenderInfoItems()"></app-info-card>
-          </div>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <app-info-card header="Gegenstand" [items]="getItemInfoItems()"></app-info-card>
-          </div>
+          @for (card of [
+            { h: 'Benutzer', items: getUserInfoItems() },
+            { h: 'Ausleihzeitraum', items: getLoanPeriodInfoItems() },
+            { h: 'Verleiher', items: getLenderInfoItems() },
+            { h: 'Gegenstand', items: getItemInfoItems() }
+          ]; track card.h) {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full">
+              <app-info-card [header]="card.h" [items]="card.items"></app-info-card>
+            </div>
+          }
         </div>
 
         @if (booking()!.message) {
-          <p-card header="Nachricht" class="shadow-sm border border-gray-200">
+          <p-card
+            header="Nachricht"
+            styleClass="shadow-sm border border-gray-200 overflow-hidden"
+            [pt]="{
+              header: { class: 'bg-gradient-to-br from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] p-4' }
+            }">
             <div class="flex gap-4 p-4 bg-blue-50/50 border-l-4 border-blue-500 rounded-r-lg">
-              <i class="pi pi-comment text-blue-400 mt-1"></i>
+              <i class="pi pi-comment text-blue-400 mt-1 text-lg"></i>
               <p class="text-blue-900 text-sm leading-relaxed m-0 italic">
                 "{{ booking()!.message }}"
               </p>
@@ -61,76 +64,48 @@
           </p-card>
         }
 
-        <p-card header="Termine & Daten" class="shadow-sm border border-gray-200">
+        <p-card
+          header="Termine & Daten"
+          styleClass="shadow-sm border border-gray-200 overflow-hidden"
+          [pt]="{
+            header: { class: 'bg-gradient-to-br from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] p-4' }
+          }">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 p-2">
             @if (booking()!.proposedPickups) {
-              <app-info-item
-                icon="pi pi-calendar"
-                iconColor="text-blue-700"
-                label="Vorgeschlagene Abholtermine"
-                [value]="booking()!.proposedPickups">
-              </app-info-item>
+              <app-info-item icon="pi pi-calendar" iconColor="text-blue-700" label="Vorgeschlagene Abholtermine" [value]="booking()!.proposedPickups"></app-info-item>
             }
             @if (booking()!.confirmedPickup) {
-              <app-info-item
-                icon="pi pi-check-circle"
-                iconColor="text-emerald-600"
-                label="Bestätigter Abholtermin"
-                [value]="formatDateTime(booking()!.confirmedPickup)">
-              </app-info-item>
+              <app-info-item icon="pi pi-check-circle" iconColor="text-emerald-600" label="Bestätigter Abholtermin" [value]="formatDateTime(booking()!.confirmedPickup)"></app-info-item>
             }
             @if (booking()!.distributionDate) {
-              <app-info-item
-                icon="pi pi-sign-out"
-                iconColor="text-orange-600"
-                label="Tatsächliche Ausgabe"
-                [value]="formatDateTime(booking()!.distributionDate)">
-              </app-info-item>
+              <app-info-item icon="pi pi-sign-out" iconColor="text-orange-600" label="Tatsächliche Ausgabe" [value]="formatDateTime(booking()!.distributionDate)"></app-info-item>
             }
             @if (booking()!.returnDate) {
-              <app-info-item
-                icon="pi pi-sign-in"
-                iconColor="text-emerald-600"
-                label="Tatsächliche Rückgabe"
-                [value]="formatDateTime(booking()!.returnDate)">
-              </app-info-item>
+              <app-info-item icon="pi pi-sign-in" iconColor="text-emerald-600" label="Tatsächliche Rückgabe" [value]="formatDateTime(booking()!.returnDate)"></app-info-item>
             }
 
             <div class="sm:col-span-2 border-t border-gray-100 my-2"></div>
 
-            <app-info-item
-              icon="pi pi-clock"
-              iconColor="text-slate-400"
-              label="Erstellt am"
-              [value]="formatDateTime(booking()!.createdAt)">
-            </app-info-item>
-            <app-info-item
-              icon="pi pi-history"
-              iconColor="text-slate-400"
-              label="Zuletzt aktualisiert"
-              [value]="formatDateTime(booking()!.updatedAt)">
-            </app-info-item>
+            <app-info-item icon="pi pi-clock" iconColor="text-slate-400" label="Erstellt am" [value]="formatDateTime(booking()!.createdAt)"></app-info-item>
+            <app-info-item icon="pi pi-history" iconColor="text-slate-400" label="Zuletzt aktualisiert" [value]="formatDateTime(booking()!.updatedAt)"></app-info-item>
           </div>
         </p-card>
       </div>
 
       <aside class="lg:col-span-1">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
           <div class="p-4 border-b border-gray-100 bg-gray-50/50">
             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-              <i class="pi pi-history text-blue-600"></i>
+              <i class="pi pi-history text-[#000080]"></i>
               Buchungsverlauf
             </h3>
           </div>
 
           <div class="p-6">
-            <div class="flex flex-col space-y-0">
-              <app-booking-timeline
-                class="block-timeline"
-                [events]="timelineEvents()"
-                [formatDateTime]="formatDateTime.bind(this)">
-              </app-booking-timeline>
-            </div>
+            <app-booking-timeline
+              [events]="timelineEvents()"
+              [formatDateTime]="formatDateTime.bind(this)">
+            </app-booking-timeline>
           </div>
         </div>
       </aside>

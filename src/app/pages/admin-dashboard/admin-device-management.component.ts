@@ -102,8 +102,8 @@ export class AdminDeviceManagementComponent implements OnInit {
         assignedLender: this.exampleLenders[index % this.exampleLenders.length],
         lenderLocation: primaryCampus
           ? `${primaryCampus.campus}, ${primaryCampus.location}`
-          : '',
-        relatedItems: []
+          : ''
+        
       };
     });
 
@@ -168,14 +168,6 @@ export class AdminDeviceManagementComponent implements OnInit {
 //
   }
 
-  // ✅ Wichtig: PrimeNG valueChange ist nicht sauber typisiert -> validieren wir hier
-  setActiveDialogTab(value: unknown): void {
-    if (value === 'lender') {
-      this.activeDialogTab.set(value);
-      return;
-    }
-    this.activeDialogTab.set('lender');
-  }
 
   // ---------- Related Items Logic ----------
 

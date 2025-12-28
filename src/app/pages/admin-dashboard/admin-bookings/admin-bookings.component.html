@@ -1,0 +1,148 @@
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50/30 min-h-screen">
+
+  <p-toast position="bottom-right"></p-toast>
+
+  <header class="space-y-4">
+    <div class="flex items-center">
+      <app-back-button routerLink="/admin" class="hover:translate-x-[-4px] transition-transform duration-200"></app-back-button>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="space-y-1">
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+          Alle Buchungen verwalten
+        </h1>
+        <p class="text-lg text-gray-500 max-w-2xl">
+          Übersicht über alle Buchungen und Ausleihen im System
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          pButton
+          icon="pi pi-chart-bar"
+          label="Statistiken"
+          class="p-button-outlined p-button-secondary !border-gray-300 shadow-sm"
+          routerLink="/admin/bookings/statistics"
+          pTooltip="Zu den Statistiken">
+        </button>
+        <button
+          pButton
+          icon="pi pi-refresh"
+          label="Aktualisieren"
+          class="p-button-outlined !border-gray-300 shadow-sm"
+          (click)="refreshData()"
+          pTooltip="Daten neu laden">
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="grid grid-cols-1 gap-6">
+    <app-booking-stats-cards
+      [currentLoansCount]="currentLoans().length"
+      [overdueCount]="overdueBookings().length"
+      [openRequestsCount]="openRequests().length"
+      [confirmedNotPickedUpCount]="confirmedNotPickedUp().length"
+      [futureBookingsCount]="futureBookings().length"
+      [totalCount]="bookings().length"
+      [selectedView]="selectedView()"
+      (viewChange)="setView($event)">
+    </app-booking-stats-cards>
+  </section>
+
+  <p-card styleClass="shadow-sm border border-gray-100 overflow-hidden">
+    <div class="flex flex-col space-y-4">
+      <div class="flex items-center gap-3">
+        <p-iconfield iconPosition="left" class="flex-1">
+          <p-inputicon styleClass="pi pi-search text-gray-400"></p-inputicon>
+          <input
+            type="text"
+            pInputText
+            placeholder="Suche nach Benutzer, Produkt, Inventarnummer..."
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="searchQuery.set($event)"
+            class="w-full !border-gray-200 focus:!ring-blue-500/20" />
+        </p-iconfield>
+
+        @if (searchQuery()) {
+          <button
+            pButton
+            icon="pi pi-times"
+            class="p-button-text p-button-rounded p-button-secondary"
+            (click)="searchQuery.set('')"
+            pTooltip="Suche zurücksetzen">
+          </button>
+        }
+      </div>
+
+      @if (selectedView() !== 'all') {
+        <div class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl animate-in fade-in duration-300">
+          <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-1.5 rounded-lg">
+              <i class="pi pi-filter text-white text-xs"></i>
+            </div>
+            <span class="text-sm text-blue-900">
+              Ansicht gefiltert nach:
+              @switch (selectedView()) {
+                @case ('current') { <strong class="font-semibold text-blue-700">Aktuelle Ausleihen</strong> }
+                @case ('overdue') { <strong class="font-semibold text-red-600">Überfällige Ausleihen</strong> }
+                @case ('pending') { <strong class="font-semibold text-amber-600">Offene Anfragen</strong> }
+                @case ('confirmed') { <strong class="font-semibold text-emerald-600">Bestätigt, nicht abgeholt</strong> }
+                @case ('future') { <strong class="font-semibold text-indigo-600">Zukünftige Ausleihen</strong> }
+              }
+            </span>
+          </div>
+          <button
+            pButton
+            label="Filter aufheben"
+            icon="pi pi-filter-slash"
+            class="p-button-text p-button-sm !text-blue-600 font-medium"
+            (click)="setView('all')">
+          </button>
+        </div>
+      }
+    </div>
+  </p-card>
+
+  <p-card styleClass="shadow-md border border-gray-100">
+    @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="relative flex items-center justify-center">
+          <i class="pi pi-spin pi-spinner text-5xl text-blue-600 opacity-20"></i>
+          <i class="pi pi-spin pi-spinner-dotted text-5xl text-blue-600 absolute"></i>
+        </div>
+        <p class="mt-6 text-gray-500 font-medium animate-pulse">Lade Buchungsdaten...</p>
+      </div>
+    } @else if (filteredBookings().length === 0) {
+      <div class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="bg-gray-100 p-6 rounded-full mb-4">
+          <i class="pi pi-inbox text-5xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800">Keine Buchungen gefunden</h3>
+        <p class="text-gray-500 mt-2">
+          @if (searchQuery()) {
+            Keine Treffer für "<span class="italic font-medium">{{searchQuery()}}</span>".
+          } @else {
+            In dieser Kategorie liegen derzeit keine Buchungen vor.
+          }
+        </p>
+      </div>
+    } @else {
+      <div class="rounded-lg overflow-hidden border border-gray-100">
+        <app-table
+          [columns]="columns"
+          [data]="filteredBookings()"
+          [loading]="isLoading()"
+          [rows]="10"
+          [paginator]="true"
+          [scrollable]="true"
+          [scrollHeight]="'600px'"
+          [rowClickable]="true"
+          (rowSelect)="onBookingRowClick($event)"
+          emptyMessage="Keine Buchungen vorhanden">
+        </app-table>
+      </div>
+    }
+  </p-card>
+</div>

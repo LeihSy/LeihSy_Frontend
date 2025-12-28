@@ -1,0 +1,23 @@
+::ng-deep .p-datatable {
+  border-radius: 0.5rem;
+}
+
+::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: #f9fafb;
+  color: #000080;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f9fafb;
+}
+
+::ng-deep .p-tag {
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+}
+
+
+
+

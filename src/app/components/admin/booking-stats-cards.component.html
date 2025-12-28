@@ -1,0 +1,56 @@
+<div class="flex flex-row gap-4 mb-6 overflow-x-auto flex-nowrap scrollbar-thin scrollbar-thumb-[#000080] scrollbar-track-gray-100 hover:scrollbar-thumb-[#000066] md:flex-wrap md:overflow-x-visible">
+  <app-stat-card
+    icon="pi pi-clock"
+    iconColor="text-blue-500"
+    [value]="currentLoansCount"
+    label="Aktuelle Ausleihen"
+    [isActive]="selectedView === 'current'"
+    (cardClick)="onViewClick('current')">
+  </app-stat-card>
+
+  <app-stat-card
+    icon="pi pi-exclamation-triangle"
+    iconColor="text-red-500"
+    [value]="overdueCount"
+    label="Überfällige Ausleihen"
+    [isActive]="selectedView === 'overdue'"
+    (cardClick)="onViewClick('overdue')">
+  </app-stat-card>
+
+  <app-stat-card
+    icon="pi pi-hourglass"
+    iconColor="text-yellow-500"
+    [value]="openRequestsCount"
+    label="Offene Anfragen"
+    [isActive]="selectedView === 'pending'"
+    (cardClick)="onViewClick('pending')">
+  </app-stat-card>
+
+  <app-stat-card
+    icon="pi pi-check-circle"
+    iconColor="text-green-500"
+    [value]="confirmedNotPickedUpCount"
+    label="Bestätigt, nicht abgeholt"
+    [isActive]="selectedView === 'confirmed'"
+    (cardClick)="onViewClick('confirmed')">
+  </app-stat-card>
+
+  <app-stat-card
+    icon="pi pi-calendar-plus"
+    iconColor="text-purple-500"
+    [value]="futureBookingsCount"
+    label="Zukünftige Ausleihen"
+    [isActive]="selectedView === 'future'"
+    (cardClick)="onViewClick('future')">
+  </app-stat-card>
+
+  <app-stat-card
+    icon="pi pi-list"
+    iconColor="text-gray-500"
+    [value]="totalCount"
+    label="Alle Buchungen"
+    [isActive]="selectedView === 'all'"
+    (cardClick)="onViewClick('all')">
+  </app-stat-card>
+</div>
+

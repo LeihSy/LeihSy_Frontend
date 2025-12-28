@@ -1,10 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule, Location as AngularLocation } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 // Import Product Service & Models
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
@@ -70,8 +74,10 @@ interface Device {
 export class DeviceDetailPageComponent implements OnInit {
   // --- Injected Services ---
   private route = inject(ActivatedRoute);
-  private location = inject(Location);
+  private location = inject(AngularLocation);
   private productService = inject(ProductService);
+  private categoryService = inject(CategoryService);
+  private locationService = inject(LocationService);
   private primeng = inject(PrimeNG);
 
   // --- State ---
@@ -114,21 +120,63 @@ export class DeviceDetailPageComponent implements OnInit {
     this.productService.getProductById(id).subscribe({
       next: (product: Product) => {
         console.log('Product loaded:', product);
-        this.device = this.mapProductToDevice(product);
 
-        // Finde Campus Daten
-        this.flandernstrasseData = this.device.campusAvailability.find(
-          (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
-        );
+        // Lade Items, Category und Location parallel
+        forkJoin({
+          items: this.productService.getProductItems(id).pipe(catchError(() => of([]))),
+          category: product.categoryId
+            ? this.categoryService.getCategoryById(product.categoryId).pipe(catchError(() => of(null)))
+            : of(null),
+          location: product.locationId
+            ? this.locationService.getLocationById(product.locationId).pipe(catchError(() => of(null)))
+            : of(null)
+        }).subscribe({
+          next: ({ items, category, location }) => {
+            // Berechne Counts basierend auf Items
+            const totalItemCount = items.length;
+            const availableItemCount = items.filter((item: any) =>
+              item.isAvailable === true || item.available === true
+            ).length;
 
-        this.isLoading.set(false);
+            // Erweitere Produkt mit allen Daten
+            const enrichedProduct: Product = {
+              ...product,
+              totalItemCount,
+              availableItemCount,
+              category: category || undefined,
+              location: location || undefined
+            };
+
+            // Konvertiere zu Device und zeige an
+            this.device = this.mapProductToDevice(enrichedProduct);
+            this.setupDeviceData();
+          },
+          error: (err: any) => {
+            console.error('Error loading additional data:', err);
+            // Fallback: Verwende Produkt ohne zusätzliche Daten
+            product.totalItemCount = 0;
+            product.availableItemCount = 0;
+            this.device = this.mapProductToDevice(product);
+            this.setupDeviceData();
+          }
+        });
       },
-      error: (error: any) => {
-        console.error('Error loading product:', error);
+      error: (err: any) => {
+        console.error('Error loading product:', err);
         this.errorMessage.set('Produkt konnte nicht geladen werden.');
         this.isLoading.set(false);
       }
     });
+  }
+
+  private setupDeviceData(): void {
+    // Finde Campus Daten
+    if (this.device) {
+      this.flandernstrasseData = this.device.campusAvailability.find(
+        (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
+      );
+    }
+    this.isLoading.set(false);
   }
 
   // Konvertiere Backend Product zu Frontend Device
@@ -138,25 +186,25 @@ export class DeviceDetailPageComponent implements OnInit {
     return {
       id: product.id.toString(),
       name: product.name,
-      category: product.categoryName,
+      category: product.category?.name || 'Unbekannt',
       description: product.description,
       price: product.price,
       expiryDate: product.expiryDate,
 
       // Verfügbarkeit
       availability: {
-        available: product.availableItems,
-        total: product.totalItems,
-        borrowed: product.totalItems - product.availableItems
+        available: product.availableItemCount || 0,
+        total: product.totalItemCount || 0,
+        borrowed: (product.totalItemCount || 0) - (product.availableItemCount || 0)
       },
 
       // Campus Verfügbarkeit
       campusAvailability: [
         {
           campus: 'Campus Esslingen Flandernstraße',
-          location: product.locationRoomNr,
-          available: product.availableItems,
-          total: product.totalItems,
+          location: product.location?.roomNr || 'N/A',
+          available: product.availableItemCount || 0,
+          total: product.totalItemCount || 0,
         }
       ],
 
@@ -173,7 +221,7 @@ export class DeviceDetailPageComponent implements OnInit {
       },
 
       // Keywords
-      keywords: [product.categoryName]
+      keywords: [product.category?.name || 'Unbekannt']
     };
   }
 

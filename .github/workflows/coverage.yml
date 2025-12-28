@@ -140,31 +140,4 @@ jobs:
           path: coverage/frontend/lcov.info
           retention-days: 30
 
-      # -----------------------------------------------------
-      # PR Comment mit Coverage (nur bei Pull Requests)
-      # -----------------------------------------------------
-      - name: Comment PR with Coverage
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const coverage = process.env.COVERAGE_PERCENT || '0';
-
-            const comment = `## Code Coverage Report
-
-            **Line Coverage:** ${coverage}%
-
-            ${coverage >= 80 ? 'Excellent coverage!' : coverage >= 60 ? 'Good coverage, but could be improved' : 'Coverage below recommended threshold (60%)'}
-
-            [Vollständiger Coverage Report](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-            `;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
+     

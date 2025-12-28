@@ -17,27 +17,12 @@ import { BadgeModule } from 'primeng/badge';
 // Services & Models
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { CatalogService } from './services/catalog.service';
 
-// Pipe
-import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
+// Components
+import { CatalogSearchFiltersComponent } from './components/catalog-search-filters.component';
+import { DeviceCardComponent, Device } from '../../components/device-card/device-card.component';
 
-// Device Interface (für UI)
-interface Device {
-  id: number;
-  name: string;
-  category: string;
-  description: string;
-  availability: {
-    available: number;
-    total: number;
-  };
-  loanConditions: {
-    loanPeriod: string;
-  };
-  location: string;
-  availableItems: number;
-  imageUrl: string | null;  // NEU: Bild-URL
-}
 
 @Component({
   selector: 'app-catalog-page',
@@ -54,208 +39,81 @@ interface Device {
     IconFieldModule,
     InputIconModule,
     BadgeModule,
-    DeviceIconPipe
+    CatalogSearchFiltersComponent,
+    DeviceCardComponent
   ],
+  providers: [CatalogService],
   templateUrl: './catalog.component.html',
 })
 export class CatalogComponent implements OnInit {
-  private productService = inject(ProductService);
+  private catalogService = inject(CatalogService);
   private router = inject(Router);
 
-  // State
-  products = signal<Product[]>([]);
-  devices = signal<Device[]>([]);
-  filteredDevices = signal<Device[]>([]);
-  isLoading = signal(true);
-  errorMessage = signal<string | null>(null);
+  // 1. Daten direkt als Signals aus dem Service beziehen
+  devices = this.catalogService.devices;
+  isLoading = this.catalogService.isLoading;
+  categories = this.catalogService.categories;
+  errorMessage = this.catalogService.errorMessage;
 
-  // Image Error Tracking (um Endlos-Reload zu vermeiden)
-  private imageErrorMap = new Map<number, boolean>();
+  // 2. Filter-Zustände als lokale Signals
+  searchQuery = signal('');
+  selectedCategory = signal('');
+  selectedCampus = signal('');
+  availabilityFilter = signal('');
+  dateRange = signal<Date[]>([]);
 
-  // Filters
-  searchQuery = '';
-  selectedCategory = '';
-  selectedCampus = '';
-  availabilityFilter = '';
-  dateRange: Date[] = [];
-
-  // Filter Options
-  categories: string[] = [];
+  // Konstanten für die UI
   campuses = ['Campus Stadtmitte', 'Campus Flandernstraße', 'Campus Göppingen'];
   availabilityOptions = [
     { label: 'Verfügbar', value: 'available' },
     { label: 'Ausgeliehen', value: 'borrowed' }
   ];
-
-  // DatePicker
   tomorrow = new Date(Date.now() + 86400000);
-  monthsToShow = 1;
+  monthsToShow = window.innerWidth >= 768 ? 2 : 1;
 
-  // Computed
+  // 3. Automatisches Filtern durch computed
+  filteredDevices = computed(() => {
+    return this.catalogService.applyFilters(
+      this.devices(),
+      this.searchQuery(),
+      this.selectedCategory(),
+      this.selectedCampus(),
+      this.availabilityFilter(),
+      this.dateRange()
+    );
+  });
+
+  // Hilfs-Computed für das Datum-Label
   formattedDateRange = computed(() => {
-    if (!this.dateRange[0]) return '';
-    const start = this.dateRange[0].toLocaleDateString('de-DE');
-    const end = this.dateRange[1]?.toLocaleDateString('de-DE') || start;
+    const range = this.dateRange();
+    if (!range || !range[0]) return '';
+    const start = range[0].toLocaleDateString('de-DE');
+    const end = range[1]?.toLocaleDateString('de-DE') || start;
     return `${start} - ${end}`;
   });
 
   ngOnInit() {
-    this.loadProducts();
-
-    // Responsive months
-    if (window.innerWidth >= 768) {
-      this.monthsToShow = 2;
-    }
+    this.catalogService.loadProducts();
   }
 
-  // Lade alle Produkte vom Backend
-  loadProducts() {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
-    this.productService.getProducts().subscribe({
-      next: (products: Product[]) => {
-        console.log('Products loaded:', products);
-        this.products.set(products);
-
-        // Konvertiere Products → Devices
-        const devices = this.mapProductsToDevices(products);
-        this.devices.set(devices);
-        this.filteredDevices.set(devices);
-
-        this.extractCategories(products);
-        this.isLoading.set(false);
-      },
-      error: (error: any) => {
-        console.error('Error loading products:', error);
-        this.errorMessage.set('Fehler beim Laden der Produkte.');
-        this.isLoading.set(false);
-      }
-    });
-  }
-
-  // Konvertiere Backend Products zu Frontend Devices
-  private mapProductsToDevices(products: Product[]): Device[] {
-    return products.map(p => ({
-      id: p.id,
-      name: p.name,
-      category: p.categoryName,
-      description: p.description,
-      availability: {
-        available: p.availableItems,
-        total: p.totalItems
-      },
-      loanConditions: {
-        loanPeriod: `${p.expiryDate} Tage`
-      },
-      location: p.locationRoomNr,
-      availableItems: p.availableItems,
-      imageUrl: p.imageUrl  // NEU: Bild-URL übernehmen
-    }));
-  }
-
-  // Extrahiere eindeutige Kategorien
-  private extractCategories(products: Product[]) {
-    const uniqueCategories = [...new Set(products.map(p => p.categoryName))];
-    this.categories = uniqueCategories;
-  }
-
-  // Filter anwenden
+  // Diese Methode bleibt leer oder kann für Analytics genutzt werden,
+  // da das computed Signal 'filteredDevices' bereits alles erledigt.
   applyFilters() {
-    let filtered = this.devices();
-
-    // Suche
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(d =>
-        d.name.toLowerCase().includes(query) ||
-        d.description.toLowerCase().includes(query) ||
-        d.category.toLowerCase().includes(query)
-      );
-    }
-
-    // Kategorie
-    if (this.selectedCategory) {
-      filtered = filtered.filter(d => d.category === this.selectedCategory);
-    }
-
-    // Campus
-    if (this.selectedCampus) {
-      filtered = filtered.filter(d => {
-        const location = d.location.toLowerCase();
-        if (this.selectedCampus.includes('Flandernstraße')) {
-          return location.includes('flandernstra') || location.startsWith('f');
-        }
-        if (this.selectedCampus.includes('Stadtmitte')) {
-          return location.includes('stadtmitte') || location.startsWith('s');
-        }
-        return true;
-      });
-    }
-
-    // Verfügbarkeit
-    if (this.availabilityFilter === 'available') {
-      filtered = filtered.filter(d => d.availableItems > 0);
-    } else if (this.availabilityFilter === 'borrowed') {
-      filtered = filtered.filter(d => d.availableItems === 0);
-    }
-
-    this.filteredDevices.set(filtered);
+    console.log('Filter wurden angewendet');
   }
 
-  // Navigiere zu Detailseite
   onViewDevice(deviceId: number) {
-    this.router.navigate(['/device', deviceId]);
+    this.catalogService.navigateToDevice(deviceId);
   }
 
-  /**
-   * Gibt die vollständige Bild-URL zurück
-   */
   getImageUrl(deviceId: number): string | null {
     const device = this.devices().find(d => d.id === deviceId);
-    if (!device || !device.imageUrl) {
-      return null;
-    }
-
-    if (this.imageErrorMap.get(deviceId)) {
-      return null;
-    }
-
-    const imageUrl = device.imageUrl;
-
-    // Fall 1: Absolute URL
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
-    }
-
-    // Fall 2: Backend API Pfad (/api/images/...)
-    if (imageUrl.startsWith('/api/images/')) {
-      return `http://localhost:8080${imageUrl}`;
-    }
-
-    // Fall 3: Legacy Assets (/assets/...) → Backend
-    if (imageUrl.startsWith('/assets/images/')) {
-      const filename = imageUrl.replace('/assets/images/', '');
-      return `http://localhost:8080/api/images/${filename}`;
-    }
-
-    // Fall 4: Nur Filename
-    return `http://localhost:8080/api/images/${imageUrl}`;
+    if (!device) return null;
+    return this.catalogService.getImageUrl(deviceId, device.imageUrl, new Map());
   }
 
-  /**
-   * Error-Handler wenn Bild nicht geladen werden kann
-   * Setzt Fallback auf Icon und verhindert Endlos-Reload
-   */
-  onImageError(event: Event, device: Device): void {
-    console.warn(`Image load error for device ${device.id}:`, device.imageUrl);
-
-    // Markiere als fehlerhaft → Template zeigt Icon
-    this.imageErrorMap.set(device.id, true);
-
-    // Verhindere weiteren Reload-Versuch
+  onImageError(event: Event, device: any): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
   }
-
 }

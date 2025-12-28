@@ -7,31 +7,21 @@
 
   <div class="grid md:grid-cols-2 gap-6">
 
-    <div class="dashboard-card">
-      <p-card header="Meine Gegenstände">
-        <p>Übersicht über alle Ihnen zugewiesenen Gegenstände und deren Status.</p>
+    <app-menu-card
+      header="Meine Gegenstände"
+      description="Übersicht über alle Ihnen zugewiesenen Gegenstände und deren Status."
+      buttonLabel="Zu meinen Gegenständen"
+      routerLink="/lender/items"
+      icon="box">
+    </app-menu-card>
 
-        <button
-          pButton
-          label="Zu meinen Gegenständen"
-          class="mt-4"
-          routerLink="/lender/items">
-        </button>
-      </p-card>
-    </div>
-
-    <div class="dashboard-card">
-      <p-card header="Ausleihvorgänge verwalten">
-        <p>Verwalten Sie Ausleihvorgänge und beantworten Sie Anfragen.</p>
-
-        <button
-          pButton
-          label="Zu den Ausleihvorgängen"
-          class="mt-4"
-          [disabled]="true">
-        </button>
-      </p-card>
-    </div>
+    <app-menu-card
+      header="Ausleihvorgänge verwalten"
+      description="Verwalten Sie Ausleihvorgänge und beantworten Sie Anfragen."
+      buttonLabel="Zu den Ausleihvorgängen"
+      [disabled]="true"
+      icon="calendar">
+    </app-menu-card>
 
   </div>
 

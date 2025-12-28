@@ -1,0 +1,140 @@
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-slate-50/30 min-h-screen">
+
+  <p-toast position="bottom-right"></p-toast>
+
+  <nav class="flex items-center">
+    <app-back-button
+      routerLink="/admin/bookings"
+      class="hover:translate-x-[-4px] transition-transform duration-200">
+    </app-back-button>
+  </nav>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-32 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div class="relative flex items-center justify-center">
+        <i class="pi pi-spin pi-spinner text-5xl text-blue-700 opacity-25"></i>
+        <i class="pi pi-spin pi-spinner-dotted text-5xl text-blue-700 absolute"></i>
+      </div>
+      <p class="mt-6 text-gray-500 font-medium animate-pulse">Lade Buchungsdetails...</p>
+    </div>
+  }
+
+  @if (!isLoading() && booking()) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+      <div class="lg:col-span-2 space-y-6">
+
+        <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+          <app-booking-header
+            [bookingId]="booking()!.id"
+            [productName]="booking()!.productName"
+            [itemInvNumber]="booking()!.itemInvNumber"
+            [status]="booking()!.status"
+            [statusLabel]="getStatusLabel(booking()!.status)"
+            [statusSeverity]="getStatusSeverity(booking()!.status)">
+          </app-booking-header>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <app-info-card header="Benutzer" [items]="getUserInfoItems()"></app-info-card>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <app-info-card header="Ausleihzeitraum" [items]="getLoanPeriodInfoItems()"></app-info-card>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <app-info-card header="Verleiher" [items]="getLenderInfoItems()"></app-info-card>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <app-info-card header="Gegenstand" [items]="getItemInfoItems()"></app-info-card>
+          </div>
+        </div>
+
+        @if (booking()!.message) {
+          <p-card header="Nachricht" styleClass="shadow-sm border border-gray-200">
+            <div class="flex gap-4 p-4 bg-blue-50/50 border-l-4 border-blue-500 rounded-r-lg">
+              <i class="pi pi-comment text-blue-400 mt-1"></i>
+              <p class="text-blue-900 text-sm leading-relaxed m-0 italic">
+                "{{ booking()!.message }}"
+              </p>
+            </div>
+          </p-card>
+        }
+
+        <p-card header="Termine & Daten" styleClass="shadow-sm border border-gray-200">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 p-2">
+            @if (booking()!.proposedPickups) {
+              <app-info-item
+                icon="pi pi-calendar"
+                iconColor="text-blue-700"
+                label="Vorgeschlagene Abholtermine"
+                [value]="booking()!.proposedPickups">
+              </app-info-item>
+            }
+            @if (booking()!.confirmedPickup) {
+              <app-info-item
+                icon="pi pi-check-circle"
+                iconColor="text-emerald-600"
+                label="Bestätigter Abholtermin"
+                [value]="formatDateTime(booking()!.confirmedPickup)">
+              </app-info-item>
+            }
+            @if (booking()!.distributionDate) {
+              <app-info-item
+                icon="pi pi-sign-out"
+                iconColor="text-orange-600"
+                label="Tatsächliche Ausgabe"
+                [value]="formatDateTime(booking()!.distributionDate)">
+              </app-info-item>
+            }
+            @if (booking()!.returnDate) {
+              <app-info-item
+                icon="pi pi-sign-in"
+                iconColor="text-emerald-600"
+                label="Tatsächliche Rückgabe"
+                [value]="formatDateTime(booking()!.returnDate)">
+              </app-info-item>
+            }
+
+            <div class="sm:col-span-2 border-t border-gray-100 my-2"></div>
+
+            <app-info-item
+              icon="pi pi-clock"
+              iconColor="text-slate-400"
+              label="Erstellt am"
+              [value]="formatDateTime(booking()!.createdAt)">
+            </app-info-item>
+            <app-info-item
+              icon="pi pi-history"
+              iconColor="text-slate-400"
+              label="Zuletzt aktualisiert"
+              [value]="formatDateTime(booking()!.updatedAt)">
+            </app-info-item>
+          </div>
+        </p-card>
+      </div>
+
+      <aside class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="p-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+              <i class="pi pi-history text-blue-600"></i>
+              Buchungsverlauf
+            </h3>
+          </div>
+
+          <div class="p-6">
+            <div class="flex flex-col space-y-0">
+              <app-booking-timeline
+                class="block-timeline"
+                [events]="timelineEvents()"
+                [formatDateTime]="formatDateTime.bind(this)">
+              </app-booking-timeline>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  }
+</div>

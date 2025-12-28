@@ -1,0 +1,99 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-back-button (backClick)="goBack()"></app-back-button>
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center p-16 text-center">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <p class="mt-4 text-gray-600">Lade Details...</p>
+    </div>
+  }
+
+  @if (!isLoading() && item()) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Item Information -->
+      <p-card header="Gegenstand Details" class="border border-gray-200">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-[#000080]">{{ item()!.invNumber }}</h2>
+            <p-tag
+              [value]="item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
+              [severity]="getStatusSeverity(item()!.isAvailable)"
+              class="mt-2">
+            </p-tag>
+          </div>
+          <button pButton
+                  icon="pi pi-pencil"
+                  label="Bearbeiten"
+                  class="p-button-outlined"
+                  (click)="editItem()"></button>
+        </div>
+
+        <app-info-card
+          header="Gegenstand Informationen"
+          [items]="getItemInfoItems()">
+        </app-info-card>
+      </p-card>
+
+      <!-- Product Information -->
+      <p-card header="Zugehöriges Produkt" class="border border-gray-200">
+        @if (product()) {
+          <div class="mb-4">
+            @if (product()!.imageUrl) {
+              <img [src]="product()!.imageUrl"
+                   [alt]="product()!.name"
+                   class="w-full max-w-xs rounded-lg shadow-md mb-4" />
+            }
+          </div>
+
+          <app-info-card
+            header="Produkt Informationen"
+            [items]="getProductInfoItems()">
+          </app-info-card>
+
+          @if (product()!.description) {
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h4 class="font-semibold mb-2 text-gray-700">Beschreibung</h4>
+              <p class="text-gray-600">{{ product()!.description }}</p>
+            </div>
+          }
+
+          <div class="mt-4">
+            <button pButton
+                    icon="pi pi-external-link"
+                    label="Zum Produkt"
+                    class="p-button-outlined p-button-secondary w-full"
+                    [routerLink]="['/admin/products', product()!.id, 'edit']">
+            </button>
+          </div>
+        } @else {
+          <p class="text-gray-600">Produktinformationen werden geladen...</p>
+        }
+      </p-card>
+
+      <!-- Loan History (Full Width) -->
+      <div class="lg:col-span-2">
+        <p-card header="Ausleihverlauf" class="border border-gray-200">
+          @if (loanHistory().length > 0) {
+            <app-table
+              [columns]="loanHistoryColumns"
+              [data]="loanHistory()"
+              [paginator]="true"
+              [rows]="10"
+              emptyMessage="Keine Ausleihvorgänge vorhanden">
+            </app-table>
+          } @else {
+            <div class="text-center p-8 text-gray-500">
+              <i class="pi pi-info-circle text-4xl mb-4 block"></i>
+              <p>Noch keine Ausleihvorgänge für diesen Gegenstand.</p>
+            </div>
+          }
+        </p-card>
+      </div>
+
+    </div>
+  }
+</div>
+

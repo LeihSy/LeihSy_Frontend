@@ -1,19 +1,23 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { ItemService } from '../../services/item.service';
 import { ProductService } from '../../services/product.service';
+import { CategoryService } from '../../services/category.service';
+import { LocationService } from '../../services/location.service';
 import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
+import { TableComponent, ColumnDef } from '../../components/table/table.component';
 
 @Component({
   selector: 'app-item-detail',
@@ -23,7 +27,7 @@ import { Product } from '../../models/product.model';
     CardModule,
     ButtonModule,
     TagModule,
-    TableModule,
+    TableComponent,
     ToastModule
   ],
   templateUrl: './item-detail.component.html',
@@ -31,6 +35,14 @@ import { Product } from '../../models/product.model';
   providers: [MessageService]
 })
 export class ItemDetailComponent implements OnInit {
+
+  // Spalten-Definition für die Loan History Tabelle
+  loanHistoryColumns: ColumnDef[] = [
+    { field: 'borrower', header: 'Ausleiher', sortable: true },
+    { field: 'startDate', header: 'Von', type: 'date', sortable: true, width: '120px' },
+    { field: 'endDate', header: 'Bis', type: 'date', sortable: true, width: '120px' },
+    { field: 'status', header: 'Status', type: 'status', sortable: true, width: '130px' }
+  ];
 
   item = signal<Item | null>(null);
   product = signal<Product | null>(null);
@@ -46,6 +58,8 @@ export class ItemDetailComponent implements OnInit {
     private readonly router: Router,
     private readonly itemService: ItemService,
     private readonly productService: ProductService,
+    private readonly categoryService: CategoryService,
+    private readonly locationService: LocationService,
     private readonly authService: AuthService,
     private readonly messageService: MessageService
   ) {}
@@ -86,11 +100,9 @@ export class ItemDetailComponent implements OnInit {
   loadItemDetails(): void {
     if (!this.itemId) return;
 
-    console.log('🔗 API Call: GET /api/items/' + this.itemId);
 
     this.itemService.getItemById(this.itemId).subscribe({
       next: (item) => {
-        console.log('✅ GET /api/items/' + this.itemId + ' - Success:', item);
         this.item.set(item);
 
         // Lade zugehöriges Produkt
@@ -104,7 +116,6 @@ export class ItemDetailComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('❌ GET /api/items/' + this.itemId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -117,38 +128,44 @@ export class ItemDetailComponent implements OnInit {
   }
 
   loadProduct(productId: number): void {
-    console.log('🔗 API Call: GET /api/products/' + productId);
-
     this.productService.getProductById(productId).subscribe({
       next: (product) => {
-        console.log('✅ GET /api/products/' + productId + ' - Success:', product);
+        // Lade Items, Category und Location parallel
+        forkJoin({
+          items: this.productService.getProductItems(productId).pipe(catchError(() => of([]))),
+          category: product.categoryId
+            ? this.categoryService.getCategoryById(product.categoryId).pipe(catchError(() => of(null)))
+            : of(null),
+          location: product.locationId
+            ? this.locationService.getLocationById(product.locationId).pipe(catchError(() => of(null)))
+            : of(null)
+        }).subscribe({
+          next: ({ items, category, location }) => {
+            // Berechne Item Counts
+            const totalItemCount = items.length;
+            const availableItemCount = items.filter((item: any) =>
+              item.isAvailable === true || item.available === true
+            ).length;
 
-        const isAdmin = this.authService.isAdmin();
+            // Erweitere Produkt mit allen Daten
+            const enrichedProduct: Product = {
+              ...product,
+              totalItemCount,
+              availableItemCount,
+              category: category || undefined,
+              location: location || undefined
+            };
 
-        if (!isAdmin) {
-          const namesMatch = this.checkNamesMatch(product.lenderName, this.keycloakFullName);
-
-          if (!namesMatch) {
-            console.warn('⚠️ Zugriff verweigert: Verleiher-Name stimmt nicht überein');
-            console.warn('  Product.lenderName:', product.lenderName);
-            console.warn('  Keycloak Name:', this.keycloakFullName);
-
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Zugriff verweigert',
-              detail: 'Sie haben keine Berechtigung, dieses Item anzuzeigen.',
-              life: 5000
-            });
-
-            this.goBack();
-            return;
+            this.product.set(enrichedProduct);
+          },
+          error: (err: any) => {
+            console.error('Error loading additional data:', err);
+            // Fallback: Verwende Produkt ohne zusätzliche Daten
+            this.product.set(product);
           }
-        }
-
-        this.product.set(product);
+        });
       },
       error: (err) => {
-        console.error('❌ GET /api/products/' + productId + ' - Error:', err.status, err.message);
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
@@ -190,4 +207,3 @@ export class ItemDetailComponent implements OnInit {
     return available ? 'Verfügbar' : 'Ausgeliehen';
   }
 }
-

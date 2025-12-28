@@ -1,0 +1,29 @@
+<div class="export-buttons">
+  <button
+    pButton
+    icon="pi pi-file-pdf"
+    label="Als PDF exportieren"
+    class="p-button-success"
+    (click)="onExportPdf()"
+    [disabled]="isLoading"
+    pTooltip="Statistiken als PDF-Datei exportieren">
+  </button>
+  <button
+    pButton
+    icon="pi pi-download"
+    label="Als HTML exportieren"
+    class="p-button-success"
+    (click)="onExportHtml()"
+    [disabled]="isLoading"
+    pTooltip="Statistiken als HTML-Datei exportieren">
+  </button>
+  <button
+    pButton
+    icon="pi pi-refresh"
+    label="Aktualisieren"
+    class="p-button-outlined"
+    (click)="onRefresh()"
+    pTooltip="Daten neu laden">
+  </button>
+</div>
+

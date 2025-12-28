@@ -52,7 +52,7 @@ export class ProductService {
       params = params.set('locationId', filters.locationId.toString());
     }
     if (filters?.keyword) {
-      params = params.set('keyword', filters.keyword);
+      params = params.set('search', filters.keyword);
     }
     return this.http.get<Product[]>(this.apiUrl, { params });
   }

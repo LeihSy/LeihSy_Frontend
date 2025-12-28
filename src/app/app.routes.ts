@@ -139,12 +139,12 @@ export const routes: Routes = [
   },
   //loan-Ausleihübersicht
   {
-    path: 'admin/loan',
+    path: 'lender/loan',
     loadComponent: () =>
-      import('./pages/admin-dashboard/admin-loan-dashboard.component')
+      import('./pages/lender-dashboard/admin-loan-dashboard.component')
         .then(m => m.AdminLoanDashboardComponent),
     canActivate: [authGuard],
-    data: { roles: ['admin'] },
+    data: { roles: ['lender'] },
   },
   {
     path: 'admin/bookings',

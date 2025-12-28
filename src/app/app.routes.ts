@@ -60,6 +60,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
+  {
+    path: 'lender/loan',
+    loadComponent: () =>
+      import('./pages/lender-dashboard/admin-loan-dashboard.component')
+        .then(m => m.AdminLoanDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender'] },
+  },
 
   // Admin Bereich
   
@@ -137,15 +145,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
-  //loan-Ausleihübersicht
-  {
-    path: 'lender/loan',
-    loadComponent: () =>
-      import('./pages/lender-dashboard/admin-loan-dashboard.component')
-        .then(m => m.AdminLoanDashboardComponent),
-    canActivate: [authGuard],
-    data: { roles: ['lender'] },
-  },
+
   {
     path: 'admin/bookings',
     loadComponent: () =>

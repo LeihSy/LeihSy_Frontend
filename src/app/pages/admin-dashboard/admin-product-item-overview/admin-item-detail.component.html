@@ -5,7 +5,7 @@
 
   @if (isLoading()) {
     <div class="flex flex-col items-center justify-center p-16 text-center">
-      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
       <p class="mt-4 text-gray-600">Lade Details...</p>
     </div>
   }
@@ -17,7 +17,7 @@
       <p-card header="Gegenstand Details" class="border border-gray-200">
         <div class="flex justify-between items-start mb-4">
           <div>
-            <h2 class="text-2xl font-bold text-[#000080]">{{ item()!.invNumber }}</h2>
+            <h2 class="text-2xl font-bold text-[#253359]">{{ item()!.invNumber }}</h2>
             <p-tag
               [value]="item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
               [severity]="getStatusSeverity(item()!.isAvailable)"

@@ -15,7 +15,7 @@ import { ButtonModule } from 'primeng/button';
       pButton
       icon="pi pi-arrow-left"
       [label]="label"
-      class="p-button-text mb-4 !text-[#000080] font-medium hover:!bg-[#000080]/[0.04] focus:!ring-2 focus:!ring-[#000080]/20 shadow-none"
+      class="p-button-text mb-4 !text-[#253359] font-medium hover:!bg-[#253359]/[0.04] focus:!ring-2 focus:!ring-[#253359]/20 shadow-none"
       (click)="handleClick()">
     </button>
   `,

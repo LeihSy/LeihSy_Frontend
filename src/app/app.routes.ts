@@ -45,7 +45,8 @@ export const routes: Routes = [
   {
     path: 'qr-action/:id',
     loadComponent: () => import('./pages/user-dashboard/qr-action.component').then(m => m.QrActionComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'lender',

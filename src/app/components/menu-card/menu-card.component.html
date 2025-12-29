@@ -10,12 +10,12 @@
     <ng-template pTemplate="header">
       <div class="flex flex-col items-center text-center gap-2">
         @if (icon) {
-          <i [class]="'pi pi-' + icon + ' text-2xl md:text-3xl text-[#000080] mb-2'"></i>
+          <i [class]="'pi pi-' + icon + ' text-2xl md:text-3xl text-[#253359] mb-2'"></i>
         }
         @if (iconClass) {
-          <i [class]="iconClass + ' text-2xl md:text-3xl text-[#000080] mb-2'"></i>
+          <i [class]="iconClass + ' text-2xl md:text-3xl text-[#253359] mb-2'"></i>
         }
-        <h3 class="text-lg md:text-xl font-semibold text-[#000080]">{{ header }}</h3>
+        <h3 class="text-lg md:text-xl font-semibold text-[#253359]">{{ header }}</h3>
       </div>
     </ng-template>
 
@@ -24,10 +24,10 @@
     <button
       pButton
       [label]="buttonLabel"
-      class="w-full !bg-[#000080] !border-[#000080] font-semibold py-3 px-6 transition-all duration-200
+      class="w-full !bg-[#253359] !border-[#253359] font-semibold py-3 px-6 transition-all duration-200
              hover:!bg-[#000066] hover:!border-[#000066] hover:scale-[1.02]
              disabled:!bg-gray-400 disabled:!border-gray-400 disabled:opacity-60 disabled:cursor-not-allowed
-             focus:!ring-2 focus:!ring-[#000080]/25 shadow-none"
+             focus:!ring-2 focus:!ring-[#253359]/25 shadow-none"
       [routerLink]="routerLink"
       [disabled]="disabled">
     </button>

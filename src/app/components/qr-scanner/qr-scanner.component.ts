@@ -1,0 +1,168 @@
+import { Component, ElementRef, OnDestroy, viewChild, input, output, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+
+// Interface für die Barcode Detector API
+interface BarcodeDetector {
+  detect(source: ImageBitmapSource): Promise<any[]>;
+}
+
+declare var BarcodeDetector: {
+  prototype: BarcodeDetector;
+  new (options?: { formats: string[] }): BarcodeDetector;
+};
+
+@Component({
+  selector: 'app-qr-scanner',
+  standalone: true,
+  imports: [CommonModule, DialogModule, ButtonModule],
+  template: `
+    <p-dialog
+      header="QR-Code Scanner"
+      [visible]="visible()"
+      [modal]="true"
+      [closable]="true"
+      (onHide)="close()"
+      [style]="{width: '420px'}"
+    >
+      <div class="flex flex-col items-center gap-4">
+        @if (!support()) {
+          <div class="p-3 bg-red-50 text-red-600 text-sm rounded-md border border-red-200">
+            <i class="pi pi-exclamation-triangle mr-1"></i>
+            Dieser Browser unterstützt die BarcodeDetector API nicht.
+          </div>
+        }
+
+        <div class="w-full flex flex-col items-center">
+          <video
+            #videoEl
+            autoplay
+            muted
+            playsinline
+            class="rounded-md border shadow-inner"
+            style="width:320px; height:240px; object-fit:cover; background:#000"
+          ></video>
+
+          <div class="mt-4 flex gap-3">
+            <button pButton type="button" label="Start" icon="pi pi-video"
+                    (click)="start()" [disabled]="running() || !support()"></button>
+            <button pButton type="button" label="Stop" icon="pi pi-stop"
+                    class="p-button-secondary" (click)="stop()" [disabled]="!running()"></button>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-500 text-center italic">
+          Nutzen Sie einen modernen Browser (Chrome/Edge/Android), um die Scan-Funktion zu nutzen.
+        </p>
+
+        <div class="w-full flex justify-end border-t pt-4">
+          <button pButton label="Abbrechen" class="p-button-text" (click)="close()"></button>
+        </div>
+      </div>
+    </p-dialog>
+  `
+})
+export class QrScannerComponent implements OnDestroy {
+  // Signal-basierte Inputs/Outputs (v20 Standard)
+  visible = input<boolean>(false);
+  visibleChange = output<boolean>();
+  scanned = output<string>();
+
+  // Zugriff auf das Video-Element via Signal
+  videoEl = viewChild<ElementRef<HTMLVideoElement>>('videoEl');
+
+  private stream: MediaStream | null = null;
+  private detector: BarcodeDetector | null = null;
+  private loopHandle: any = null;
+
+  // Signal States für reaktive UI
+  running = signal(false);
+  support = signal(true);
+
+  constructor() {
+    // Check Support direkt beim Start
+    if (typeof window !== 'undefined' && !('BarcodeDetector' in window)) {
+      this.support.set(false);
+    }
+  }
+
+  async start(): Promise<void> {
+    if (this.running() || !this.support()) return;
+
+    try {
+      this.detector = new BarcodeDetector({ formats: ['qr_code'] });
+
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: 640, height: 480 }
+      });
+
+      const video = this.videoEl()?.nativeElement;
+      if (video) {
+        video.srcObject = this.stream;
+        // Warten bis Video geladen ist
+        video.onloadedmetadata = () => video.play();
+      }
+
+      this.running.set(true);
+      this.scanLoop();
+    } catch (err) {
+      console.error('Kamera-Fehler:', err);
+      this.support.set(false);
+    }
+  }
+
+  private async scanLoop() {
+    if (!this.running()) return;
+
+    try {
+      const video = this.videoEl()?.nativeElement;
+      if (video && video.readyState >= 2) { // HAVE_CURRENT_DATA
+        const barcodes = await this.detector?.detect(video);
+
+        if (barcodes && barcodes.length > 0) {
+          const value = barcodes[0].rawValue;
+          if (value) {
+            this.scanned.emit(value);
+            this.close(); // Stop & Close nach Erfolg
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.debug('Scan-Intervall Fehler (normal während Fokus):', err);
+    }
+
+    // Effizienteres Loop-Handling
+    this.loopHandle = setTimeout(() => this.scanLoop(), 250);
+  }
+
+  stop(): void {
+    this.running.set(false);
+
+    if (this.loopHandle) {
+      clearTimeout(this.loopHandle);
+      this.loopHandle = null;
+    }
+
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
+    }
+
+    const video = this.videoEl()?.nativeElement;
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+    }
+  }
+
+  close(): void {
+    this.stop();
+    this.visibleChange.emit(false);
+  }
+
+  ngOnDestroy(): void {
+    this.stop();
+  }
+}

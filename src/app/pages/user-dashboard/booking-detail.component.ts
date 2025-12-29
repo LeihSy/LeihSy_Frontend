@@ -12,6 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { Booking, BookingStatus } from '../../models/booking.model';
 import { BookingService } from '../../services/booking.service';
+import { BookingQrComponent } from './booking-qr.component';
 
 interface TimelineEvent {
   status: string;
@@ -31,7 +32,8 @@ interface TimelineEvent {
     TagModule,
     DividerModule,
     TimelineModule,
-    ToastModule
+    ToastModule,
+    BookingQrComponent
   ],
   templateUrl: './booking-detail.component.html',
   styleUrls: ['./booking-detail.component.scss'],
@@ -41,6 +43,9 @@ export class BookingDetailComponent implements OnInit {
   booking = signal<Booking | null>(null);
   isLoading = signal(true);
   timelineEvents = signal<TimelineEvent[]>([]);
+
+  // dialog state for QR
+  showQrDialog = signal(false);
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -83,6 +88,14 @@ export class BookingDetailComponent implements OnInit {
         this.goBack();
       }
     });
+  }
+
+  openQrDialog(): void {
+    this.showQrDialog.set(true);
+  }
+
+  onQrClosed(): void {
+    this.showQrDialog.set(false);
   }
 
   generateTimeline(booking: Booking): void {

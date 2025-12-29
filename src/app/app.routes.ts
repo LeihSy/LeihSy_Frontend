@@ -43,6 +43,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'qr-action/:id',
+    loadComponent: () => import('./pages/user-dashboard/qr-action.component').then(m => m.QrActionComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'lender',
     loadComponent: () => import('./pages/lender-dashboard/lender-dashboard.component').then(m => m.LenderDashboardComponent),
     canActivate: [authGuard],

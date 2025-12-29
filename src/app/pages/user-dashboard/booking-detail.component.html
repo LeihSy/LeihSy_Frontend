@@ -1,13 +1,28 @@
 <div class="p-8 max-w-6xl mx-auto">
   <p-toast position="bottom-right"></p-toast>
 
-  <button
-    pButton
-    icon="pi pi-arrow-left"
-    label="Zurück zur Übersicht"
-    class="p-button-text mb-4 text-[#000080] hover:bg-[rgba(0,0,128,0.04)]"
-    (click)="goBack()">
-  </button>
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <button
+        pButton
+        icon="pi pi-arrow-left"
+        label="Zurück zur Übersicht"
+        class="p-button-text text-[#000080] hover:bg-[rgba(0,0,128,0.04)]"
+        (click)="goBack()">
+      </button>
+    </div>
+
+    <div>
+      <button
+        pButton
+        icon="pi pi-qrcode"
+        label="QR-Codes anzeigen"
+        class="p-button-secondary text-[#000080]"
+        (click)="openQrDialog()"
+        [disabled]="!booking()">
+      </button>
+    </div>
+  </div>
 
   @if (isLoading()) {
     <div class="text-center py-8 flex flex-col items-center justify-center">
@@ -256,5 +271,12 @@
       <button pButton label="Zurück zur Übersicht" class="p-button" (click)="goBack()"></button>
     </div>
   }
+
+  <!-- Booking QR Dialog Component -->
+  <app-booking-qr
+    [visible]="showQrDialog()"
+    [bookingId]="booking()!.id"
+    (closed)="onQrClosed()">
+  </app-booking-qr>
 
 </div>

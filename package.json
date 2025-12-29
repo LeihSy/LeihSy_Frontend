@@ -34,6 +34,7 @@
     "@angular/router": "20.3.6",
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/postcss": "^4.1.16",
+    "angularx-qrcode": "^20.0.0",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "html2canvas": "^1.4.1",

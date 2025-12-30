@@ -37,6 +37,7 @@ import { ValidationMessageComponent } from '../../validation-message/validation-
 })
 export class ProductFormComponent implements OnInit, OnChanges {
   @Input() product: Product | null = null;
+  @Input() mode: 'admin' | 'private' = 'admin';
   @Input() categories: Category[] = [];
   @Input() locations: Location[] = [];
   @Input() isEditMode = false;
@@ -65,6 +66,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
   }
 
   private initForm(): void {
+    // In 'private' mode we don't require a location selection because Location will be set to 'privat'
     this.itemForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
@@ -73,8 +75,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
       imageUrl: [''],
       accessories: [''],
       categoryId: [null, Validators.required],
-      locationId: [null, Validators.required],
-      locationRoomNr: ['', Validators.required]
+      locationId: [null, this.mode === 'admin' ? Validators.required : []],
+      locationRoomNr: ['', this.mode === 'admin' ? Validators.required : []]
     });
   }
 
@@ -107,10 +109,13 @@ export class ProductFormComponent implements OnInit, OnChanges {
   submitForm(): void {
     if (!this.itemForm.valid) return;
 
+    // Wenn private mode, geben wir ein Flag weiter, damit die Elternkomponente weiß, dass
+    // kein POST erfolgen soll und stattdessen ein JSON erzeugt werden kann.
     this.formSubmit.emit({
       formValue: this.itemForm.value,
-      imageFile: this.selectedFile()
-    });
+      imageFile: this.selectedFile(),
+      privateMode: this.mode === 'private'
+    } as any);
   }
 
   resetForm(): void {

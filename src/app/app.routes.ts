@@ -38,6 +38,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/private-lend',
+    loadComponent: () => import('./pages/user-dashboard/private-lend.component').then(m => m.PrivateLendComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/private-lend/product',
+    loadComponent: () => import('./pages/admin-dashboard/admin-products/admin-product-form-page.component').then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/private-lend/item',
+    loadComponent: () => import('./pages/admin-dashboard/admin-items/admin-item-form-page.component').then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'user-dashboard/bookings/:id',
     loadComponent: () => import('./pages/user-dashboard/booking-detail.component').then(m => m.BookingDetailComponent),
     canActivate: [authGuard]

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
 import { ProductFormComponent } from '../../../components/admin/forms/product-form/product-form.component';
+import { PrivateLendService } from '../../user-dashboard/private-lend.service';
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
@@ -42,6 +43,7 @@ import { Location } from '../../../models/location.model';
         [categories]="allCategories()"
         [locations]="allLocations()"
         [isEditMode]="isEditMode()"
+        [mode]="isPrivateMode() ? 'private' : 'admin'"
         (formSubmit)="handleFormSubmit($event)"
         (formCancel)="goBack()">
       </app-product-form>
@@ -49,6 +51,7 @@ import { Location } from '../../../models/location.model';
   `
 })
 export class AdminProductFormPageComponent implements OnInit {
+  privateLendService = inject(PrivateLendService);
   @ViewChild(ProductFormComponent) productFormComponent!: ProductFormComponent;
 
   product = signal<Product | null>(null);
@@ -149,7 +152,24 @@ export class AdminProductFormPageComponent implements OnInit {
     });
   }
 
+  isPrivateMode(): boolean {
+    // Prüfe die aktuelle URL auf '/user-dashboard/private-lend'
+    const url = (globalThis as any).location?.pathname || '';
+    return url.includes('/user-dashboard/private-lend');
+  }
+
   handleFormSubmit(data: { formValue: any, imageFile: File | null }): void {
+    if ((data as any).privateMode) {
+      const payload = { ...data.formValue };
+      // Setze Location auf 'privat' wenn privateMode
+      payload.locationId = 'privat';
+      // Übergebe JSON an PrivateLendService (SendAsEmail)
+      this.privateLendService.sendAsEmail(JSON.stringify({ type: 'product', payload }, null, 2));
+      this.messageService.add({ severity: 'success', summary: 'Vorschau', detail: 'Produkt-JSON vorbereitet und Mail-Client geöffnet.' });
+      this.goBack();
+      return;
+    }
+
     if (this.isEditMode() && this.productId) {
       this.productService.updateProduct(this.productId, data.formValue, data.imageFile).subscribe({
         next: () => {

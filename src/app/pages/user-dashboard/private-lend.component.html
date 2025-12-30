@@ -1,0 +1,24 @@
+<div class="p-8 max-w-3xl mx-auto">
+  <h2 class="text-2xl font-semibold mb-4">Private Gegenstände verleihen</h2>
+  <p class="text-gray-600 mb-6">Wähle, ob du ein Produkt (Produkt-Vorlage) oder einen konkreten Gegenstand anlegen möchtest.</p>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <app-menu-card
+      header="Produkt erstellen"
+      description="Erstelle ein neues Produkt (allgemeine Produktdaten)."
+      buttonLabel="Produkt erstellen"
+      routerLink="/user-dashboard/private-lend/product"
+      icon="tag">
+    </app-menu-card>
+
+    <app-menu-card
+      header="Gegenstand erstellen"
+      description="Erstelle einen konkreten Gegenstand zu einem Produkt (Inventarnummer wird PRV-... gesetzt)."
+      buttonLabel="Gegenstand erstellen"
+      routerLink="/user-dashboard/private-lend/item"
+      icon="box">
+    </app-menu-card>
+  </div>
+
+  <p class="text-sm text-gray-500 mt-6">Hinweis: Die Formulare verwenden die gleichen Komponenten wie im Admin-Bereich — wir haben separate Routen, damit normale Nutzer darauf zugreifen können. Die Formulare sollten so angepasst werden, dass statt eines direkten POSTs ein JSON erzeugt wird (das z. B. per E-Mail versendet werden kann). Falls du willst, passe ich die Admin-Komponenten an, damit sie im Modus "private" statt POST die JSON-Erzeugung nutzen.</p>
+</div>

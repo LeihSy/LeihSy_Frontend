@@ -104,35 +104,37 @@
             </app-form-row>
 
             <app-form-row [columns]="2">
-              <app-form-input-field label="Raumnummer" [required]="true" [fullWidth]="true">
-                <p-select
-                  [options]="locations"
-                  optionLabel="roomNr"
-                  optionValue="id"
-                  placeholder="Location wählen"
-                  formControlName="locationId"
-                  class="w-full"
-                  (onChange)="onLocationSelect($event)">
-                </p-select>
-                @if (locations.length === 0) {
-                  <app-validation-message
-                    [message]="'Keine Standorte verfügbar. Bitte Standorte im System anlegen.'"
-                    [isError]="true">
-                  </app-validation-message>
-                }
-              </app-form-input-field>
+              <ng-container *ngIf="mode === 'admin'">
+                <app-form-input-field label="Raumnummer" [required]="true" [fullWidth]="true">
+                  <p-select
+                    [options]="locations"
+                    optionLabel="roomNr"
+                    optionValue="id"
+                    placeholder="Location wählen"
+                    formControlName="locationId"
+                    class="w-full"
+                    (onChange)="onLocationSelect($event)">
+                  </p-select>
+                  @if (locations.length === 0) {
+                    <app-validation-message
+                      [message]="'Keine Standorte verfügbar. Bitte Standorte im System anlegen.'"
+                      [isError]="true">
+                    </app-validation-message>
+                  }
+                </app-form-input-field>
 
-              <app-form-input-field label="Location ID" [fullWidth]="true">
-                <p-inputNumber formControlName="locationId"
-                               [useGrouping]="false"
-                               class="w-full"
-                               [disabled]="true"
-                               placeholder="Wird automatisch gesetzt">
-                </p-inputNumber>
-                <app-validation-message
-                  [message]="'Wird automatisch aus der Auswahl ermittelt'">
-                </app-validation-message>
-              </app-form-input-field>
+                <app-form-input-field label="Location ID" [fullWidth]="true">
+                  <p-inputNumber formControlName="locationId"
+                                 [useGrouping]="false"
+                                 class="w-full"
+                                 [disabled]="true"
+                                 placeholder="Wird automatisch gesetzt">
+                  </p-inputNumber>
+                  <app-validation-message
+                    [message]="'Wird automatisch aus der Auswahl ermittelt'">
+                  </app-validation-message>
+                </app-form-input-field>
+              </ng-container>
             </app-form-row>
 
             <div class="flex gap-2 mt-6">

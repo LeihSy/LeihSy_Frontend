@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, ViewChild, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
@@ -7,11 +7,10 @@ import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
 import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
+import { PrivateLendService } from '../../user-dashboard/private-lend.service';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';
 import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';
-import { Item } from '../../../models/item.model';
 import { Product } from '../../../models/product.model';
-import { User } from '../../../models/user.model';
 
 @Component({
   selector: 'app-admin-item-form-page',
@@ -35,6 +34,7 @@ import { User } from '../../../models/user.model';
         [selectedProduct]="selectedProduct()"
         [isEditMode]="isEditMode()"
         [generatedInventoryNumbers]="generatedInventoryNumbers()"
+        [mode]="isPrivateMode() ? 'private' : 'admin'"
         (formSubmit)="handleFormSubmit($event)"
         (formCancel)="goBack()"
         (inventoryPrefixChange)="handleInventoryPrefixChange($event)"
@@ -49,10 +49,11 @@ import { User } from '../../../models/user.model';
 export class AdminItemFormPageComponent implements OnInit {
   @ViewChild(ItemFormComponent) itemFormComponent!: ItemFormComponent;
 
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private pageService = inject(AdminItemFormPageService);
-  private logicService = inject(AdminItemFormLogicService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly pageService = inject(AdminItemFormPageService);
+  private readonly logicService = inject(AdminItemFormLogicService);
+  private readonly messageService = inject(MessageService);
+  private readonly privateLendService = inject(PrivateLendService);
 
   // Use service signals directly
   item = this.pageService.item;
@@ -86,6 +87,11 @@ export class AdminItemFormPageComponent implements OnInit {
     this.loadAllItemsIncludingDeleted();
   }
 
+  isPrivateMode(): boolean {
+    const url = (globalThis as any).location?.pathname || '';
+    return url.includes('/user-dashboard/private-lend');
+  }
+
   loadItem(): void {
     if (!this.itemId) return;
     this.pageService.loadItem(this.itemId);
@@ -113,6 +119,16 @@ export class AdminItemFormPageComponent implements OnInit {
   }
 
   handleFormSubmit(formValue: any): void {
+    if (formValue && (formValue as any).privateMode) {
+      // private flow -> create JSON and send via PrivateLendService
+      const payload = { ...formValue };
+      payload.locationId = 'privat';
+      this.privateLendService.sendAsEmail(JSON.stringify({ type: 'item', payload }, null, 2));
+      this.messageService.add({ severity: 'success', summary: 'Vorschau', detail: 'Item-JSON erzeugt und Mail-Client geöffnet.' });
+      this.goBack();
+      return;
+    }
+
     if (this.isEditMode() && this.itemId) {
       const payload = {
         invNumber: formValue.invNumber,

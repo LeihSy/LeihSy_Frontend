@@ -43,6 +43,7 @@ export class ItemFormComponent implements OnInit, OnChanges {
   @Input() item: Item | null = null;
   @Input() products: Product[] = [];
   @Input() selectedProduct: Product | null = null;
+  @Input() mode: 'admin' | 'private' = 'admin';
   @Input() isEditMode = false;
   @Input() generatedInventoryNumbers: string[] = [];
 
@@ -96,11 +97,12 @@ export class ItemFormComponent implements OnInit, OnChanges {
   }
 
   private initForm(): void {
+    // In private mode owner and lender fields are not required/visible and inventory number prefix will be PRV
     this.itemForm = this.fb.group({
       invNumber: ['', Validators.required],
       ownerId: [null],
-      ownerName: ['', Validators.required],
-      lenderId: [null, Validators.required],
+      ownerName: ['', this.mode === 'admin' ? Validators.required : []],
+      lenderId: [null, this.mode === 'admin' ? Validators.required : []],
       lenderName: [''],
       productId: [null, Validators.required],
       available: [true],
@@ -124,7 +126,13 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
   submitForm(): void {
     if (!this.itemForm.valid) return;
-    this.formSubmit.emit(this.itemForm.value);
+    const value = { ...this.itemForm.value };
+    if (this.mode === 'private') {
+      // Ensure inventory number format PRV-...
+      const inv = value.invNumber || Date.now().toString();
+      value.invNumber = inv.toString().startsWith('PRV') ? inv : `PRV-${inv}`;
+    }
+    this.formSubmit.emit({ ...value, privateMode: this.mode === 'private' });
   }
 
   resetForm(): void {
@@ -226,7 +234,7 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
   private updateRadioButtonValue(): void {
     const currentValue = this.itemForm.get('available')?.value;
-    this.availabilityValue = currentValue !== null ? currentValue : true;
+    this.availabilityValue = currentValue ?? true;
   }
 }
 

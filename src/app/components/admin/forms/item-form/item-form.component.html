@@ -26,71 +26,75 @@
     </app-form-row>
 
     <app-form-row [columns]="2">
-      <app-form-input-field label="Besitzer User ID" [fullWidth]="true">
-        <p-inputNumber formControlName="ownerId"
-                       [useGrouping]="false"
-                       class="w-full"
-                       placeholder="z.B. 1"
-                       (onInput)="onOwnerIdChange()">
-        </p-inputNumber>
-        @if (ownerIdDisplayValue() && !itemForm.get('ownerName')?.value) {
-          <app-validation-message
-            [message]="ownerIdDisplayValue()"
-            [isLoading]="isLoadingOwnerId()"
-            [isSuccess]="ownerFound()"
-            [isError]="!ownerFound() && !isLoadingOwnerId()">
-          </app-validation-message>
-        }
-      </app-form-input-field>
+      <ng-container *ngIf="mode === 'admin'">
+        <app-form-input-field label="Besitzer User ID" [fullWidth]="true">
+          <p-inputNumber formControlName="ownerId"
+                         [useGrouping]="false"
+                         class="w-full"
+                         placeholder="z.B. 1"
+                         (onInput)="onOwnerIdChange()">
+          </p-inputNumber>
+          @if (ownerIdDisplayValue() && !itemForm.get('ownerName')?.value) {
+            <app-validation-message
+              [message]="ownerIdDisplayValue()"
+              [isLoading]="isLoadingOwnerId()"
+              [isSuccess]="ownerFound()"
+              [isError]="!ownerFound() && !isLoadingOwnerId()">
+            </app-validation-message>
+          }
+        </app-form-input-field>
 
-      <app-form-input-field label="Besitzer Benutzername" [required]="true" [fullWidth]="true">
-        <input pInputText formControlName="ownerName"
-               class="w-full"
-               placeholder="Username"
-               (input)="onOwnerNameChange()" />
-        @if (ownerNameDisplayValue() && itemForm.get('ownerName')?.value) {
-          <app-validation-message
-            [message]="ownerNameDisplayValue()"
-            [isLoading]="isLoadingOwnerName()"
-            [isSuccess]="ownerFound()"
-            [isError]="!ownerFound() && !isLoadingOwnerName()">
-          </app-validation-message>
-        }
-      </app-form-input-field>
+        <app-form-input-field label="Besitzer Benutzername" [required]="true" [fullWidth]="true">
+          <input pInputText formControlName="ownerName"
+                 class="w-full"
+                 placeholder="Username"
+                 (input)="onOwnerNameChange()" />
+          @if (ownerNameDisplayValue() && itemForm.get('ownerName')?.value) {
+            <app-validation-message
+              [message]="ownerNameDisplayValue()"
+              [isLoading]="isLoadingOwnerName()"
+              [isSuccess]="ownerFound()"
+              [isError]="!ownerFound() && !isLoadingOwnerName()">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+      </ng-container>
     </app-form-row>
 
     <app-form-row [columns]="2">
-      <app-form-input-field label="Verleiher User ID" [required]="true" [fullWidth]="true">
-        <p-inputNumber formControlName="lenderId"
-                       [useGrouping]="false"
-                       class="w-full"
-                       placeholder="z.B. 1"
-                       (onInput)="onLenderIdChange()">
-        </p-inputNumber>
-        @if (lenderDisplayValue() && !itemForm.get('lenderName')?.value) {
-          <app-validation-message
-            [message]="lenderDisplayValue()"
-            [isLoading]="isLoadingLender()"
-            [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
-            [isError]="lenderDisplayValue().includes('nicht gefunden')">
-          </app-validation-message>
-        }
-      </app-form-input-field>
+      <ng-container *ngIf="mode === 'admin'">
+        <app-form-input-field label="Verleiher User ID" [required]="true" [fullWidth]="true">
+          <p-inputNumber formControlName="lenderId"
+                         [useGrouping]="false"
+                         class="w-full"
+                         placeholder="z.B. 1"
+                         (onInput)="onLenderIdChange()">
+          </p-inputNumber>
+          @if (lenderDisplayValue() && !itemForm.get('lenderName')?.value) {
+            <app-validation-message
+              [message]="lenderDisplayValue()"
+              [isLoading]="isLoadingLender()"
+              [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
+              [isError]="lenderDisplayValue().includes('nicht gefunden')">
+            </app-validation-message>
+          }
+        </app-form-input-field>
 
-      <app-form-input-field label="Verleiher Benutzername" [required]="true" [fullWidth]="true">
-        <input pInputText formControlName="lenderName"
-               class="w-full"
-               placeholder="Username"
-               (input)="onLenderNameChange()" />
-        @if (lenderDisplayValue() && itemForm.get('lenderName')?.value) {
-          <app-validation-message
-            [message]="lenderDisplayValue()"
-            [isLoading]="isLoadingLender()"
-            [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
-            [isError]="lenderDisplayValue().includes('nicht gefunden')">
-          </app-validation-message>
-        }
-      </app-form-input-field>
+        <app-form-input-field label="Verleiher Benutzername" [required]="true" [fullWidth]="true">
+          <input pInputText formControlName="lenderName"
+                 class="w-full"
+                 placeholder="Username"
+                 (input)="onLenderNameChange()" />
+          @if (lenderDisplayValue() && itemForm.get('lenderName')?.value) {
+            <app-validation-message
+              [message]="lenderDisplayValue()"
+              [isLoading]="isLoadingLender()"
+              [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
+              [isError]="lenderDisplayValue().includes('nicht gefunden')">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+      </ng-container>
     </app-form-row>
 
     @if (!isEditMode) {

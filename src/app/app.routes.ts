@@ -179,6 +179,30 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/groups',
+    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-groups.component').then(m => m.AdminGroupsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/new',
+    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-form.component').then(m => m.AdminGroupFormComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/:id',
+    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-detail.component').then(m => m.AdminGroupDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/:id/edit',
+    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-edit.component').then(m => m.AdminGroupEditComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

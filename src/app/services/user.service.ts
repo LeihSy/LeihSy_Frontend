@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
+import { Group } from '../models/group.model';
 
 @Injectable({
   providedIn: 'root'
@@ -35,5 +36,10 @@ export class UserService {
   getUserByName(name: string): Observable<User> {
     const params = new HttpParams().set('name', name);
     return this.http.get<User>(`${this.apiUrl}/users`, { params });
+  }
+
+  // GET /api/users/{userId}/groups (Gruppen des Users abrufen)
+  getUserGroups(userId: number): Observable<Group[]> {
+    return this.http.get<Group[]>(`${this.apiUrl}/users/${userId}/groups`);
   }
 }

@@ -23,7 +23,6 @@ export class AdminGroupsComponent implements OnInit {
     { field: 'name', header: 'Name', sortable: true },
     { field: 'description', header: 'Beschreibung' },
     { field: 'memberCount', header: 'Mitglieder', type: 'number' },
-    { field: 'activeBookingsCount', header: 'Aktive Buchungen', type: 'number' },
     { field: 'createdAt', header: 'Erstellt', type: 'datetime' }
   ];
 

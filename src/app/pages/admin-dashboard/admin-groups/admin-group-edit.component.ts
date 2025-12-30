@@ -8,17 +8,21 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { GroupService } from '../../../services/group.service';
 import { StudentGroupDTO, UpdateStudentGroupDTO } from '../../../models/group.model';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, TextareaModule, ButtonModule, CardModule],
+  imports: [CommonModule, FormsModule, InputTextModule, TextareaModule, ButtonModule, CardModule, ToastModule],
   templateUrl: './admin-group-edit.component.html',
-  styleUrls: ['./admin-group-edit.component.scss']
+  styleUrls: ['./admin-group-edit.component.scss'],
+  providers: [MessageService]
 })
 export class AdminGroupEditComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly groupService = inject(GroupService);
   private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
 
   model?: StudentGroupDTO;
   saving = false;
@@ -46,10 +50,10 @@ export class AdminGroupEditComponent {
     const payload: UpdateStudentGroupDTO = { name: this.model.name, description: this.model.description };
     this.saving = true;
     this.groupService.updateGroup(this.model.id, payload).subscribe({
-      next: () => { this.router.navigate(['/admin/groups', this.model!.id]); },
-      error: (e) => { console.error(e); this.error = 'Fehler beim Speichern'; this.saving = false; }
+      next: () => { this.saving = false; void this.router.navigate(['/admin/groups', this.model!.id]); this.messageService.add({ severity: 'success', summary: 'Gespeichert', detail: 'Gruppe aktualisiert' }); },
+      error: (e) => { console.error(e); this.error = 'Fehler beim Speichern'; this.saving = false; this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte Gruppe nicht speichern' }); }
     });
   }
 
-  cancel() { this.router.navigate(['/admin/groups']); }
+  cancel() { void this.router.navigate(['/admin/groups']); }
 }

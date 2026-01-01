@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,27 +12,33 @@ import { GroupCreateDTO } from '../../../models/group.model';
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, InputTextModule, TextareaModule, CardModule, ButtonModule],
-  templateUrl: './admin-group-form.component.html'
+  templateUrl: './admin-student-group-form.component.html'
 })
-export class AdminGroupFormComponent {
+export class AdminStudentGroupFormComponent {
   private readonly groupService = inject(GroupService);
   private readonly router = inject(Router);
 
-  model: GroupCreateDTO = { name: '', description: '' };
-  saving = false;
-  error?: string;
+  model = signal<GroupCreateDTO>({ name: '', description: '' });
+  saving = signal(false);
+  error = signal<string | undefined>(undefined);
+
+  // Getter für ngModel binding
+  get currentModel() {
+    return this.model();
+  }
 
   save() {
-    if (!this.model.name || this.model.name.length < 2) {
-      this.error = 'Name zu kurz';
+    const currentModel = this.model();
+    if (!currentModel.name || currentModel.name.length < 2) {
+      this.error.set('Name zu kurz');
       return;
     }
-    this.saving = true;
-    this.groupService.createGroup(this.model).subscribe({
+    this.saving.set(true);
+    this.groupService.createGroup(currentModel).subscribe({
       next: () => { void this.router.navigate(['/admin/groups']); },
-      error: () => { this.error = 'Fehler beim Speichern'; this.saving = false; }
+      error: () => { this.error.set('Fehler beim Speichern'); this.saving.set(false); }
     });
   }
 
-  cancel() { this.router.navigate(['/admin/groups']); }
+  cancel() { void this.router.navigate(['/admin/groups']); }
 }

@@ -1,0 +1,96 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <app-back-button (click)="goBack()"></app-back-button>
+
+  @if (loading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl"></i>
+      <p class="mt-2">Lade Gruppendaten...</p>
+    </div>
+  }
+
+  @if (error() && !loading()) {
+    <div class="text-red-600 p-4 bg-red-50 rounded">
+      {{ error() }}
+    </div>
+  }
+
+  @if (group() && !loading()) {
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-3xl font-bold">{{ group()!.name }}</h2>
+      <div class="flex gap-2">
+        <button pButton type="button" label="Bearbeiten" icon="pi pi-pencil" class="p-button-sm" (click)="edit()"></button>
+        <button pButton type="button" label="Löschen" icon="pi pi-trash" severity="danger" class="p-button-sm" (click)="delete()"></button>
+      </div>
+    </div>
+
+    <p-card header="Gruppeninformationen" class="mb-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Gruppen-ID</p>
+          <p class="font-medium">{{ group()!.id }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Anzahl Mitglieder</p>
+          <p class="font-medium">{{ members().length }}</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-sm text-gray-500 mb-1">Beschreibung</p>
+          <p class="font-medium">{{ group()!.description || 'Keine Beschreibung vorhanden' }}</p>
+        </div>
+        @if (group()!.createdAt) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Erstellt am</p>
+            <p class="font-medium">{{ group()!.createdAt | date:'dd.MM.yyyy HH:mm' }}</p>
+          </div>
+        }
+        @if (group()!.updatedAt) {
+          <div>
+            <p class="text-sm text-gray-500 mb-1">Zuletzt aktualisiert</p>
+            <p class="font-medium">{{ group()!.updatedAt | date:'dd.MM.yyyy HH:mm' }}</p>
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <p-card header="Mitglieder" class="mb-4">
+      <div class="mb-3">
+        <button pButton type="button" label="Mitglied hinzufügen" icon="pi pi-plus" class="p-button-sm" (click)="openAddMember()"></button>
+      </div>
+
+      <app-table
+        [columns]="memberColumns"
+        [data]="members()"
+        [paginator]="true"
+        [rows]="10"
+        [showActions]="true"
+        (remove)="onRemoveMember($event)">
+      </app-table>
+    </p-card>
+  }
+
+  <!-- Dialog zum Hinzufügen eines Mitglieds -->
+  <p-dialog header="Mitglied hinzufügen" [(visible)]="dialogVisible" [modal]="true" [style]="{width: '450px'}">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="newMemberId" class="font-bold">User ID</label>
+        <input pInputText id="newMemberId" [(ngModel)]="currentNewMemberId" type="number" placeholder="z.B. 123" />
+        <small class="text-gray-500">Geben Sie die User-ID des hinzuzufügenden Mitglieds ein</small>
+      </div>
+
+      @if (addError()) {
+        <div class="text-red-600 text-sm">
+          {{ addError() }}
+        </div>
+      }
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Abbrechen" class="p-button-text" (click)="dialogVisible = false"></button>
+      <button pButton type="button" label="Hinzufügen" icon="pi pi-check" [loading]="adding()" (click)="onAddMember()"></button>
+    </ng-template>
+  </p-dialog>
+</div>
+

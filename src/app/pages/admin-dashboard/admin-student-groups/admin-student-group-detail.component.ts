@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,11 +18,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, DialogModule, InputTextModule, TableComponent, BackButtonComponent, ToastModule, ConfirmDialogModule],
-  templateUrl: './admin-group-detail.component.html',
-  styleUrls: ['./admin-group-detail.component.scss'],
+  templateUrl: './admin-student-group-detail.component.html',
+  styleUrls: ['./admin-student-group-detail.component.scss'],
   providers: [MessageService, ConfirmationService]
 })
-export class AdminGroupDetailComponent {
+export class AdminStudentGroupDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly groupService = inject(GroupService);
   private readonly userService = inject(UserService);
@@ -30,11 +30,11 @@ export class AdminGroupDetailComponent {
   private readonly messageService = inject(MessageService);
   private readonly confirmation = inject(ConfirmationService);
 
-  group?: Group;
-  loading = false;
-  error?: string;
+  group = signal<Group | undefined>(undefined);
+  loading = signal(false);
+  error = signal<string | undefined>(undefined);
 
-  members: { userId: number; userName: string; owner?: boolean }[] = [];
+  members = signal<{ userId: number; userName: string; owner?: boolean }[]>([]);
 
   memberColumns: ColumnDef[] = [
     { field: 'userId', header: 'User ID', type: 'number' },
@@ -43,80 +43,100 @@ export class AdminGroupDetailComponent {
   ];
 
   // dialog state for adding a member
-  addMemberDialog = false;
-  newMemberId: number | null = null;
-  adding = false;
-  addError?: string;
+  addMemberDialog = signal(false);
+  newMemberId = signal<number | null>(null);
+  adding = signal(false);
+  addError = signal<string | undefined>(undefined);
+
+  // Getter für ngModel binding
+  get currentNewMemberId() {
+    return this.newMemberId();
+  }
+
+  set currentNewMemberId(value: number | null) {
+    this.newMemberId.set(value);
+  }
+
+  get dialogVisible() {
+    return this.addMemberDialog();
+  }
+
+  set dialogVisible(value: boolean) {
+    this.addMemberDialog.set(value);
+  }
 
   constructor() {
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : Number.NaN;
     if (Number.isNaN(id)) {
-      this.error = 'Ungültige Gruppen-ID';
+      this.error.set('Ungültige Gruppen-ID');
     } else {
       this.load(id);
     }
   }
 
   load(id: number) {
-    this.loading = true;
+    this.loading.set(true);
     this.groupService.getGroupById(id).subscribe({
       next: (g) => {
-        this.group = g;
-        this.members = g.members?.map(m => ({ userId: m.userId, userName: m.userName, owner: m.owner })) || [];
+        this.group.set(g);
+        this.members.set(g.members?.map(m => ({ userId: m.userId, userName: m.userName, owner: m.owner })) || []);
       },
-      error: (e) => { console.error(e); this.error = 'Fehler beim Laden der Gruppe'; },
-      complete: () => { this.loading = false; }
+      error: (e) => { console.error(e); this.error.set('Fehler beim Laden der Gruppe'); },
+      complete: () => { this.loading.set(false); }
     });
   }
 
   openAddMember() {
-    this.addError = undefined;
-    this.newMemberId = null;
-    this.addMemberDialog = true;
+    this.addError.set(undefined);
+    this.newMemberId.set(null);
+    this.addMemberDialog.set(true);
   }
 
   onAddMember() {
-    if (!this.group) return;
-    if (!this.newMemberId || Number.isNaN(Number(this.newMemberId))) {
-      this.addError = 'Bitte eine gültige User ID eingeben.';
+    const currentGroup = this.group();
+    if (!currentGroup) return;
+    const memberId = this.newMemberId();
+    if (!memberId || Number.isNaN(Number(memberId))) {
+      this.addError.set('Bitte eine gültige User ID eingeben.');
       return;
     }
 
-    this.adding = true;
+    this.adding.set(true);
     // first verify user exists
-    this.userService.getUserById(Number(this.newMemberId)).subscribe({
+    this.userService.getUserById(Number(memberId)).subscribe({
       next: (_) => {
         // add
-        this.groupService.addMember(this.group!.id, Number(this.newMemberId)).subscribe({
+        this.groupService.addMember(currentGroup.id, Number(memberId)).subscribe({
           next: () => {
-            this.adding = false;
-            this.addMemberDialog = false;
-            this.load(this.group!.id);
+            this.adding.set(false);
+            this.addMemberDialog.set(false);
+            this.load(currentGroup.id);
             this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Mitglied hinzugefügt' });
           },
           error: (e) => {
             console.error(e);
-            this.addError = 'Fehler beim Hinzufügen des Mitglieds';
-            this.adding = false;
+            this.addError.set('Fehler beim Hinzufügen des Mitglieds');
+            this.adding.set(false);
             this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Mitglied konnte nicht hinzugefügt werden' });
           }
         });
       },
       error: (_) => {
-        this.adding = false;
-        this.addError = 'User-ID nicht gefunden';
+        this.adding.set(false);
+        this.addError.set('User-ID nicht gefunden');
         this.messageService.add({ severity: 'warn', summary: 'Nicht gefunden', detail: 'User-ID existiert nicht' });
       }
     });
   }
 
   delete() {
-    if (!this.group) return;
+    const currentGroup = this.group();
+    if (!currentGroup) return;
     this.confirmation.confirm({
-      message: `Gruppe "${this.group.name}" wirklich löschen?`,
+      message: `Gruppe "${currentGroup.name}" wirklich löschen?`,
       accept: () => {
-        this.groupService.deleteGroup(this.group!.id).subscribe({
+        this.groupService.deleteGroup(currentGroup.id).subscribe({
           next: () => { void this.router.navigate(['/admin/groups']); this.messageService.add({ severity: 'success', summary: 'Gelöscht', detail: 'Gruppe gelöscht' }); },
           error: (e) => { console.error(e); this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte Gruppe nicht löschen' }); }
         });
@@ -125,15 +145,16 @@ export class AdminGroupDetailComponent {
   }
 
   onRemoveMember(row: any) {
-    if (!this.group) return;
+    const currentGroup = this.group();
+    if (!currentGroup) return;
     const userId = Number(row.userId);
     this.confirmation.confirm({
-      message: `Mitglied "${row.userName}" aus Gruppe "${this.group.name}" entfernen?`,
+      message: `Mitglied "${row.userName}" aus Gruppe "${currentGroup.name}" entfernen?`,
       accept: () => {
-        this.groupService.removeMember(this.group!.id, userId).subscribe({
+        this.groupService.removeMember(currentGroup.id, userId).subscribe({
           next: () => {
             // refresh members
-            this.load(this.group!.id);
+            this.load(currentGroup.id);
             this.messageService.add({ severity: 'success', summary: 'Entfernt', detail: 'Mitglied entfernt' });
           },
           error: (_) => { console.error('removeMember error'); this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Mitglied konnte nicht entfernt werden' }); }
@@ -143,5 +164,8 @@ export class AdminGroupDetailComponent {
   }
 
   goBack() { void this.router.navigate(['/admin/groups']); }
-  edit() { if (this.group) void this.router.navigate(['/admin/groups', this.group.id, 'edit']); }
+  edit() {
+    const currentGroup = this.group();
+    if (currentGroup) void this.router.navigate(['/admin/groups', currentGroup.id, 'edit']);
+  }
 }

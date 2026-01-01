@@ -3,19 +3,21 @@
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2">
         <label for="name" class="font-bold">Name</label>
-        <input pInputText id="name" [(ngModel)]="model.name" placeholder="z.B. Lerngruppe Informatik" />
+        <input pInputText id="name" [(ngModel)]="currentModel.name" placeholder="z.B. Lerngruppe Informatik" />
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="desc" class="font-bold">Beschreibung</label>
-        <textarea pInputTextarea id="desc" [(ngModel)]="model.description" rows="5" autoResize="true"></textarea>
+        <textarea pInputTextarea id="desc" [(ngModel)]="currentModel.description" rows="5" [autoResize]="true"></textarea>
       </div>
 
       <div class="flex justify-end gap-2 mt-4">
         <p-button label="Abbrechen" severity="secondary" [text]="true" (onClick)="cancel()" />
-        <p-button label="Gruppe speichern" icon="pi pi-check" [loading]="saving" (onClick)="save()" />
+        <p-button label="Gruppe speichern" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
       </div>
-      <small class="text-red-500" *ngIf="error">{{ error }}</small>
+      @if (error()) {
+        <small class="text-red-500">{{ error() }}</small>
+      }
     </div>
   </p-card>
 </div>

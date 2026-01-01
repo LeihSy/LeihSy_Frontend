@@ -6,15 +6,15 @@ import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 
 @Component({
-  selector: 'app-admin-groups',
+  selector: 'app-admin-student-groups',
   standalone: true,
   imports: [CommonModule, TableComponent],
-  templateUrl: './admin-groups.component.html',
-  styleUrls: ['./admin-groups.component.scss']
+  templateUrl: './admin-student-groups.component.html',
+  styleUrls: ['./admin-student-groups.component.scss']
 })
-export class AdminGroupsComponent implements OnInit {
-  private groupService = inject(GroupService);
-  private router = inject(Router);
+export class AdminStudentGroupsComponent implements OnInit {
+  private readonly groupService = inject(GroupService);
+  private readonly router = inject(Router);
 
   groups = signal<Group[]>([]);
   loading = signal(false);
@@ -39,12 +39,12 @@ export class AdminGroupsComponent implements OnInit {
   }
 
   goToNew() {
-    this.router.navigate(['/admin/groups/new']);
+    void this.router.navigate(['/admin/groups/new']);
   }
 
   onEdit(row: Group) {
     // implement edit behavior - navigate to edit page if exists
-    this.router.navigate(['/admin/groups', row.id, 'edit']);
+    void this.router.navigate(['/admin/groups', row.id, 'edit']);
   }
 
   onRemove(row: Group) {
@@ -57,6 +57,6 @@ export class AdminGroupsComponent implements OnInit {
 
   onRowSelect(row: Group) {
     // navigate to detail page (not implemented) or show details
-    this.router.navigate(['/admin/groups', row.id]);
+    void this.router.navigate(['/admin/groups', row.id]);
   }
 }

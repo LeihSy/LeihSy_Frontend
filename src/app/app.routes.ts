@@ -180,25 +180,25 @@ export const routes: Routes = [
   },
   {
     path: 'admin/groups',
-    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-groups.component').then(m => m.AdminGroupsComponent),
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-groups.component').then(m => m.AdminStudentGroupsComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
   {
     path: 'admin/groups/new',
-    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-form.component').then(m => m.AdminGroupFormComponent),
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-form.component').then(m => m.AdminStudentGroupFormComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
   {
     path: 'admin/groups/:id',
-    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-detail.component').then(m => m.AdminGroupDetailComponent),
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-detail.component').then(m => m.AdminStudentGroupDetailComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
   {
     path: 'admin/groups/:id/edit',
-    loadComponent: () => import('./pages/admin-dashboard/admin-groups/admin-group-edit.component').then(m => m.AdminGroupEditComponent),
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-edit.component').then(m => m.AdminStudentGroupEditComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

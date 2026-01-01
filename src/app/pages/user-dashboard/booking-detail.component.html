@@ -12,7 +12,16 @@
       </button>
     </div>
 
-    <div>
+    <div class="flex gap-2">
+      <button
+        pButton
+        icon="pi pi-file-pdf"
+        label="Export PDF"
+        class="p-button-outlined text-[#253359]"
+        (click)="exportToPdf()"
+        [disabled]="!booking()">
+      </button>
+
       <button
         pButton
         icon="pi pi-qrcode"

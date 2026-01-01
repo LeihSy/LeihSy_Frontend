@@ -43,6 +43,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/groups',
+    loadComponent: () => import('./pages/user-dashboard/user-groups.component').then(m => m.UserGroupsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/groups/:id',
+    loadComponent: () => import('./pages/user-dashboard/user-group-detail.component').then(m => m.UserGroupDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'qr-action/:id',
     loadComponent: () => import('./pages/user-dashboard/qr-action.component').then(m => m.QrActionComponent),
     canActivate: [authGuard],

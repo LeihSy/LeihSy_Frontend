@@ -1,5 +1,5 @@
-import { Component, OnInit, signal, ViewChild, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, OnInit, AfterViewInit, signal, ViewChild, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
@@ -13,6 +13,8 @@ import { ItemFormComponent } from '../../../components/admin/forms/item-form/ite
 import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';
 import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';
+import { AdminPrivateImportService } from '../admin-private-management/admin-private-import.service';
+import { AuthService } from '../../../services/auth.service';
 import { Product } from '../../../models/product.model';
 
 @Component({
@@ -91,14 +93,17 @@ import { Product } from '../../../models/product.model';
     </div>
   `
 })
-export class AdminItemFormPageComponent implements OnInit {
+export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
   @ViewChild(ItemFormComponent) itemFormComponent!: ItemFormComponent;
 
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly pageService = inject(AdminItemFormPageService);
   private readonly logicService = inject(AdminItemFormLogicService);
   private readonly messageService = inject(MessageService);
   private readonly privateLendService = inject(PrivateLendService);
+  private readonly importService = inject(AdminPrivateImportService);
+  private readonly authService = inject(AuthService);
 
   // Use service signals directly
   item = this.pageService.item;
@@ -117,6 +122,9 @@ export class AdminItemFormPageComponent implements OnInit {
   jsonString = signal('');
   copySuccess = signal(false);
 
+  // Signal für importierte Daten
+  private pendingImportData = signal<any>(null);
+
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -126,6 +134,14 @@ export class AdminItemFormPageComponent implements OnInit {
       this.itemId = Number.parseInt(id, 10);
       this.isEditMode.set(true);
       this.loadItem();
+    } else {
+      // Prüfe auf importierte Daten und speichere sie
+      const navigation = this.router.getCurrentNavigation();
+      const importedData = navigation?.extras?.state?.['importedData'];
+
+      if (importedData) {
+        this.pendingImportData.set(importedData);
+      }
     }
 
     if (productIdParam) {
@@ -143,6 +159,42 @@ export class AdminItemFormPageComponent implements OnInit {
         this.handleInventoryPrefixChange('PRV');
       }, 500);
     }
+  }
+
+  ngAfterViewInit(): void {
+    // Lade importierte Daten nach dem View initialisiert wurde
+    if (this.pendingImportData()) {
+      setTimeout(() => {
+        this.loadImportedData();
+      }, 200);
+    }
+  }
+
+  private loadImportedData(): void {
+    const importedData = this.pendingImportData();
+
+    if (!importedData || !this.itemFormComponent?.itemForm) {
+      return;
+    }
+
+    // Befülle das Formular mit den importierten Daten
+    this.itemFormComponent.itemForm.patchValue({
+      invNumber: importedData.invNumber || 'PRV',
+      ownerName: importedData.ownerName || '',
+      lenderName: importedData.lenderName || '',
+      productId: importedData.productId || null,
+      available: importedData.available !== undefined ? importedData.available : true,
+      quantity: importedData.quantity || 1
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Daten geladen',
+      detail: 'Die JSON-Daten wurden erfolgreich in das Formular geladen.'
+    });
+
+    // Lösche die gespeicherten Daten
+    this.pendingImportData.set(null);
   }
 
   isPrivateMode(): boolean {
@@ -178,6 +230,41 @@ export class AdminItemFormPageComponent implements OnInit {
 
   handleFormSubmit(formValue: any): void {
     if (formValue && ((formValue as any).privateMode || this.isPrivateMode())) {
+      // Hole aktuellen User und Rollen
+      const currentUser = this.authService.currentUser();
+      const userRoles = this.authService.getRoles();
+
+      console.log('Current User:', currentUser);
+      console.log('User Roles:', userRoles);
+
+      // Prüfe ob User Lender oder Admin ist
+      const isLenderOrAdmin = userRoles.includes('lender') || userRoles.includes('admin');
+
+      if (!isLenderOrAdmin) {
+        // Zeige Warnung und biete Keycloak-Link an
+        const keycloakUrl = 'http://localhost:8081/admin/master/console/#/LeihSy/users';
+
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Fehlende Berechtigung',
+          detail: 'Sie benötigen die "Lender" oder "Admin" Rolle um Gegenstände zu erstellen.'
+        });
+
+        if (confirm('Sie benötigen die "Lender" oder "Admin" Rolle um Gegenstände zu erstellen.\n\nMöchten Sie zur Keycloak-Admin-Konsole weitergeleitet werden, um die Rolle zu erhalten?')) {
+          window.open(keycloakUrl, '_blank');
+        }
+        return;
+      }
+
+      if (!currentUser || !currentUser.id) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: 'Kein Benutzer eingeloggt'
+        });
+        return;
+      }
+
       // Private flow -> create JSON and show dialog
       const payload = { ...formValue };
 
@@ -192,6 +279,15 @@ export class AdminItemFormPageComponent implements OnInit {
 
       // Setze Location ID fest auf 7 (privat)
       payload.locationId = 7;
+
+      // Füge User-IDs hinzu
+      payload.ownerId = currentUser.id;
+      payload.ownerName = payload.ownerName || currentUser.name;
+      payload.lenderId = currentUser.id;
+      payload.lenderName = payload.lenderName || currentUser.name;
+
+      // Füge User-Rollen hinzu
+      payload.userRoles = userRoles;
 
       // Erstelle JSON-String
       const jsonData = {

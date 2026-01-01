@@ -194,6 +194,14 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/private',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-private-management/admin-private-management.component')
+        .then(m => m.AdminPrivateManagementComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
@@ -128,6 +128,34 @@ export class AdminProductFormPageComponent implements OnInit {
 
     this.loadCategories();
     this.loadLocations();
+  }
+
+  private checkForImportedData(): void {
+    // Prüfe Router State
+    const navigation = this.router.getCurrentNavigation();
+    const importedData = navigation?.extras?.state?.['importedData'];
+
+    if (importedData) {
+      // Erstelle ein temporäres Produkt-Objekt mit den importierten Daten
+      const tempProduct: Partial<Product> = {
+        name: importedData.name || '',
+        description: importedData.description || '',
+        expiryDate: importedData.expiryDate || 0,
+        price: importedData.price || 0,
+        imageUrl: importedData.imageUrl || '',
+        accessories: importedData.accessories || '',
+        categoryId: importedData.categoryId || null,
+        locationId: importedData.locationId || null
+      };
+
+      this.product.set(tempProduct as Product);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Daten geladen',
+        detail: 'Die JSON-Daten wurden erfolgreich in das Formular geladen.'
+      });
+    }
   }
 
   loadProduct(): void {

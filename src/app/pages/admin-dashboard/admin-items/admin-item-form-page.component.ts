@@ -3,11 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
 import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
-import { PrivateLendService } from '../../user-dashboard/private-lend.service';
+import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';
 import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';
 import { Product } from '../../../models/product.model';
@@ -18,6 +21,9 @@ import { Product } from '../../../models/product.model';
   imports: [
     CommonModule,
     ToastModule,
+    DialogModule,
+    ButtonModule,
+    TooltipModule,
     BackButtonComponent,
     ItemFormComponent
   ],
@@ -43,6 +49,45 @@ import { Product } from '../../../models/product.model';
         (lenderIdChange)="handleLenderIdChange($event)"
         (lenderNameChange)="handleLenderNameChange($event)">
       </app-item-form>
+
+      <!-- JSON Preview Dialog -->
+      <p-dialog
+        header="Gegenstand-Daten (JSON)"
+        [(visible)]="showJsonDialog"
+        [modal]="true"
+        [style]="{width: '700px', maxHeight: '80vh'}"
+        [draggable]="false"
+        [resizable]="false">
+        <div class="flex flex-col gap-4">
+          <p class="text-sm text-gray-600">
+            Kopieren Sie den folgenden JSON-String, um ihn per E-Mail zu versenden:
+          </p>
+
+          <div class="relative">
+            <pre class="bg-gray-50 border border-gray-200 rounded p-4 overflow-auto max-h-96 text-sm">{{ jsonString() }}</pre>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-copy"
+              label="Kopieren"
+              class="absolute top-2 right-2 p-button-sm"
+              (click)="copyToClipboard()"
+              pTooltip="In Zwischenablage kopieren">
+            </button>
+          </div>
+
+          @if (copySuccess()) {
+            <div class="text-green-600 text-sm flex items-center gap-2">
+              <i class="pi pi-check-circle"></i>
+              <span>In Zwischenablage kopiert!</span>
+            </div>
+          }
+        </div>
+
+        <ng-template pTemplate="footer">
+          <button pButton type="button" label="Schließen" (click)="closeJsonDialog()"></button>
+        </ng-template>
+      </p-dialog>
     </div>
   `
 })
@@ -67,6 +112,11 @@ export class AdminItemFormPageComponent implements OnInit {
   itemId: number | null = null;
   productId: number | null = null;
 
+  // JSON Dialog Signals
+  showJsonDialog = signal(false);
+  jsonString = signal('');
+  copySuccess = signal(false);
+
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -85,6 +135,14 @@ export class AdminItemFormPageComponent implements OnInit {
 
     this.loadProducts();
     this.loadAllItemsIncludingDeleted();
+
+    // Im Private-Modus: Generiere Inventarnummern mit PRV-Präfix
+    if (this.isPrivateMode() && !this.isEditMode()) {
+      // Warte kurz, bis alle Items geladen sind, dann generiere die Nummer
+      setTimeout(() => {
+        this.handleInventoryPrefixChange('PRV');
+      }, 500);
+    }
   }
 
   isPrivateMode(): boolean {
@@ -119,13 +177,38 @@ export class AdminItemFormPageComponent implements OnInit {
   }
 
   handleFormSubmit(formValue: any): void {
-    if (formValue && (formValue as any).privateMode) {
-      // private flow -> create JSON and send via PrivateLendService
+    if (formValue && ((formValue as any).privateMode || this.isPrivateMode())) {
+      // Private flow -> create JSON and show dialog
       const payload = { ...formValue };
-      payload.locationId = 'privat';
-      this.privateLendService.sendAsEmail(JSON.stringify({ type: 'item', payload }, null, 2));
-      this.messageService.add({ severity: 'success', summary: 'Vorschau', detail: 'Item-JSON erzeugt und Mail-Client geöffnet.' });
-      this.goBack();
+
+      // Verwende die erste generierte Inventarnummer, falls vorhanden
+      // Ansonsten erstelle eine mit PRV-Präfix und Timestamp
+      if (this.generatedInventoryNumbers().length > 0) {
+        payload.invNumber = this.generatedInventoryNumbers()[0];
+      } else {
+        // Fallback: PRV-Timestamp
+        payload.invNumber = 'PRV-' + Date.now();
+      }
+
+      // Setze Location ID fest auf 7 (privat)
+      payload.locationId = 7;
+
+      // Erstelle JSON-String
+      const jsonData = {
+        type: 'item',
+        timestamp: new Date().toISOString(),
+        payload: payload
+      };
+
+      this.jsonString.set(JSON.stringify(jsonData, null, 2));
+      this.showJsonDialog.set(true);
+      this.copySuccess.set(false);
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Erfolg',
+        detail: 'Gegenstand-Daten als JSON vorbereitet.'
+      });
       return;
     }
 
@@ -154,9 +237,12 @@ export class AdminItemFormPageComponent implements OnInit {
   handleInventoryPrefixChange(prefix: string): void {
     if (this.isEditMode()) return;
 
+    // Im Private-Modus immer PRV verwenden
+    const finalPrefix = this.isPrivateMode() ? 'PRV' : prefix;
+
     const quantity = 1;
-    if (prefix) {
-      const numbers = this.logicService.generateInventoryNumbers(prefix, quantity, this.allItemsIncludingDeleted());
+    if (finalPrefix) {
+      const numbers = this.logicService.generateInventoryNumbers(finalPrefix, quantity, this.allItemsIncludingDeleted());
       this.generatedInventoryNumbers.set(numbers);
     } else {
       this.generatedInventoryNumbers.set([]);
@@ -185,6 +271,33 @@ export class AdminItemFormPageComponent implements OnInit {
     if (this.itemFormComponent) {
       this.logicService.handleLenderNameChange(lenderName, this.itemFormComponent);
     }
+  }
+
+  copyToClipboard(): void {
+    const text = this.jsonString();
+    navigator.clipboard.writeText(text).then(() => {
+      this.copySuccess.set(true);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Kopiert',
+        detail: 'JSON wurde in die Zwischenablage kopiert!'
+      });
+
+      // Reset nach 3 Sekunden
+      setTimeout(() => this.copySuccess.set(false), 3000);
+    }).catch(err => {
+      console.error('Fehler beim Kopieren:', err);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Konnte nicht in Zwischenablage kopieren.'
+      });
+    });
+  }
+
+  closeJsonDialog(): void {
+    this.showJsonDialog.set(false);
+    this.copySuccess.set(false);
   }
 
   goBack(): void {

@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BookingService } from '../../services/booking.service';
-import { UserService } from '../../services/user.service';
+import { BookingService } from '../../../services/booking.service';
+import { UserService } from '../../../services/user.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';

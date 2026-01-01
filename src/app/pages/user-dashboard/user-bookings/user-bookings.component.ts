@@ -12,11 +12,11 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
-import { TableComponent, ColumnDef } from '../../components/table/table.component';
+import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { UserBookingsService } from './services/user-bookings.service';
-import { UserStatsCardsComponent, UserStatCard } from './components/user-stats-cards.component';
-import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
-import { Booking } from '../../models/booking.model';
+import { UserStatsCardsComponent, UserStatCard } from '../components/user-stats-cards.component';
+import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
+import { Booking } from '../../../models/booking.model';
 
 @Component({
   selector: 'app-user-bookings',

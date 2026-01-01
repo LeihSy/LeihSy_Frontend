@@ -2,9 +2,9 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 
-import { BookingService } from '../../../services/booking.service';
-import { Booking, BookingStatus } from '../../../models/booking.model';
-import { UserService } from '../../../services/user.service';
+import { BookingService } from '../../../../services/booking.service';
+import { Booking, BookingStatus } from '../../../../models/booking.model';
+import { UserService } from '../../../../services/user.service';
 
 @Injectable()
 export class UserBookingsService {

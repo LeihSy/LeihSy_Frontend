@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -12,6 +12,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { Item } from '../../../../models/item.model';
 import { Product } from '../../../../models/product.model';
+import { AuthService } from '../../../../services/auth.service';
 import { FormRowComponent } from '../../form-row/form-row.component';
 import { FormInputFieldComponent } from '../../form-input-field/form-input-field.component';
 import { RadioButtonGroupComponent, RadioOption } from '../../radio-button-group/radio-button-group.component';
@@ -72,7 +73,12 @@ export class ItemFormComponent implements OnInit, OnChanges {
   isLoadingLender = signal<boolean>(false);
   lenderFound = signal<boolean>(false);
 
+  // Für Private-Modus
+  inventoryPrefix = signal<string>('PRV');
+
   availabilityValue: boolean = true;
+
+  private readonly authService = inject(AuthService);
 
   constructor(private readonly fb: FormBuilder) {}
 
@@ -81,6 +87,20 @@ export class ItemFormComponent implements OnInit, OnChanges {
 
     if (!this.isEditMode && this.selectedProduct) {
       this.itemForm.patchValue({ productId: this.selectedProduct.id });
+    }
+
+    // Im Private-Modus: Setze Owner und Lender automatisch auf den aktuellen Benutzer
+    if (this.mode === 'private') {
+      const currentUser = this.authService.currentUser();
+      const userName = currentUser?.name || this.authService.getUsername();
+
+      this.itemForm.patchValue({
+        ownerName: userName,
+        lenderName: userName
+      });
+
+      // Setze Präfix fest auf PRV
+      this.inventoryPrefix.set('PRV');
     }
 
     this.updateRadioButtonValue();
@@ -99,7 +119,7 @@ export class ItemFormComponent implements OnInit, OnChanges {
   private initForm(): void {
     // In private mode owner and lender fields are not required/visible and inventory number prefix will be PRV
     this.itemForm = this.fb.group({
-      invNumber: ['', Validators.required],
+      invNumber: ['', this.mode === 'admin' ? Validators.required : []],
       ownerId: [null],
       ownerName: ['', this.mode === 'admin' ? Validators.required : []],
       lenderId: [null, this.mode === 'admin' ? Validators.required : []],
@@ -108,6 +128,11 @@ export class ItemFormComponent implements OnInit, OnChanges {
       available: [true],
       quantity: [1, [Validators.required, Validators.min(1), Validators.max(100)]]
     });
+
+    // Im Private-Modus: Setze invNumber auf PRV
+    if (this.mode === 'private') {
+      this.itemForm.patchValue({ invNumber: 'PRV' });
+    }
   }
 
   private loadItemData(): void {
@@ -125,13 +150,30 @@ export class ItemFormComponent implements OnInit, OnChanges {
   }
 
   submitForm(): void {
-    if (!this.itemForm.valid) return;
+    console.log('submitForm called, mode:', this.mode);
+    console.log('Form valid:', this.itemForm.valid);
+    console.log('Form value:', this.itemForm.value);
+
+    if (!this.itemForm.valid) {
+      console.log('Form invalid, errors:', this.itemForm.errors);
+      Object.keys(this.itemForm.controls).forEach(key => {
+        const control = this.itemForm.get(key);
+        if (control?.invalid) {
+          console.log(`Field ${key} is invalid:`, control.errors);
+        }
+      });
+      return;
+    }
+
     const value = { ...this.itemForm.value };
+
     if (this.mode === 'private') {
       // Ensure inventory number format PRV-...
-      const inv = value.invNumber || Date.now().toString();
-      value.invNumber = inv.toString().startsWith('PRV') ? inv : `PRV-${inv}`;
+      value.invNumber = 'PRV';
+      console.log('Private mode: set invNumber to PRV');
     }
+
+    console.log('Emitting form submit:', value);
     this.formSubmit.emit({ ...value, privateMode: this.mode === 'private' });
   }
 

@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BookingDetailComponent } from './booking-detail.component';
-import { BookingService } from '../../services/booking.service';
+import { BookingService } from '../../../services/booking.service';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { Booking } from '../../models/booking.model';
+import { Booking } from '../../../models/booking.model';
 
 describe('BookingDetailComponent (User)', () => {
   let component: BookingDetailComponent;

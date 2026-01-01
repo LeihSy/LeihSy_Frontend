@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { BookingQrService } from '../../services/booking-qr.service';
+import { BookingQrService } from '../../../services/booking-qr.service';
 
 @Component({
   selector: 'app-booking-qr',

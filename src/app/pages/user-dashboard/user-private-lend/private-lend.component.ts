@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
-import { QrScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
+import { QrScannerComponent } from '../../../components/qr-scanner/qr-scanner.component';
 import { PrivateLendService } from './private-lend.service';
-import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
+import { MenuCardComponent } from '../../../components/menu-card/menu-card.component';
 
 @Component({
   selector: 'app-private-lend',

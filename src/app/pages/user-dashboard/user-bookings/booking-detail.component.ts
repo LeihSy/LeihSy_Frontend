@@ -10,8 +10,8 @@ import { TimelineModule } from 'primeng/timeline';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { Booking, BookingStatus } from '../../models/booking.model';
-import { BookingService } from '../../services/booking.service';
+import { Booking, BookingStatus } from '../../../models/booking.model';
+import { BookingService } from '../../../services/booking.service';
 import { BookingQrComponent } from './booking-qr.component';
 
 interface TimelineEvent {

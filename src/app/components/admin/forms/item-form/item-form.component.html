@@ -13,10 +13,15 @@
 
     <app-form-row [columns]="2">
       <app-form-input-field label="Inventarnummer Präfix" [required]="true" [fullWidth]="true">
-        <input pInputText formControlName="invNumber" class="w-full"
-               placeholder="z.B. VR-PRO"
-               (input)="onInventoryPrefixChange()"
-               pTooltip="Basisname für die Inventarnummer (Zahl wird automatisch hinzugefügt)" />
+        @if (mode === 'private') {
+          <input pInputText [value]="inventoryPrefix()" class="w-full" [readonly]="true" [disabled]="true"
+                 pTooltip="Im Private-Modus ist das Präfix fest auf PRV gesetzt" />
+        } @else {
+          <input pInputText formControlName="invNumber" class="w-full"
+                 placeholder="z.B. VR-PRO"
+                 (input)="onInventoryPrefixChange()"
+                 pTooltip="Basisname für die Inventarnummer (Zahl wird automatisch hinzugefügt)" />
+        }
         @if (generatedInventoryNumbers.length > 0 && !isEditMode) {
           <app-validation-message
             [message]="'Vorschau: ' + generatedInventoryNumbers[0] + (generatedInventoryNumbers.length > 1 ? ' bis ' + generatedInventoryNumbers[generatedInventoryNumbers.length - 1] : '')">
@@ -26,7 +31,7 @@
     </app-form-row>
 
     <app-form-row [columns]="2">
-      <ng-container *ngIf="mode === 'admin'">
+      @if (mode === 'admin') {
         <app-form-input-field label="Besitzer User ID" [fullWidth]="true">
           <p-inputNumber formControlName="ownerId"
                          [useGrouping]="false"
@@ -58,11 +63,19 @@
             </app-validation-message>
           }
         </app-form-input-field>
-      </ng-container>
+      } @else {
+        <app-form-input-field label="Besitzer" [fullWidth]="true">
+          <input pInputText formControlName="ownerName"
+                 class="w-full"
+                 [readonly]="true" [disabled]="true"
+                 pTooltip="Automatisch auf Ihren Namen gesetzt" />
+        </app-form-input-field>
+        <div></div>
+      }
     </app-form-row>
 
     <app-form-row [columns]="2">
-      <ng-container *ngIf="mode === 'admin'">
+      @if (mode === 'admin') {
         <app-form-input-field label="Verleiher User ID" [required]="true" [fullWidth]="true">
           <p-inputNumber formControlName="lenderId"
                          [useGrouping]="false"
@@ -94,7 +107,15 @@
             </app-validation-message>
           }
         </app-form-input-field>
-      </ng-container>
+      } @else {
+        <app-form-input-field label="Verleiher" [fullWidth]="true">
+          <input pInputText formControlName="lenderName"
+                 class="w-full"
+                 [readonly]="true" [disabled]="true"
+                 pTooltip="Automatisch auf Ihren Namen gesetzt" />
+        </app-form-input-field>
+        <div></div>
+      }
     </app-form-row>
 
     @if (!isEditMode) {

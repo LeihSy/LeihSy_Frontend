@@ -11,11 +11,13 @@ export interface CreateStudentGroupDTO {
   name: string; // 2..255 chars
   description?: string; // 0..1000 chars
   memberIds?: number[];
+  budget?: number; // Budget für die Gruppe
 }
 
 export interface UpdateStudentGroupDTO {
   name?: string; // 2..255 chars
   description?: string; // 0..1000 chars
+  budget?: number; // Budget für die Gruppe
 }
 
 export interface StudentGroupDTO {

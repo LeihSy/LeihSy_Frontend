@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -11,7 +12,7 @@ import { GroupCreateDTO } from '../../../models/group.model';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, TextareaModule, CardModule, ButtonModule],
+  imports: [CommonModule, FormsModule, InputTextModule, InputNumberModule, TextareaModule, CardModule, ButtonModule],
   templateUrl: './admin-student-group-form.component.html'
 })
 export class AdminStudentGroupFormComponent {

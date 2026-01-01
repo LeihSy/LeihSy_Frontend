@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -13,7 +14,7 @@ import { ToastModule } from 'primeng/toast';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, TextareaModule, ButtonModule, CardModule, ToastModule],
+  imports: [CommonModule, FormsModule, InputTextModule, InputNumberModule, TextareaModule, ButtonModule, CardModule, ToastModule],
   templateUrl: './admin-student-group-edit.component.html',
   styleUrls: ['./admin-student-group-edit.component.scss'],
   providers: [MessageService]
@@ -53,7 +54,11 @@ export class AdminStudentGroupEditComponent {
   save() {
     const currentModel = this.model();
     if (!currentModel) return;
-    const payload: UpdateStudentGroupDTO = { name: currentModel.name, description: currentModel.description };
+    const payload: UpdateStudentGroupDTO = {
+      name: currentModel.name,
+      description: currentModel.description,
+      budget: currentModel.budget
+    };
     this.saving.set(true);
     this.groupService.updateGroup(currentModel.id, payload).subscribe({
       next: () => {

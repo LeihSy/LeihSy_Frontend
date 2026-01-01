@@ -6,6 +6,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
@@ -14,10 +15,11 @@ import { UserService } from '../../../services/user.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, DialogModule, InputTextModule, TableComponent, BackButtonComponent, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, DialogModule, InputTextModule, InputNumberModule, TableComponent, BackButtonComponent, ToastModule, ConfirmDialogModule],
   templateUrl: './admin-student-group-detail.component.html',
   styleUrls: ['./admin-student-group-detail.component.scss'],
   providers: [MessageService, ConfirmationService]
@@ -48,6 +50,11 @@ export class AdminStudentGroupDetailComponent {
   adding = signal(false);
   addError = signal<string | undefined>(undefined);
 
+  // Benutzer-Vorschau
+  userPreview = signal<{ name: string; email: string } | null>(null);
+  loadingPreview = signal(false);
+  private userIdChange$ = new Subject<number>();
+
   // Getter für ngModel binding
   get currentNewMemberId() {
     return this.newMemberId();
@@ -55,6 +62,12 @@ export class AdminStudentGroupDetailComponent {
 
   set currentNewMemberId(value: number | null) {
     this.newMemberId.set(value);
+    // Trigger Vorschau-Laden
+    if (value && value >= 0) {
+      this.userIdChange$.next(value);
+    } else {
+      this.userPreview.set(null);
+    }
   }
 
   get dialogVisible() {
@@ -73,6 +86,38 @@ export class AdminStudentGroupDetailComponent {
     } else {
       this.load(id);
     }
+
+    // Setup debounced user preview
+    this.userIdChange$.pipe(
+      debounceTime(500)
+    ).subscribe(userId => {
+      this.loadUserPreview(userId);
+    });
+  }
+
+  loadUserPreview(userId: number) {
+    if (!userId || userId < 0) {
+      this.userPreview.set(null);
+      return;
+    }
+
+    this.loadingPreview.set(true);
+    this.addError.set(undefined);
+
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        this.userPreview.set({
+          name: user.name || 'Unbekannt',
+          email: user.uniqueId || 'Keine ID'
+        });
+        this.loadingPreview.set(false);
+      },
+      error: (_) => {
+        this.userPreview.set(null);
+        this.loadingPreview.set(false);
+        this.addError.set('User-ID nicht gefunden');
+      }
+    });
   }
 
   load(id: number) {
@@ -90,6 +135,7 @@ export class AdminStudentGroupDetailComponent {
   openAddMember() {
     this.addError.set(undefined);
     this.newMemberId.set(null);
+    this.userPreview.set(null);
     this.addMemberDialog.set(true);
   }
 
@@ -97,35 +143,30 @@ export class AdminStudentGroupDetailComponent {
     const currentGroup = this.group();
     if (!currentGroup) return;
     const memberId = this.newMemberId();
-    if (!memberId || Number.isNaN(Number(memberId))) {
-      this.addError.set('Bitte eine gültige User ID eingeben.');
+
+    if (!memberId || Number.isNaN(Number(memberId)) || memberId < 0) {
+      this.addError.set('Bitte eine gültige User ID (>= 0) eingeben.');
+      return;
+    }
+
+    if (!this.userPreview()) {
+      this.addError.set('Benutzer nicht gefunden. Bitte gültige User-ID eingeben.');
       return;
     }
 
     this.adding.set(true);
-    // first verify user exists
-    this.userService.getUserById(Number(memberId)).subscribe({
-      next: (_) => {
-        // add
-        this.groupService.addMember(currentGroup.id, Number(memberId)).subscribe({
-          next: () => {
-            this.adding.set(false);
-            this.addMemberDialog.set(false);
-            this.load(currentGroup.id);
-            this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Mitglied hinzugefügt' });
-          },
-          error: (e) => {
-            console.error(e);
-            this.addError.set('Fehler beim Hinzufügen des Mitglieds');
-            this.adding.set(false);
-            this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Mitglied konnte nicht hinzugefügt werden' });
-          }
-        });
-      },
-      error: (_) => {
+    this.groupService.addMember(currentGroup.id, Number(memberId)).subscribe({
+      next: () => {
         this.adding.set(false);
-        this.addError.set('User-ID nicht gefunden');
-        this.messageService.add({ severity: 'warn', summary: 'Nicht gefunden', detail: 'User-ID existiert nicht' });
+        this.addMemberDialog.set(false);
+        this.load(currentGroup.id);
+        this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Mitglied hinzugefügt' });
+      },
+      error: (e) => {
+        console.error(e);
+        this.addError.set('Fehler beim Hinzufügen des Mitglieds');
+        this.adding.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Mitglied konnte nicht hinzugefügt werden' });
       }
     });
   }

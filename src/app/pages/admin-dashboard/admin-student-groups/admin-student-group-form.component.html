@@ -11,6 +11,22 @@
         <textarea pInputTextarea id="desc" [(ngModel)]="currentModel.description" rows="5" [autoResize]="true"></textarea>
       </div>
 
+      <div class="flex flex-col gap-2">
+        <label for="budget" class="font-bold">Budget (€)</label>
+        <p-inputNumber
+          id="budget"
+          [(ngModel)]="currentModel.budget"
+          mode="currency"
+          currency="EUR"
+          locale="de-DE"
+          [min]="0"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          placeholder="z.B. 1000.00">
+        </p-inputNumber>
+        <small class="text-gray-500">Optional: Legen Sie ein Budget für diese Gruppe fest</small>
+      </div>
+
       <div class="flex justify-end gap-2 mt-4">
         <p-button label="Abbrechen" severity="secondary" [text]="true" (onClick)="cancel()" />
         <p-button label="Gruppe speichern" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />

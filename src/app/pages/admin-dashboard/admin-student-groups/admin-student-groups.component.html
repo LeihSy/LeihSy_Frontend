@@ -1,0 +1,27 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">Studentengruppen</h2>
+    <div>
+      <p-button
+        label="Neue Gruppe"
+        icon="pi pi-plus"
+        (onClick)="goToNew()"
+        severity="success">
+      </p-button>
+    </div>
+  </div>
+
+  <app-table
+    [columns]="columns"
+    [data]="groups()"
+    [loading]="loading()"
+    [paginator]="true"
+    [rows]="10"
+    [showActions]="true"
+    [rowClickable]="true"
+    (edit)="onEdit($event)"
+    (remove)="onRemove($event)"
+    (rowSelect)="onRowSelect($event)">
+  </app-table>
+
+</div>

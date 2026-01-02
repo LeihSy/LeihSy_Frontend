@@ -58,6 +58,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/groups',
+    loadComponent: () => import('./pages/user-dashboard/user-groups.component').then(m => m.UserGroupsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/groups/:id',
+    loadComponent: () => import('./pages/user-dashboard/user-group-detail.component').then(m => m.UserGroupDetailComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'qr-action/:id',
     loadComponent: () => import('./pages/user-dashboard/user-bookings/qr-action.component').then(m => m.QrActionComponent),
     canActivate: [authGuard],
@@ -198,6 +208,30 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-private-management/admin-private-management.component')
         .then(m => m.AdminPrivateManagementComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups',
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-groups.component').then(m => m.AdminStudentGroupsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/new',
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-form.component').then(m => m.AdminStudentGroupFormComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/:id',
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-detail.component').then(m => m.AdminStudentGroupDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/groups/:id/edit',
+    loadComponent: () => import('./pages/admin-dashboard/admin-student-groups/admin-student-group-edit.component').then(m => m.AdminStudentGroupEditComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

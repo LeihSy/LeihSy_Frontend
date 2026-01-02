@@ -136,31 +136,31 @@
       <!-- Checkbox-Spalte -->
       <ng-template pTemplate="header">
         <tr>
-          <th style="width: 4rem">
+          <th scope="col" style="width: 4rem">
             <p-tableHeaderCheckbox />
           </th>
-          <th pSortableColumn="id">
+          <th scope="col" pSortableColumn="id">
             ID <p-sortIcon field="id" />
           </th>
-          <th pSortableColumn="name">
+          <th scope="col" pSortableColumn="name">
             Name <p-sortIcon field="name" />
           </th>
-          <th pSortableColumn="invNumber">
+          <th scope="col" pSortableColumn="invNumber">
             Inv-Nr <p-sortIcon field="invNumber" />
           </th>
-          <th pSortableColumn="category">
+          <th scope="col" pSortableColumn="category">
             Kategorie <p-sortIcon field="category" />
           </th>
-          <th pSortableColumn="roomNr">
+          <th scope="col" pSortableColumn="roomNr">
             Raum <p-sortIcon field="roomNr" />
           </th>
-          <th pSortableColumn="status">
+          <th scope="col" pSortableColumn="status">
             Status <p-sortIcon field="status" />
           </th>
-          <th pSortableColumn="createdAt">
+          <th scope="col" pSortableColumn="createdAt">
             Erstellt am <p-sortIcon field="createdAt" />
           </th>
-          <th style="width: 10rem">Aktionen</th>
+          <th scope="col" style="width: 10rem">Aktionen</th>
         </tr>
       </ng-template>
 
@@ -342,8 +342,8 @@
         [(ngModel)]="rejectReason"
         rows="3"
         placeholder="Grund für die Ablehnung..."
-        styleClass="w-full"
-      />
+        styleClass="w-full">
+      </p-textarea>
     </div>
   }
 

@@ -49,7 +49,7 @@ import { AdminInsyImportService } from './services/admin-insy-import.service';
   providers: [ConfirmationService, MessageService, AdminInsyImportService]
 })
 export class AdminInsyImportComponent implements OnInit {
-  private pageService = inject(AdminInsyImportService);
+  private readonly pageService = inject(AdminInsyImportService);
 
   // Service Signals
   allRequests = this.pageService.importRequests;
@@ -98,11 +98,11 @@ export class AdminInsyImportComponent implements OnInit {
     // Such-Filter
     if (query) {
       filtered = filtered.filter(r =>
-        (r.name && r.name.toLowerCase().includes(query)) ||
-        (r.invNumber && r.invNumber.toLowerCase().includes(query)) ||
-        (r.category && r.category.toLowerCase().includes(query)) ||
-        (r.roomNr && r.roomNr.toLowerCase().includes(query)) ||
-        (r.description && r.description.toLowerCase().includes(query))
+        r.name?.toLowerCase().includes(query) ||
+        r.invNumber?.toLowerCase().includes(query) ||
+        r.category?.toLowerCase().includes(query) ||
+        r.roomNr?.toLowerCase().includes(query) ||
+        r.description?.toLowerCase().includes(query)
       );
     }
 
@@ -214,10 +214,10 @@ export class AdminInsyImportComponent implements OnInit {
     const selected = this.selectedRequests();
     const pendingOnly = selected.filter(r => r.status === ImportStatus.PENDING);
 
-    if (pendingOnly.length !== selected.length) {
-      this.pageService.bulkApprove(pendingOnly);
-    } else {
+    if (pendingOnly.length === selected.length) {
       this.pageService.bulkApprove(selected);
+    } else {
+      this.pageService.bulkApprove(pendingOnly);
     }
   }
 
@@ -225,10 +225,10 @@ export class AdminInsyImportComponent implements OnInit {
     const selected = this.selectedRequests();
     const pendingOnly = selected.filter(r => r.status === ImportStatus.PENDING);
 
-    if (pendingOnly.length !== selected.length) {
-      this.pageService.bulkReject(pendingOnly);
-    } else {
+    if (pendingOnly.length === selected.length) {
       this.pageService.bulkReject(selected);
+    } else {
+      this.pageService.bulkReject(pendingOnly);
     }
   }
 

@@ -14,6 +14,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
+import { TextareaModule } from 'primeng/textarea';
 
 import { InsyImportRequest, ImportStatus } from '../../../models/insy-import.model';
 import { AdminInsyImportService } from './services/admin-insy-import.service';
@@ -35,6 +36,7 @@ import { AdminInsyImportService } from './services/admin-insy-import.service';
     DialogModule,
     ChipModule,
     TooltipModule,
+    TextareaModule,
   ],
   templateUrl: './admin-insy-import.component.html',
   styleUrls: ['./admin-insy-import.component.css'],
@@ -49,8 +51,8 @@ export class AdminInsyImportComponent implements OnInit {
   isLoading = this.pageService.isLoading;
   selectedRequests = this.pageService.selectedRequests;
 
-  // Filter Signals (WritableSignal für direktes Setzen)
-  statusFilter: ImportStatus | 'ALL' = 'ALL';
+  // Filter Signals - BEIDE als WritableSignal für automatische Reaktivität
+  statusFilter: WritableSignal<ImportStatus | 'ALL'> = signal('ALL');
   searchQuery: WritableSignal<string> = signal('');
 
   // Dialog Signals
@@ -67,10 +69,10 @@ export class AdminInsyImportComponent implements OnInit {
     { label: 'Abgelehnt', value: ImportStatus.REJECTED }
   ];
 
-  // Gefilterte Requests
+  // Gefilterte Requests - reagiert automatisch auf statusFilter-Änderungen
   filteredRequests = computed(() => {
     const requests = this.allRequests();
-    const status = this.statusFilter; // Keine Signal mehr!
+    const status = this.statusFilter(); // Signal-Aufruf registriert Abhängigkeit
     const query = this.searchQuery().toLowerCase().trim();
 
     let filtered = requests;
@@ -168,7 +170,7 @@ export class AdminInsyImportComponent implements OnInit {
   // Einzelnen Import ablehnen
   openRejectDialog(request: InsyImportRequest): void {
     this.currentRequest.set(request);
-    this.rejectReason = ''; // Direkte Zuweisung statt .set()
+    this.rejectReason = '';
     this.showRejectDialog.set(true);
   }
 

@@ -1,12 +1,12 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { InsyImportService } from '../../../../services/insy-import.service';
 import { InsyImportRequest, ImportStatus } from '../../../../models/insy-import.model';
 
 @Injectable()
 export class AdminInsyImportService {
-  private insyImportService = inject(InsyImportService);
-  private messageService = inject(MessageService);
+  private readonly insyImportService = inject(InsyImportService);
+  private readonly messageService = inject(MessageService);
 
   // State Signals
   importRequests = signal<InsyImportRequest[]>([]);
@@ -62,8 +62,8 @@ export class AdminInsyImportService {
   }
 
   // Einzelnen Import genehmigen
-  approveImport(request: InsyImportRequest) {
-    return this.insyImportService.approveImport(request.id).subscribe({
+  approveImport(request: InsyImportRequest): void {
+    this.insyImportService.approveImport(request.id).subscribe({
       next: (updated) => {
         this.messageService.add({
           severity: 'success',
@@ -84,8 +84,8 @@ export class AdminInsyImportService {
   }
 
   // Einzelnen Import ablehnen
-  rejectImport(request: InsyImportRequest, reason?: string) {
-    return this.insyImportService.rejectImport(request.id, { reason }).subscribe({
+  rejectImport(request: InsyImportRequest, reason?: string): void {
+    this.insyImportService.rejectImport(request.id, { reason }).subscribe({
       next: (updated) => {
         this.messageService.add({
           severity: 'warn',
@@ -106,9 +106,9 @@ export class AdminInsyImportService {
   }
 
   // Mehrere Imports genehmigen
-  bulkApprove(requests: InsyImportRequest[]) {
+  bulkApprove(requests: InsyImportRequest[]): void {
     const ids = requests.map(r => r.id);
-    return this.insyImportService.bulkApprove(ids).subscribe({
+    this.insyImportService.bulkApprove(ids).subscribe({
       next: (updated) => {
         this.messageService.add({
           severity: 'success',
@@ -130,9 +130,9 @@ export class AdminInsyImportService {
   }
 
   // Mehrere Imports ablehnen
-  bulkReject(requests: InsyImportRequest[], reason?: string) {
+  bulkReject(requests: InsyImportRequest[], reason?: string): void {
     const ids = requests.map(r => r.id);
-    return this.insyImportService.bulkReject(ids, reason).subscribe({
+    this.insyImportService.bulkReject(ids, reason).subscribe({
       next: (updated) => {
         this.messageService.add({
           severity: 'warn',
@@ -154,9 +154,9 @@ export class AdminInsyImportService {
   }
 
   // Neue Imports von InSy holen (Mock)
-  refreshImports() {
+  refreshImports(): void {
     this.isLoading.set(true);
-    return this.insyImportService.refreshImports().subscribe({
+    this.insyImportService.refreshImports().subscribe({
       next: (newImports) => {
         this.messageService.add({
           severity: 'success',
@@ -178,14 +178,14 @@ export class AdminInsyImportService {
   }
 
   // Import löschen (mit Bestätigung)
-  confirmDeleteImport(request: InsyImportRequest) {
+  confirmDeleteImport(request: InsyImportRequest): void {
     // Diese Methode wird vom Component aufgerufen nach Bestätigung
-    return this.deleteImport(request);
+    this.deleteImport(request);
   }
 
   // Import tatsächlich löschen
-  deleteImport(request: InsyImportRequest) {
-    return this.insyImportService.deleteImportRequest(request.id).subscribe({
+  deleteImport(request: InsyImportRequest): void {
+    this.insyImportService.deleteImportRequest(request.id).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

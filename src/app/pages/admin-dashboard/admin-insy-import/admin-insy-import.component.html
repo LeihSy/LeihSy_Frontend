@@ -17,7 +17,7 @@
 
     <!-- Statistik-Karten -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <p-card styleClass="shadow-sm">
+      <p-card class="shadow-sm">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600 mb-1">Ausstehend</p>
@@ -27,7 +27,7 @@
         </div>
       </p-card>
 
-      <p-card styleClass="shadow-sm">
+      <p-card class="shadow-sm">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600 mb-1">Genehmigt</p>
@@ -37,7 +37,7 @@
         </div>
       </p-card>
 
-      <p-card styleClass="shadow-sm">
+      <p-card class="shadow-sm">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600 mb-1">Abgelehnt</p>
@@ -47,7 +47,7 @@
         </div>
       </p-card>
 
-      <p-card styleClass="shadow-sm">
+      <p-card class="shadow-sm">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600 mb-1">Neu heute</p>
@@ -60,7 +60,7 @@
   </div>
 
   <!-- Filter und Suche -->
-  <p-card styleClass="shadow-sm mb-6">
+  <p-card class="shadow-sm mb-6">
     <div class="flex flex-wrap gap-4 items-end">
       <!-- Suche mit wiederverwendbarer SearchBar-Komponente -->
       <div class="flex-1 min-w-[300px]">
@@ -68,7 +68,7 @@
           Suche
         </label>
         <p-iconfield iconPosition="left" class="w-full">
-          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <p-inputicon class="pi pi-search"></p-inputicon>
           <input
             type="text"
             pInputText
@@ -87,13 +87,14 @@
         </label>
         <p-select
           id="statusFilter"
+          name="statusFilter"
           [options]="statusOptions"
           [(ngModel)]="statusFilterValue"
           (ngModelChange)="onStatusFilterChange($event)"
           optionLabel="label"
           optionValue="value"
           placeholder="Status wählen"
-          styleClass="w-full"
+          class="w-full"
         />
       </div>
 
@@ -120,7 +121,7 @@
   </p-card>
 
   <!-- Import-Requests Tabelle -->
-  <p-card styleClass="shadow-sm">
+  <p-card class="shadow-sm">
     <p-table
       [value]="filteredRequests()"
       [loading]="isLoading()"
@@ -131,7 +132,7 @@
       [rowsPerPageOptions]="[5, 10, 25, 50]"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Einträgen"
-      styleClass="p-datatable-sm"
+      class="p-datatable-sm"
     >
       <!-- Checkbox-Spalte -->
       <ng-template pTemplate="header">
@@ -174,7 +175,7 @@
             <div class="flex items-center gap-2">
               {{ request.id }}
               @if (isNewRequest(request)) {
-                <p-chip label="NEU" styleClass="bg-blue-500 text-white text-xs" />
+                <p-chip label="NEU" class="bg-blue-500 text-white text-xs" />
               }
             </div>
           </td>
@@ -342,7 +343,7 @@
         [(ngModel)]="rejectReason"
         rows="3"
         placeholder="Grund für die Ablehnung..."
-        styleClass="w-full">
+        class="w-full">
       </p-textarea>
     </div>
   }

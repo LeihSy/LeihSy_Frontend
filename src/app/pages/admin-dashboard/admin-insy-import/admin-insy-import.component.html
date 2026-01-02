@@ -1,0 +1,370 @@
+<div class="admin-insy-import-container">
+  <!-- Header mit Statistiken -->
+  <div class="mb-6">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">InSy Import-Verwaltung</h1>
+        <p class="text-gray-600 mt-2">Verwaltung von Import-Anfragen aus dem InSy-System</p>
+      </div>
+      <p-button
+        label="Aktualisieren"
+        icon="pi pi-refresh"
+        [loading]="isLoading()"
+        (onClick)="refreshImports()"
+        severity="secondary"
+      />
+    </div>
+
+    <!-- Statistik-Karten -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <p-card styleClass="shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Ausstehend</p>
+            <p class="text-2xl font-bold text-orange-500">{{ statistics().totalPending }}</p>
+          </div>
+          <i class="pi pi-clock text-4xl text-orange-300"></i>
+        </div>
+      </p-card>
+
+      <p-card styleClass="shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Genehmigt</p>
+            <p class="text-2xl font-bold text-green-500">{{ statistics().totalApproved }}</p>
+          </div>
+          <i class="pi pi-check-circle text-4xl text-green-300"></i>
+        </div>
+      </p-card>
+
+      <p-card styleClass="shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Abgelehnt</p>
+            <p class="text-2xl font-bold text-red-500">{{ statistics().totalRejected }}</p>
+          </div>
+          <i class="pi pi-times-circle text-4xl text-red-300"></i>
+        </div>
+      </p-card>
+
+      <p-card styleClass="shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Neu heute</p>
+            <p class="text-2xl font-bold text-blue-500">{{ newRequests().length }}</p>
+          </div>
+          <i class="pi pi-plus-circle text-4xl text-blue-300"></i>
+        </div>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Filter und Suche -->
+  <p-card styleClass="shadow-sm mb-6">
+    <div class="flex flex-wrap gap-4">
+      <!-- Status Filter -->
+      <div class="flex-1 min-w-[200px]">
+        <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">
+          Status
+        </label>
+        <p-select
+          id="statusFilter"
+          [options]="statusOptions"
+          [(ngModel)]="statusFilter"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Status wählen"
+          styleClass="w-full"
+        />
+      </div>
+
+      <!-- Suche -->
+      <div class="flex-1 min-w-[200px]">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Suche
+        </label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            id="search"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            placeholder="Name, Inv-Nr, Kategorie..."
+            class="w-full"
+          />
+        </span>
+      </div>
+
+      <!-- Bulk-Aktionen -->
+      @if (selectedRequests().length > 0) {
+        <div class="flex items-end gap-2">
+          <p-button
+            label="Ausgewählte genehmigen ({{ selectedRequests().length }})"
+            icon="pi pi-check"
+            (onClick)="bulkApprove()"
+            severity="success"
+            size="small"
+          />
+          <p-button
+            label="Ausgewählte ablehnen ({{ selectedRequests().length }})"
+            icon="pi pi-times"
+            (onClick)="bulkReject()"
+            severity="danger"
+            size="small"
+          />
+        </div>
+      }
+    </div>
+  </p-card>
+
+  <!-- Import-Requests Tabelle -->
+  <p-card styleClass="shadow-sm">
+    <p-table
+      [value]="filteredRequests()"
+      [loading]="isLoading()"
+      [(selection)]="selectedRequests"
+      dataKey="id"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Einträgen"
+      styleClass="p-datatable-sm"
+    >
+      <!-- Checkbox-Spalte -->
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 4rem">
+            <p-tableHeaderCheckbox />
+          </th>
+          <th pSortableColumn="id">
+            ID <p-sortIcon field="id" />
+          </th>
+          <th pSortableColumn="name">
+            Name <p-sortIcon field="name" />
+          </th>
+          <th pSortableColumn="invNumber">
+            Inv-Nr <p-sortIcon field="invNumber" />
+          </th>
+          <th pSortableColumn="category">
+            Kategorie <p-sortIcon field="category" />
+          </th>
+          <th pSortableColumn="roomNr">
+            Raum <p-sortIcon field="roomNr" />
+          </th>
+          <th pSortableColumn="status">
+            Status <p-sortIcon field="status" />
+          </th>
+          <th pSortableColumn="createdAt">
+            Erstellt am <p-sortIcon field="createdAt" />
+          </th>
+          <th style="width: 10rem">Aktionen</th>
+        </tr>
+      </ng-template>
+
+      <!-- Tabellen-Körper -->
+      <ng-template pTemplate="body" let-request>
+        <tr [class.bg-blue-50]="isNewRequest(request)">
+          <td>
+            <p-tableCheckbox [value]="request" />
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              {{ request.id }}
+              @if (isNewRequest(request)) {
+                <p-chip label="NEU" styleClass="bg-blue-500 text-white text-xs" />
+              }
+            </div>
+          </td>
+          <td>
+            <div class="font-medium">{{ request.name }}</div>
+            @if (request.description) {
+              <div class="text-sm text-gray-500 truncate max-w-xs">
+                {{ request.description }}
+              </div>
+            }
+          </td>
+          <td>
+            <code class="text-sm bg-gray-100 px-2 py-1 rounded">
+              {{ request.invNumber }}
+            </code>
+          </td>
+          <td>
+            <p-tag [value]="request.category" severity="info" />
+          </td>
+          <td>{{ request.roomNr }}</td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(request.status)"
+              [severity]="getStatusSeverity(request.status)"
+            />
+          </td>
+          <td>{{ formatDate(request.createdAt) }}</td>
+          <td>
+            <div class="flex gap-2">
+              @if (request.status === 'PENDING') {
+                <p-button
+                  icon="pi pi-check"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="success"
+                  pTooltip="Genehmigen"
+                  tooltipPosition="top"
+                  (onClick)="openApproveDialog(request)"
+                />
+                <p-button
+                  icon="pi pi-times"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  pTooltip="Ablehnen"
+                  tooltipPosition="top"
+                  (onClick)="openRejectDialog(request)"
+                />
+              }
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                pTooltip="Löschen"
+                tooltipPosition="top"
+                (onClick)="deleteImport(request)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty State -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center py-8">
+            <div class="flex flex-col items-center gap-3">
+              <i class="pi pi-inbox text-6xl text-gray-300"></i>
+              <p class="text-gray-500">Keine Import-Anfragen gefunden</p>
+              <p-button
+                label="Jetzt aktualisieren"
+                icon="pi pi-refresh"
+                (onClick)="refreshImports()"
+                [outlined]="true"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<!-- Approve Dialog -->
+<p-dialog
+  header="Import genehmigen"
+  [(visible)]="showApproveDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+>
+  @if (currentRequest()) {
+    <div class="py-4">
+      <p class="mb-4">
+        Möchten Sie folgenden Import genehmigen?
+      </p>
+      <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+        <div class="flex justify-between">
+          <span class="font-medium">Name:</span>
+          <span>{{ currentRequest()!.name }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Inv-Nr:</span>
+          <span>{{ currentRequest()!.invNumber }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Kategorie:</span>
+          <span>{{ currentRequest()!.category }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Raum:</span>
+          <span>{{ currentRequest()!.roomNr }}</span>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-gray-500">
+        Das Item wird als neues Produkt angelegt und kann anschließend bearbeitet werden.
+      </p>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Abbrechen"
+      icon="pi pi-times"
+      (onClick)="showApproveDialog.set(false)"
+      [text]="true"
+    />
+    <p-button
+      label="Genehmigen"
+      icon="pi pi-check"
+      (onClick)="confirmApprove()"
+      severity="success"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Reject Dialog -->
+<p-dialog
+  header="Import ablehnen"
+  [(visible)]="showRejectDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+>
+  @if (currentRequest()) {
+    <div class="py-4">
+      <p class="mb-4">
+        Möchten Sie folgenden Import ablehnen?
+      </p>
+      <div class="bg-gray-50 p-4 rounded-lg space-y-2 mb-4">
+        <div class="flex justify-between">
+          <span class="font-medium">Name:</span>
+          <span>{{ currentRequest()!.name }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Inv-Nr:</span>
+          <span>{{ currentRequest()!.invNumber }}</span>
+        </div>
+      </div>
+
+      <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2">
+        Grund (optional)
+      </label>
+      <p-textarea
+        id="rejectReason"
+        [(ngModel)]="rejectReason"
+        rows="3"
+        placeholder="Grund für die Ablehnung..."
+        styleClass="w-full"
+      />
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Abbrechen"
+      icon="pi pi-times"
+      (onClick)="showRejectDialog.set(false)"
+      [text]="true"
+    />
+    <p-button
+      label="Ablehnen"
+      icon="pi pi-times"
+      (onClick)="confirmReject()"
+      severity="danger"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Toast für Benachrichtigungen -->
+<p-toast />
+
+<!-- Confirm Dialog -->
+<p-confirmDialog />

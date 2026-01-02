@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { BookingQrComponent } from './booking-qr.component';
+import { UserBookingExportService } from './services/user-booking-export.service';
 
 interface TimelineEvent {
   status: string;
@@ -51,7 +52,8 @@ export class BookingDetailComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly bookingService: BookingService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly exportService: UserBookingExportService
   ) {}
 
   ngOnInit(): void {
@@ -242,6 +244,34 @@ export class BookingDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/user-dashboard/bookings']);
+  }
+
+  exportToPdf(): void {
+    const booking = this.booking();
+    if (!booking) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warnung',
+        detail: 'Keine Buchungsdaten verfügbar zum Exportieren.'
+      });
+      return;
+    }
+
+    try {
+      this.exportService.exportBookingAsPdf(booking);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Erfolg',
+        detail: 'PDF wurde erfolgreich heruntergeladen.'
+      });
+    } catch (error) {
+      console.error('Fehler beim PDF-Export:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'PDF konnte nicht erstellt werden.'
+      });
+    }
   }
 }
 

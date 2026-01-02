@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
 import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
@@ -20,6 +21,7 @@ import { AdminPrivateImportService, ImportResult } from './admin-private-import.
     CardModule,
     FilledButtonComponent,
     SecondaryButtonComponent,
+    PageHeaderComponent,
     ButtonModule,
     DialogModule,
     TextareaModule,

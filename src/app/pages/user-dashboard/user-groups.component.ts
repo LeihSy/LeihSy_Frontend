@@ -7,11 +7,12 @@ import { TableComponent, ColumnDef } from '../../components/table/table.componen
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { Group } from '../../models/group.model';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-user-groups',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableComponent],
+  imports: [CommonModule, CardModule, ButtonModule, TableComponent, PageHeaderComponent],
   templateUrl: './user-groups.component.html',
   styleUrls: ['./user-groups.component.scss']
 })

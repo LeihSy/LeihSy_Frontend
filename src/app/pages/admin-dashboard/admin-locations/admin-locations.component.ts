@@ -5,6 +5,7 @@ import { AdminLocationsService } from './admin-locations.service';
 import { Location, LocationCreateDTO } from '../../../models/location.model';
 import { FormsModule } from '@angular/forms';
 import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
@@ -14,7 +15,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-admin-locations',
   standalone: true,
-  imports: [CommonModule, TableComponent, FormsModule, FilledButtonComponent, InputTextModule, ConfirmDialogModule, ToastModule],
+  imports: [CommonModule, TableComponent, FormsModule, FilledButtonComponent, PageHeaderComponent, InputTextModule, ConfirmDialogModule, ToastModule],
   templateUrl: './admin-locations.component.html',
   styleUrls: [],
   providers: [ConfirmationService, MessageService, AdminLocationsService]

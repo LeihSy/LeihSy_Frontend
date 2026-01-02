@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -13,7 +14,8 @@ import { MenuCardComponent } from '../../components/menu-card/menu-card.componen
     RouterModule,
     CardModule,
     ButtonModule,
-    MenuCardComponent
+    MenuCardComponent,
+    PageHeaderComponent
   ],
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.scss']

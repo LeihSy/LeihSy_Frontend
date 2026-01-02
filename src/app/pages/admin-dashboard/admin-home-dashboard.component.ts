@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-home-dashboard',
@@ -14,7 +15,8 @@ import { MenuCardComponent } from '../../components/menu-card/menu-card.componen
     RouterModule,
     CardModule,
     ButtonModule,
-    MenuCardComponent
+    MenuCardComponent,
+    PageHeaderComponent
   ],
   templateUrl: './admin-home-dashboard.component.html',
   styleUrls: ['./admin-home-dashboard.component.scss']

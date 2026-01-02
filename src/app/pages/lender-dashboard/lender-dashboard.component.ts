@@ -5,6 +5,7 @@ import { CardModule } from 'primeng/card';
 import { FilledButtonComponent } from '../../components/buttons/filled-button/filled-button.component';
 import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
 import { QrScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-lender-dashboard',
@@ -15,7 +16,8 @@ import { QrScannerComponent } from '../../components/qr-scanner/qr-scanner.compo
     CardModule,
     FilledButtonComponent,
     MenuCardComponent,
-    QrScannerComponent
+    QrScannerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './lender-dashboard.component.html',
   styleUrls: ['./lender-dashboard.component.scss']

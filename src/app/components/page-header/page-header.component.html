@@ -1,14 +1,5 @@
-<div class="flex justify-between items-center mb-6">
-  <div>
-    <h1 class="text-3xl font-bold mb-2">{{ title }}</h1>
-    <p class="text-gray-600">{{ subtitle }}</p>
-  </div>
-  @if (showButton) {
-    <app-filled-button
-      [label]="buttonLabel"
-      [icon]="buttonIcon"
-      (buttonClick)="onButtonClick()">
-    </app-filled-button>
-  }
+<div class="mb-6">
+  <h1 class="text-3xl font-bold mb-2">{{ title }}</h1>
+  <p class="text-gray-600">{{ subtitle }}</p>
 </div>
 

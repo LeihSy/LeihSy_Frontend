@@ -16,6 +16,7 @@ import { TableComponent, ColumnDef } from '../../../components/table/table.compo
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { AdminProductDashboardService } from './services/admin-product-dashboard.service';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -31,7 +32,8 @@ import { PageHeaderComponent } from '../../../components/page-header/page-header
     ConfirmDialogModule,
     ToastModule,
     SearchBarComponent,
-    PageHeaderComponent
+    PageHeaderComponent,
+    FilledButtonComponent
   ],
   templateUrl: './admin-product-dashboard.component.html',
   providers: [ConfirmationService, MessageService, AdminProductDashboardService]

@@ -12,6 +12,7 @@ import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { BookingService } from '../../../services/booking.service';
 import { Booking } from '../../../models/booking.model';
 import { StatisticsHeaderComponent } from '../../../components/admin/statistics-header/statistics-header.component';
@@ -31,6 +32,7 @@ import { ExportButtonsComponent } from '../../../components/admin/export-buttons
     ChartModule,
     ToastModule,
     BackButtonComponent,
+    PageHeaderComponent,
     ButtonModule,
     RouterLink,
     TooltipModule,

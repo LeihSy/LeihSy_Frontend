@@ -17,6 +17,7 @@ import { LenderItemsService } from './services/lender-items.service';
 import { LenderStatsCardsComponent, StatCard } from '../../components/lender/lender-stats-cards.component';
 import { LenderProductItemListComponent } from '../../components/lender/lender-product-item-list.component';
 import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-lender-items',
@@ -33,7 +34,8 @@ import { SearchBarComponent } from '../../components/search-bar/search-bar.compo
     ToastModule,
     LenderStatsCardsComponent,
     LenderProductItemListComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    PageHeaderComponent
   ],
   templateUrl: './lender-items.component.html',
   styleUrls: ['./lender-items.component.scss'],

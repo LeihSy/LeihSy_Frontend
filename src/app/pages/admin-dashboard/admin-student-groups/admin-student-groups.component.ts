@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
@@ -9,7 +10,7 @@ import { Group } from '../../../models/group.model';
 @Component({
   selector: 'app-admin-student-groups',
   standalone: true,
-  imports: [CommonModule, FilledButtonComponent, TableComponent],
+  imports: [CommonModule, FilledButtonComponent, PageHeaderComponent, TableComponent],
   templateUrl: './admin-student-groups.component.html',
   styleUrls: ['./admin-student-groups.component.scss']
 })

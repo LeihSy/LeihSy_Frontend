@@ -2,16 +2,17 @@
 
   <p-toast position="bottom-right"></p-toast>
 
-  <div class="mb-6">
-    <h1 class="text-3xl font-bold mb-2">Meine Gegenstände</h1>
-    <p class="text-gray-600">Übersicht über alle Ihnen zugewiesenen Gegenstände</p>
-    @if (currentUser()) {
-      <p class="text-sm text-gray-500 mt-2">
-        <i class="pi pi-user mr-1"></i>
-        Angemeldet als: <strong>{{ currentUser()!.name }}</strong> (Verleiher ID: {{ currentUser()!.id }})
-      </p>
-    }
-  </div>
+  <app-page-header
+    title="Meine Gegenstände"
+    subtitle="Übersicht über alle Ihnen zugewiesenen Gegenstände">
+  </app-page-header>
+
+  @if (currentUser()) {
+    <p class="text-sm text-gray-500 mt-2 mb-4">
+      <i class="pi pi-user mr-1"></i>
+      Angemeldet als: <strong>{{ currentUser()!.name }}</strong> (Verleiher ID: {{ currentUser()!.id }})
+    </p>
+  }
 
   <app-lender-stats-cards [stats]="statsCards()"></app-lender-stats-cards>
 

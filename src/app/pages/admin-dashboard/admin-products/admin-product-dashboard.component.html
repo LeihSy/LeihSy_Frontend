@@ -2,14 +2,17 @@
   <p-toast position="bottom-right"></p-toast>
   <p-confirmDialog></p-confirmDialog>
 
-  <app-page-header
-    title="Produktgruppen verwalten"
-    subtitle="Erstelle, bearbeite oder lösche Produktgruppen"
-    buttonLabel="Neues Produkt"
-    buttonIcon="pi pi-plus"
-    [showButton]="true"
-    (buttonClick)="navigateToNewProduct()">
-  </app-page-header>
+  <div class="flex justify-between items-start mb-6">
+    <app-page-header
+      title="Produktgruppen verwalten"
+      subtitle="Erstelle, bearbeite oder lösche Produktgruppen">
+    </app-page-header>
+    <app-filled-button
+      label="Neues Produkt"
+      icon="pi pi-plus"
+      (buttonClick)="navigateToNewProduct()">
+    </app-filled-button>
+  </div>
 
 
   <p-card header="Vorhandene Produkte">

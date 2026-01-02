@@ -18,7 +18,7 @@ import { BookingService } from '../../../services/booking.service';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingStatsCardsComponent } from '../../../components/admin/booking-stats-cards/booking-stats-cards.component';
-import { BookingsHeaderComponent } from '../../../components/admin/bookings-header/bookings-header.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-bookings',
@@ -38,7 +38,7 @@ import { BookingsHeaderComponent } from '../../../components/admin/bookings-head
     TooltipModule,
     BackButtonComponent,
     BookingStatsCardsComponent,
-    BookingsHeaderComponent,
+    PageHeaderComponent,
     RouterLink
   ],
   providers: [MessageService],

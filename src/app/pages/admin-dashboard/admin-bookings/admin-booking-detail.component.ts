@@ -13,10 +13,12 @@ import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
-import { BookingHeaderComponent } from '../../../components/booking-components/booking-header/booking-header.component';
-import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
-import { InfoItemComponent } from '../../../components/admin/info-item/info-item.component';
-import { BookingTimelineComponent } from '../../../components/booking-components/booking-timeline/booking-timeline.component';
+import { InfoItem } from '../../../components/info-card/info-card.component';
+import { BookingLoadingScreenComponent } from '../../../components/admin/booking-components/booking-loading-screen.component';
+import { BookingGridComponent } from '../../../components/admin/booking-components/booking-grid.component';
+import { BookingMessageComponent } from '../../../components/admin/booking-components/booking-message.component';
+import { AppointmentsAndDataComponent } from '../../../components/admin/booking-components/appointments-and-data.component';
+import { BookingProgressComponent } from '../../../components/admin/booking-components/booking-progress.component';
 
 interface TimelineEvent {
   status: string;
@@ -38,10 +40,11 @@ interface TimelineEvent {
     TimelineModule,
     ToastModule,
     BackButtonComponent,
-    BookingHeaderComponent,
-    InfoCardComponent,
-    InfoItemComponent,
-    BookingTimelineComponent
+    BookingLoadingScreenComponent,
+    BookingGridComponent,
+    BookingMessageComponent,
+    AppointmentsAndDataComponent,
+    BookingProgressComponent
   ],
   templateUrl: './admin-booking-detail.component.html',
   providers: [MessageService]
@@ -206,10 +209,10 @@ export class AdminBookingDetailComponent implements OnInit {
     }
   }
 
-  formatDateTime(dateString: string): string {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString('de-DE', {
+  formatDateTime(date: string | Date | null): string {
+    if (!date) return '-';
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleString('de-DE', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -266,6 +269,15 @@ export class AdminBookingDetailComponent implements OnInit {
       { icon: 'pi-box', label: 'Produkt', value: booking.productName },
       { icon: 'pi-hashtag', label: 'Inventarnummer', value: booking.itemInvNumber },
       { icon: 'pi-tag', label: 'Produkt-ID', value: `#${booking.productId}` }
+    ];
+  }
+
+  getCardData() {
+    return [
+      { h: 'Benutzer', items: this.getUserInfoItems() },
+      { h: 'Ausleihzeitraum', items: this.getLoanPeriodInfoItems() },
+      { h: 'Verleiher', items: this.getLenderInfoItems() },
+      { h: 'Gegenstand', items: this.getItemInfoItems() }
     ];
   }
 

@@ -19,6 +19,9 @@ import { TableComponent, ColumnDef } from '../../../components/table/table.compo
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingStatsCardsComponent } from '../../../components/booking-components/booking-stats-cards/booking-stats-cards.component';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
+import { BookingsHeaderComponent } from '../../../components/admin/booking-list-components/bookings-header.component';
+import { BookingsSearchFilterComponent } from '../../../components/admin/booking-list-components/bookings-search-filter.component';
+import { BookingsTableViewComponent } from '../../../components/admin/booking-list-components/bookings-table-view.component';
 
 @Component({
   selector: 'app-admin-bookings',
@@ -39,6 +42,9 @@ import { PageHeaderComponent } from '../../../components/page-header/page-header
     BackButtonComponent,
     BookingStatsCardsComponent,
     PageHeaderComponent,
+    BookingsHeaderComponent,
+    BookingsSearchFilterComponent,
+    BookingsTableViewComponent,
     RouterLink
   ],
   providers: [MessageService],

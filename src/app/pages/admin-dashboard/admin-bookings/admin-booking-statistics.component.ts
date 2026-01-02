@@ -7,20 +7,20 @@ import { ChartModule } from 'primeng/chart';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { DatePicker } from 'primeng/datepicker';
-import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { BookingService } from '../../../services/booking.service';
 import { Booking } from '../../../models/booking.model';
-import { StatisticsHeaderComponent } from '../../../components/stat-components/statistics-header/statistics-header.component';
-import { OverviewStatCardComponent } from '../../../components/stat-components/overview-stat-card/overview-stat-card.component';
-import { StatsTableComponent, StatusStat } from '../../../components/stat-components/stats-table/stats-table.component';
-import { RankingListComponent, ProductRanking } from '../../../components/stat-components/ranking-list/ranking-list.component';
+import { StatusStat } from '../../../components/stat-components/stats-table/stats-table.component';
+import { ProductRanking } from '../../../components/stat-components/ranking-list/ranking-list.component';
 import { BookingStatisticsExportService } from './services/booking-statistics-export.service';
 import { ExportButtonsComponent } from '../../../components/buttons/export-buttons/export-buttons.component';
+import { FilterBookingsComponent } from '../../../components/admin/booking-statistics-components/filter-bookings.component';
+import { BookingStatisticsOverviewComponent } from '../../../components/admin/booking-statistics-components/booking-statistics-overview.component';
+import { BookingPieChartComponent } from '../../../components/admin/booking-statistics-components/booking-pie-chart.component';
+import { BookingColumnChartComponent } from '../../../components/admin/booking-statistics-components/booking-column-chart.component';
 
 @Component({
   selector: 'app-admin-booking-statistics',
@@ -36,13 +36,11 @@ import { ExportButtonsComponent } from '../../../components/buttons/export-butto
     ButtonModule,
     RouterLink,
     TooltipModule,
-    DatePicker,
-    Select,
-    StatisticsHeaderComponent,
-    OverviewStatCardComponent,
-    StatsTableComponent,
-    RankingListComponent,
-    ExportButtonsComponent
+    ExportButtonsComponent,
+    FilterBookingsComponent,
+    BookingStatisticsOverviewComponent,
+    BookingPieChartComponent,
+    BookingColumnChartComponent
   ],
   providers: [MessageService],
   templateUrl: './admin-booking-statistics.component.html'
@@ -326,6 +324,18 @@ export class AdminBookingStatisticsComponent implements OnInit {
     this.dateRangeStart.set(null);
     this.dateRangeEnd.set(null);
     this.dateFilterPreset.set('all');
+  }
+
+  handlePresetChange(preset: string): void {
+    this.dateFilterPreset.set(preset);
+  }
+
+  handleStartDateChange(date: Date | null): void {
+    this.dateRangeStart.set(date);
+  }
+
+  handleEndDateChange(date: Date | null): void {
+    this.dateRangeEnd.set(date);
   }
 
   private getStatusLabel(status: string | null): string {

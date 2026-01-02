@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -15,14 +15,11 @@ import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { BookingQrComponent } from './booking-qr.component';
 import { UserBookingExportService } from './services/user-booking-export.service';
+import { BookingHeaderComponent } from '../../../components/booking-components/booking-header/booking-header.component';
+import { BookingTimelineComponent, TimelineEvent as ComponentTimelineEvent } from '../../../components/booking-components/booking-timeline/booking-timeline.component';
+import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
 
-interface TimelineEvent {
-  status: string;
-  date: string;
-  icon: string;
-  color: string;
-  description: string;
-}
+type TimelineEvent = ComponentTimelineEvent;
 
 @Component({
   selector: 'app-booking-detail',
@@ -36,7 +33,10 @@ interface TimelineEvent {
     DividerModule,
     TimelineModule,
     ToastModule,
-    BookingQrComponent
+    BookingQrComponent,
+    BookingHeaderComponent,
+    BookingTimelineComponent,
+    InfoCardComponent
   ],
   templateUrl: './booking-detail.component.html',
   styleUrls: ['./booking-detail.component.scss'],
@@ -49,6 +49,59 @@ export class BookingDetailComponent implements OnInit {
 
   // dialog state for QR
   showQrDialog = signal(false);
+
+  // Computed InfoItems for cards
+  rentalPeriodItems = computed<InfoItem[]>(() => {
+    const booking = this.booking();
+    if (!booking) return [];
+    return [
+      { icon: 'pi-calendar-plus', label: 'Geplante Abholung', value: this.formatDateOnly(booking.startDate) },
+      { icon: 'pi-calendar-minus', label: 'Geplante Rückgabe', value: this.formatDateOnly(booking.endDate) }
+    ];
+  });
+
+  lenderItems = computed<InfoItem[]>(() => {
+    const booking = this.booking();
+    if (!booking) return [];
+    return [
+      { icon: 'pi-user', label: 'Name', value: booking.lenderName },
+      { icon: 'pi-id-card', label: 'Verleiher-ID', value: `#${booking.lenderId}` }
+    ];
+  });
+
+  itemItems = computed<InfoItem[]>(() => {
+    const booking = this.booking();
+    if (!booking) return [];
+    return [
+      { icon: 'pi-box', label: 'Produkt', value: booking.productName },
+      { icon: 'pi-hashtag', label: 'Inventarnummer', value: booking.itemInvNumber },
+      { icon: 'pi-tag', label: 'Produkt-ID', value: `#${booking.productId}` }
+    ];
+  });
+
+  datesItems = computed<InfoItem[]>(() => {
+    const booking = this.booking();
+    if (!booking) return [];
+    const items: InfoItem[] = [];
+
+    if (booking.proposedPickups) {
+      items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: booking.proposedPickups });
+    }
+    if (booking.confirmedPickup) {
+      items.push({ icon: 'pi-check-circle', label: 'Bestätigter Abholtermin', value: this.formatDate(booking.confirmedPickup) });
+    }
+    if (booking.distributionDate) {
+      items.push({ icon: 'pi-sign-out', label: 'Tatsächliche Ausgabe', value: this.formatDate(booking.distributionDate) });
+    }
+    if (booking.returnDate) {
+      items.push({ icon: 'pi-sign-in', label: 'Tatsächliche Rückgabe', value: this.formatDate(booking.returnDate) });
+    }
+
+    items.push({ icon: 'pi-clock', label: 'Erstellt am', value: this.formatDate(booking.createdAt) });
+    items.push({ icon: 'pi-history', label: 'Zuletzt aktualisiert', value: this.formatDate(booking.updatedAt) });
+
+    return items;
+  });
 
   constructor(
     private readonly route: ActivatedRoute,

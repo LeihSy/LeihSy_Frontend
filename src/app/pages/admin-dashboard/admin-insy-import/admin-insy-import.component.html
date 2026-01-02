@@ -62,6 +62,24 @@
   <!-- Filter und Suche -->
   <p-card styleClass="shadow-sm mb-6">
     <div class="flex flex-wrap gap-4 items-end">
+      <!-- Suche mit wiederverwendbarer SearchBar-Komponente -->
+      <div class="flex-1 min-w-[300px]">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+          Suche
+        </label>
+        <p-iconfield iconPosition="left" class="w-full">
+          <p-inputicon styleClass="pi pi-search"></p-inputicon>
+          <input
+            type="text"
+            pInputText
+            placeholder="Suche nach Name, Beschreibung, Kategorie..."
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            class="w-full"
+          />
+        </p-iconfield>
+      </div>
+
       <!-- Status Filter -->
       <div class="flex-1 min-w-[200px]">
         <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">
@@ -70,31 +88,13 @@
         <p-select
           id="statusFilter"
           [options]="statusOptions"
-          [(ngModel)]="statusFilter"
+          [(ngModel)]="statusFilterValue"
+          (ngModelChange)="onStatusFilterChange($event)"
           optionLabel="label"
           optionValue="value"
           placeholder="Status wählen"
           styleClass="w-full"
         />
-      </div>
-
-      <!-- Suche -->
-      <div class="flex-1 min-w-[200px]">
-        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-          Suche
-        </label>
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            id="search"
-            [value]="searchQuery()"
-            (input)="searchQuery.set($any($event.target).value)"
-            placeholder="Name, Inv-Nr, Kategorie..."
-            class="w-full"
-          />
-        </span>
       </div>
 
       <!-- Bulk-Aktionen -->

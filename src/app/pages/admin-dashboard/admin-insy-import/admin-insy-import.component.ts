@@ -9,13 +9,17 @@ import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { Select } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
 
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+
+import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { InsyImportRequest, ImportStatus } from '../../../models/insy-import.model';
 import { AdminInsyImportService } from './services/admin-insy-import.service';
 
@@ -32,11 +36,13 @@ import { AdminInsyImportService } from './services/admin-insy-import.service';
     ConfirmDialogModule,
     ToastModule,
     Select,
-    InputTextModule,
     DialogModule,
     ChipModule,
     TooltipModule,
     TextareaModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
   ],
   templateUrl: './admin-insy-import.component.html',
   styleUrls: ['./admin-insy-import.component.css'],
@@ -51,9 +57,12 @@ export class AdminInsyImportComponent implements OnInit {
   isLoading = this.pageService.isLoading;
   selectedRequests = this.pageService.selectedRequests;
 
-  // Filter Signals - BEIDE als WritableSignal für automatische Reaktivität
+  // Filter Signals
   statusFilter: WritableSignal<ImportStatus | 'ALL'> = signal('ALL');
   searchQuery: WritableSignal<string> = signal('');
+
+  // Für ngModel Binding (normale Variable)
+  statusFilterValue: ImportStatus | 'ALL' = 'ALL';
 
   // Dialog Signals
   showApproveDialog = signal(false);
@@ -69,10 +78,14 @@ export class AdminInsyImportComponent implements OnInit {
     { label: 'Abgelehnt', value: ImportStatus.REJECTED }
   ];
 
-  // Gefilterte Requests - reagiert automatisch auf statusFilter-Änderungen
+  constructor() {
+    // Constructor bleibt leer - keine Debug-Logs mehr
+  }
+
+  // Gefilterte Requests - reagiert automatisch auf beide Filter
   filteredRequests = computed(() => {
     const requests = this.allRequests();
-    const status = this.statusFilter(); // Signal-Aufruf registriert Abhängigkeit
+    const status = this.statusFilter();
     const query = this.searchQuery().toLowerCase().trim();
 
     let filtered = requests;
@@ -85,10 +98,11 @@ export class AdminInsyImportComponent implements OnInit {
     // Such-Filter
     if (query) {
       filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(query) ||
-        r.invNumber.toLowerCase().includes(query) ||
-        r.category.toLowerCase().includes(query) ||
-        r.roomNr.toLowerCase().includes(query)
+        (r.name && r.name.toLowerCase().includes(query)) ||
+        (r.invNumber && r.invNumber.toLowerCase().includes(query)) ||
+        (r.category && r.category.toLowerCase().includes(query)) ||
+        (r.roomNr && r.roomNr.toLowerCase().includes(query)) ||
+        (r.description && r.description.toLowerCase().includes(query))
       );
     }
 
@@ -116,6 +130,16 @@ export class AdminInsyImportComponent implements OnInit {
 
   refreshImports(): void {
     this.pageService.refreshImports();
+  }
+
+  // Handler für SearchBar-Component
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+  }
+
+  // Handler für Status-Filter Änderung
+  onStatusFilterChange(value: ImportStatus | 'ALL'): void {
+    this.statusFilter.set(value);
   }
 
   // Status-Badge Severity
@@ -191,7 +215,6 @@ export class AdminInsyImportComponent implements OnInit {
     const pendingOnly = selected.filter(r => r.status === ImportStatus.PENDING);
 
     if (pendingOnly.length !== selected.length) {
-      // Warnung wenn nicht-ausstehende Requests ausgewählt sind
       this.pageService.bulkApprove(pendingOnly);
     } else {
       this.pageService.bulkApprove(selected);

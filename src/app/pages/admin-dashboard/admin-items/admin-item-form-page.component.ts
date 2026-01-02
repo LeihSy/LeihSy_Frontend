@@ -9,7 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
-import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
+import { ItemFormComponent } from '../../../components/form-components/item-form/item-form.component';
 import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';
 import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';

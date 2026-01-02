@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { StatusStat } from '../../../../components/admin/stats-table/stats-table.component';
-import { ProductRanking } from '../../../../components/admin/ranking-list/ranking-list.component';
+import { StatusStat } from '../../../../components/stat-components/stats-table/stats-table.component';
+import { ProductRanking } from '../../../../components/stat-components/ranking-list/ranking-list.component';
 import jsPDF from 'jspdf';
 
 export interface StatisticsExportData {

@@ -13,10 +13,10 @@ import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
-import { BookingHeaderComponent } from '../../../components/admin/booking-header/booking-header.component';
+import { BookingHeaderComponent } from '../../../components/booking-components/booking-header/booking-header.component';
 import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
 import { InfoItemComponent } from '../../../components/admin/info-item/info-item.component';
-import { BookingTimelineComponent } from '../../../components/admin/booking-timeline/booking-timeline.component';
+import { BookingTimelineComponent } from '../../../components/booking-components/booking-timeline/booking-timeline.component';
 
 interface TimelineEvent {
   status: string;

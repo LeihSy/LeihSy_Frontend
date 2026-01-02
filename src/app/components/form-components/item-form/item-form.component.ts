@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { CommonModule } from '@angular/common';
 
 import { CardModule } from 'primeng/card';
-import { FilledButtonComponent } from '../../../buttons/filled-button/filled-button.component';
-import { SecondaryButtonComponent } from '../../../buttons/secondary-button/secondary-button.component';
+import { FilledButtonComponent } from '../../buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -12,13 +12,13 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { Item } from '../../../../models/item.model';
-import { Product } from '../../../../models/product.model';
-import { AuthService } from '../../../../services/auth.service';
-import { FormRowComponent } from '../../form-row/form-row.component';
-import { FormInputFieldComponent } from '../../form-input-field/form-input-field.component';
-import { RadioButtonGroupComponent, RadioOption } from '../../radio-button-group/radio-button-group.component';
-import { ValidationMessageComponent } from '../../validation-message/validation-message.component';
+import { Item } from '../../../models/item.model';
+import { Product } from '../../../models/product.model';
+import { AuthService } from '../../../services/auth.service';
+import { FormRowComponent } from '../form-row/form-row.component';
+import { FormInputFieldComponent } from '../form-input-field/form-input-field.component';
+import { RadioButtonGroupComponent, RadioOption } from '../../buttons/radio-button-group/radio-button-group.component';
+import { ValidationMessageComponent } from '../../admin/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-item-form',

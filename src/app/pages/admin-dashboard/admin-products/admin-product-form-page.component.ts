@@ -10,7 +10,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
-import { ProductFormComponent } from '../../../components/admin/forms/product-form/product-form.component';
+import { ProductFormComponent } from '../../../components/form-components/product-form/product-form.component';
 import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { ProductService } from '../../../services/product.service';

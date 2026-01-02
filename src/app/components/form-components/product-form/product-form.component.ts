@@ -3,20 +3,20 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 
 import { CardModule } from 'primeng/card';
-import { FilledButtonComponent } from '../../../buttons/filled-button/filled-button.component';
-import { SecondaryButtonComponent } from '../../../buttons/secondary-button/secondary-button.component';
+import { FilledButtonComponent } from '../../buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
 import { InputNumberModule } from 'primeng/inputnumber';
 
-import { Product } from '../../../../models/product.model';
-import { Category } from '../../../../models/category.model';
-import { Location } from '../../../../models/location.model';
-import { FormRowComponent } from '../../form-row/form-row.component';
-import { FormInputFieldComponent } from '../../form-input-field/form-input-field.component';
-import { ValidationMessageComponent } from '../../validation-message/validation-message.component';
+import { Product } from '../../../models/product.model';
+import { Category } from '../../../models/category.model';
+import { Location } from '../../../models/location.model';
+import { FormRowComponent } from '../form-row/form-row.component';
+import { FormInputFieldComponent } from '../form-input-field/form-input-field.component';
+import { ValidationMessageComponent } from '../../admin/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-product-form',

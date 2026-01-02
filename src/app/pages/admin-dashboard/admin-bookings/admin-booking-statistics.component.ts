@@ -15,12 +15,12 @@ import { BackButtonComponent } from '../../../components/buttons/back-button/bac
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { BookingService } from '../../../services/booking.service';
 import { Booking } from '../../../models/booking.model';
-import { StatisticsHeaderComponent } from '../../../components/admin/statistics-header/statistics-header.component';
-import { OverviewStatCardComponent } from '../../../components/admin/overview-stat-card/overview-stat-card.component';
-import { StatsTableComponent, StatusStat } from '../../../components/admin/stats-table/stats-table.component';
-import { RankingListComponent, ProductRanking } from '../../../components/admin/ranking-list/ranking-list.component';
+import { StatisticsHeaderComponent } from '../../../components/stat-components/statistics-header/statistics-header.component';
+import { OverviewStatCardComponent } from '../../../components/stat-components/overview-stat-card/overview-stat-card.component';
+import { StatsTableComponent, StatusStat } from '../../../components/stat-components/stats-table/stats-table.component';
+import { RankingListComponent, ProductRanking } from '../../../components/stat-components/ranking-list/ranking-list.component';
 import { BookingStatisticsExportService } from './services/booking-statistics-export.service';
-import { ExportButtonsComponent } from '../../../components/admin/export-buttons/export-buttons.component';
+import { ExportButtonsComponent } from '../../../components/buttons/export-buttons/export-buttons.component';
 
 @Component({
   selector: 'app-admin-booking-statistics',

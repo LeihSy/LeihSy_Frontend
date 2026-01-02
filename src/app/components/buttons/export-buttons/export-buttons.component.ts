@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FilledButtonComponent } from '../../buttons/filled-button/filled-button.component';
+import { FilledButtonComponent } from '../filled-button/filled-button.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 

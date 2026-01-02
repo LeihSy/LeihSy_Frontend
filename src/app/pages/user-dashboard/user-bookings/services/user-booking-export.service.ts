@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import jsPDF from 'jspdf';
-import { Booking } from '../../../models/booking.model';
-import { AuthService } from '../../../services/auth.service';
+import { Booking } from '../../../../models/booking.model';
+import { AuthService } from '../../../../services/auth.service';
 
 @Injectable({
   providedIn: 'root'

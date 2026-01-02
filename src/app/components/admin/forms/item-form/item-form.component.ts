@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { CommonModule } from '@angular/common';
 
 import { CardModule } from 'primeng/card';
+import { FilledButtonComponent } from '../../../buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../../buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -26,6 +28,8 @@ import { ValidationMessageComponent } from '../../validation-message/validation-
     ReactiveFormsModule,
     FormsModule,
     CardModule,
+    FilledButtonComponent,
+    SecondaryButtonComponent,
     ButtonModule,
     InputTextModule,
     SelectModule,

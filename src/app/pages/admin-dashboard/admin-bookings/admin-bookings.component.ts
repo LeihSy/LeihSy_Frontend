@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
+import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -15,7 +16,7 @@ import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingStatsCardsComponent } from '../../../components/admin/booking-stats-cards/booking-stats-cards.component';
 import { BookingsHeaderComponent } from '../../../components/admin/bookings-header/bookings-header.component';
 
@@ -27,6 +28,7 @@ import { BookingsHeaderComponent } from '../../../components/admin/bookings-head
     FormsModule,
     CardModule,
     TableComponent,
+    SecondaryButtonComponent,
     ButtonModule,
     InputTextModule,
     IconFieldModule,

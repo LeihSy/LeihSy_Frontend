@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableComponent, ColumnDef } from '../../components/table/table.component';
-import { BackButtonComponent } from '../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../components/buttons/back-button/back-button.component';
 import { GroupService } from '../../services/group.service';
 import { Group } from '../../models/group.model';
 

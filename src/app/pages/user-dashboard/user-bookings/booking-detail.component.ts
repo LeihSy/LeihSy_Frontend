@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
@@ -29,6 +30,7 @@ interface TimelineEvent {
   imports: [
     CommonModule,
     CardModule,
+    FilledButtonComponent,
     ButtonModule,
     TagModule,
     DividerModule,

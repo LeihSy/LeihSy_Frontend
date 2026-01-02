@@ -11,7 +11,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingService } from '../../../services/booking.service';
 import { Booking } from '../../../models/booking.model';
 import { StatisticsHeaderComponent } from '../../../components/admin/statistics-header/statistics-header.component';

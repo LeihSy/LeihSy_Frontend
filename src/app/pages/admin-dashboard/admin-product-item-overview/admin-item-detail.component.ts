@@ -12,7 +12,7 @@ import { ProductService } from '../../../services/product.service';
 import { Item } from '../../../models/item.model';
 import { Product } from '../../../models/product.model';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
 
 @Component({

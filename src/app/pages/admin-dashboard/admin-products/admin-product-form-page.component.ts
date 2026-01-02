@@ -12,7 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { ProductFormComponent } from '../../../components/admin/forms/product-form/product-form.component';
 import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { LocationService } from '../../../services/location.service';

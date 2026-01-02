@@ -13,6 +13,7 @@ import { Product } from '../../models/product.model';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
+import { FilledButtonComponent } from '../../components/buttons/filled-button/filled-button.component';
 
 // Import PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -61,6 +62,7 @@ interface Device {
   imports: [
     CommonModule,
     FormsModule,
+    FilledButtonComponent,
     ButtonModule,
     CardModule,
     TagModule,

@@ -18,22 +18,18 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <button
-          pButton
+        <app-secondary-button
           icon="pi pi-chart-bar"
           label="Statistiken"
-          class="p-button-outlined p-button-secondary !border-gray-300 shadow-sm"
           routerLink="/admin/bookings/statistics"
-          pTooltip="Zu den Statistiken">
-        </button>
-        <button
-          pButton
+          tooltip="Zu den Statistiken">
+        </app-secondary-button>
+        <app-secondary-button
           icon="pi pi-refresh"
           label="Aktualisieren"
-          class="p-button-outlined !border-gray-300 shadow-sm"
-          (click)="refreshData()"
-          pTooltip="Daten neu laden">
-        </button>
+          (buttonClick)="refreshData()"
+          tooltip="Daten neu laden">
+        </app-secondary-button>
       </div>
     </div>
   </header>

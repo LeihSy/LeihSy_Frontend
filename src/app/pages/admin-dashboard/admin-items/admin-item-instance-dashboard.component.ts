@@ -18,7 +18,7 @@ import { ColumnDef } from '../../../components/table/table.component';
 import { ProductListItemComponent } from '../../../components/admin/product-list-item/product-list-item.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { AdminItemInstanceDashboardService } from './services/admin-item-instance-dashboard.service';
-import { PageHeaderComponent } from '../../../components/admin/page-header/page-header.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-item-instance',

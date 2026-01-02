@@ -161,11 +161,15 @@
     </app-form-row>
 
     <div class="flex gap-2">
-      <button pButton type="submit"
-              [label]="isEditMode ? 'Aktualisieren' : ('Erstellen (' + (itemForm.get('quantity')?.value || 1) + 'x)')"
-              [disabled]="itemForm.invalid"></button>
-      <button pButton type="button" label="Abbrechen"
-              class="p-button-secondary" (click)="resetForm()"></button>
+      <app-filled-button
+        type="submit"
+        [label]="isEditMode ? 'Aktualisieren' : ('Erstellen (' + (itemForm.get('quantity')?.value || 1) + 'x)')">
+      </app-filled-button>
+      <app-secondary-button
+        label="Abbrechen"
+        color="red"
+        (buttonClick)="resetForm()">
+      </app-secondary-button>
     </div>
   </form>
 </p-card>

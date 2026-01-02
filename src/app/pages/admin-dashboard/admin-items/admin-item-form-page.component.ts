@@ -8,7 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
 import { PrivateLendService } from '../../user-dashboard/user-private-lend/private-lend.service';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';

@@ -15,7 +15,7 @@ import { Product } from '../../../models/product.model';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { AdminProductDashboardService } from './services/admin-product-dashboard.service';
-import { PageHeaderComponent } from '../../../components/admin/page-header/page-header.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-admin-dashboard',

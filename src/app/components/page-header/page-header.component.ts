@@ -1,11 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
+import { FilledButtonComponent } from '../buttons/filled-button/filled-button.component';
 
 @Component({
   selector: 'app-page-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, FilledButtonComponent],
   templateUrl: './page-header.component.html'
 })
 export class PageHeaderComponent {

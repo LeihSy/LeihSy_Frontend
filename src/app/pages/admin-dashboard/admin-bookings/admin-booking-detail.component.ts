@@ -12,7 +12,7 @@ import { MessageService } from 'primeng/api';
 
 import { Booking, BookingStatus } from '../../../models/booking.model';
 import { BookingService } from '../../../services/booking.service';
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingHeaderComponent } from '../../../components/admin/booking-header/booking-header.component';
 import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
 import { InfoItemComponent } from '../../../components/admin/info-item/info-item.component';

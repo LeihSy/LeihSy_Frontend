@@ -13,23 +13,17 @@
     </div>
 
     <div class="flex gap-2">
-      <button
-        pButton
+      <app-filled-button
         icon="pi pi-file-pdf"
         label="Export PDF"
-        class="p-button-outlined text-[#253359]"
-        (click)="exportToPdf()"
-        [disabled]="!booking()">
-      </button>
+        (buttonClick)="exportToPdf()">
+      </app-filled-button>
 
-      <button
-        pButton
+      <app-filled-button
         icon="pi pi-qrcode"
         label="QR-Codes anzeigen"
-        class="p-button-secondary text-[#253359]"
-        (click)="openQrDialog()"
-        [disabled]="!booking()">
-      </button>
+        (buttonClick)="openQrDialog()">
+      </app-filled-button>
     </div>
   </div>
 

@@ -1,13 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
+import { FilledButtonComponent } from '../../buttons/filled-button/filled-button.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-export-buttons',
   standalone: true,
   imports: [
     CommonModule,
+    FilledButtonComponent,
     ButtonModule,
     TooltipModule
   ],

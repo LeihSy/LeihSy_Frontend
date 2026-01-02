@@ -10,7 +10,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { UserService } from '../../../services/user.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';

@@ -138,13 +138,17 @@
             </app-form-row>
 
             <div class="flex gap-2 mt-6">
-              <button pButton type="submit"
-                      [label]="isEditMode ? 'Aktualisieren' : 'Erstellen'"
-                      [disabled]="itemForm.invalid"></button>
+              <app-filled-button
+                type="submit"
+                [label]="isEditMode ? 'Aktualisieren' : 'Erstellen'">
+              </app-filled-button>
 
               @if (isEditMode) {
-                <button pButton type="button" label="Abbrechen"
-                        class="p-button-secondary" (click)="resetForm()"></button>
+                <app-secondary-button
+                  label="Abbrechen"
+                  color="red"
+                  (buttonClick)="resetForm()">
+                </app-secondary-button>
               }
             </div>
 

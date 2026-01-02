@@ -2,6 +2,8 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CardModule } from 'primeng/card';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
@@ -16,6 +18,8 @@ import { AdminPrivateImportService, ImportResult } from './admin-private-import.
   imports: [
     CommonModule,
     CardModule,
+    FilledButtonComponent,
+    SecondaryButtonComponent,
     ButtonModule,
     DialogModule,
     TextareaModule,

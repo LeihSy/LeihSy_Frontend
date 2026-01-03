@@ -122,7 +122,9 @@ export class ProductFormComponent implements OnInit, OnChanges {
 
     this.formSubmit.emit({
       formValue: this.itemForm.value,
-      imageFile: this.selectedFile()
+      relatedItems: this.selectedRelatedItems()
+    },
+      imageFile: this.selectedFile(),
     });
   }
 
@@ -130,6 +132,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
     this.itemForm.reset();
     this.selectedFile.set(null);
     this.imagePreview.set(null);
+    this.selectedRelatedItems.set([]);
+    this.relatedItemsSearch.set('');
     this.formCancel.emit();
   }
 

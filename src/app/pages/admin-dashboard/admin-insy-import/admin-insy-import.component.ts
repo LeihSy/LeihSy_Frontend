@@ -1,6 +1,7 @@
 import { Component, signal, computed, inject, OnInit, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -30,6 +31,7 @@ import { AdminInsyImportService } from './services/admin-insy-import.service';
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     CardModule,
     ButtonModule,
     TableModule,

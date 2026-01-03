@@ -64,7 +64,7 @@
     <div class="flex flex-wrap gap-4 items-end">
       <!-- Suche -->
       <div class="flex-1 min-w-[300px]">
-        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-2">
           Suche
         </label>
         <p-iconfield iconPosition="left" class="w-full">
@@ -72,6 +72,7 @@
           <input
             type="text"
             pInputText
+            id="searchInput"
             placeholder="Suche nach Name, Beschreibung, Inventarnummer..."
             [value]="searchQuery()"
             (input)="searchQuery.set($any($event.target).value)"
@@ -298,8 +299,8 @@
       }
 
       <!-- Import Type Auswahl -->
-      <div class="space-y-3">
-        <label class="block text-sm font-medium text-gray-700">Import-Typ</label>
+      <fieldset class="space-y-3">
+        <legend class="block text-sm font-medium text-gray-700">Import-Typ</legend>
         <div class="flex flex-col gap-3">
           <div class="flex items-center">
             <p-radioButton
@@ -324,16 +325,17 @@
             </label>
           </div>
         </div>
-      </div>
+      </fieldset>
 
       <!-- Felder fuer Bestehendes Produkt -->
       @if (importType() === 'EXISTING_PRODUCT') {
         <div class="space-y-4 border-t pt-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="existingProductSelect" class="block text-sm font-medium text-gray-700 mb-2">
               Produkt auswaehlen <span class="text-red-500">*</span>
             </label>
             <p-select
+              inputId="existingProductSelect"
               [options]="products()"
               [(ngModel)]="selectedProductId"
               optionLabel="name"
@@ -384,10 +386,11 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="categorySelect" class="block text-sm font-medium text-gray-700 mb-2">
               Kategorie <span class="text-red-500">*</span>
             </label>
             <p-select
+              inputId="categorySelect"
               [options]="categories()"
               [(ngModel)]="selectedCategoryId"
               optionLabel="name"
@@ -400,10 +403,11 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="locationSelect" class="block text-sm font-medium text-gray-700 mb-2">
               Standort <span class="text-red-500">*</span>
             </label>
             <p-select
+              inputId="locationSelect"
               [options]="locations()"
               [(ngModel)]="selectedLocationId"
               optionLabel="roomNr"
@@ -417,10 +421,11 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label for="priceInput" class="block text-sm font-medium text-gray-700 mb-2">
                 Preis/Tag (EUR)
               </label>
               <p-inputNumber
+                inputId="priceInput"
                 [(ngModel)]="importPrice"
                 mode="currency"
                 currency="EUR"
@@ -430,10 +435,11 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label for="expiryInput" class="block text-sm font-medium text-gray-700 mb-2">
                 Max. Ausleihdauer (Tage)
               </label>
               <p-inputNumber
+                inputId="expiryInput"
                 [(ngModel)]="importExpiryDate"
                 [min]="1"
                 [max]="365"
@@ -537,10 +543,11 @@
     </p>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+      <label for="batchProductSelect" class="block text-sm font-medium text-gray-700 mb-2">
         Ziel-Produkt <span class="text-red-500">*</span>
       </label>
       <p-select
+        inputId="batchProductSelect"
         [options]="products()"
         [(ngModel)]="batchProductId"
         optionLabel="name"
@@ -555,12 +562,13 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+      <label for="batchInvPrefix" class="block text-sm font-medium text-gray-700 mb-2">
         Inventarnummer-Praefix (optional)
       </label>
       <input
         type="text"
         pInputText
+        id="batchInvPrefix"
         [(ngModel)]="batchInvPrefix"
         placeholder="z.B. VR"
         class="w-full"

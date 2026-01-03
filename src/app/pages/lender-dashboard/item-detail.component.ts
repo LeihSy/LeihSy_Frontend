@@ -1,11 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -18,17 +16,22 @@ import { AuthService } from '../../services/auth.service';
 import { Item } from '../../models/item.model';
 import { Product } from '../../models/product.model';
 import { TableComponent, ColumnDef } from '../../components/table/table.component';
+import { BackButtonComponent } from '../../components/buttons/back-button/back-button.component';
+import { ItemHeaderComponent } from '../../components/lender/item-header/item-header.component';
+import { InfoSectionComponent, InfoSectionItem } from '../../components/lender/info-section/info-section.component';
+import { LoanHistoryComponent } from '../../components/shared/loan-history/loan-history.component';
 
 @Component({
   selector: 'app-item-detail',
   standalone: true,
   imports: [
     CommonModule,
-    CardModule,
-    ButtonModule,
     TagModule,
-    TableComponent,
-    ToastModule
+    ToastModule,
+    BackButtonComponent,
+    ItemHeaderComponent,
+    InfoSectionComponent,
+    LoanHistoryComponent
   ],
   templateUrl: './item-detail.component.html',
   styleUrls: ['./item-detail.component.scss'],
@@ -50,8 +53,63 @@ export class ItemDetailComponent implements OnInit {
   itemId: number | null = null;
   keycloakFullName = '';
 
-  // TODO: Später mit echten Ausleih-Daten ersetzen
   loanHistory = signal<any[]>([]);
+
+  // Computed signals für Info-Section Daten
+  itemInfoItems = computed<InfoSectionItem[]>(() => {
+    const currentItem = this.item();
+    if (!currentItem) return [];
+
+    return [
+      { label: 'Inventarnummer', value: currentItem.invNumber },
+      { label: 'Besitzer', value: currentItem.owner },
+      { label: 'Status', value: this.getStatusLabel(currentItem.isAvailable), type: 'tag' }
+    ];
+  });
+
+  productGroupItems = computed<InfoSectionItem[]>(() => {
+    const currentProduct = this.product();
+    if (!currentProduct) return [];
+
+    const items: InfoSectionItem[] = [
+      { label: 'Produkt', value: currentProduct.name },
+      { label: 'Beschreibung', value: currentProduct.description },
+      { label: 'Kategorie', value: currentProduct.category?.name },
+      { label: 'Standort', value: currentProduct.location?.roomNr }
+    ];
+
+    if (currentProduct.imageUrl) {
+      items.push({ label: 'Bild', value: currentProduct.imageUrl, type: 'image' });
+    }
+
+    return items;
+  });
+
+  productInfoItems = computed<InfoSectionItem[]>(() => {
+    const currentProduct = this.product();
+    if (!currentProduct) return [];
+
+    return [
+      { label: 'Produkt ID', value: currentProduct.id },
+      { label: 'Preis', value: currentProduct.price, type: 'currency' }
+    ];
+  });
+
+  loanConditionsItems = computed<InfoSectionItem[]>(() => {
+    const currentProduct = this.product();
+    if (!currentProduct) return [];
+
+    const items: InfoSectionItem[] = [
+      { label: 'Max. Dauer', value: currentProduct.expiryDate ? `${currentProduct.expiryDate} Tage` : 'N/A' },
+      { label: 'Preis/Tag', value: currentProduct.price, type: 'currency' }
+    ];
+
+    if (currentProduct.accessories) {
+      items.push({ label: 'Zubehör', value: currentProduct.accessories });
+    }
+
+    return items;
+  });
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -110,8 +168,8 @@ export class ItemDetailComponent implements OnInit {
           this.loadProduct(item.productId);
         }
 
-        // TODO: Lade Ausleih-Historie
-        // this.loadLoanHistory(this.itemId);
+        // Lade Ausleih-Historie
+        this.loadItemBookings(this.itemId!);
 
         this.isLoading.set(false);
       },
@@ -176,6 +234,26 @@ export class ItemDetailComponent implements OnInit {
     });
   }
 
+  loadItemBookings(itemId: number): void {
+    this.itemService.getItemBookings(itemId).subscribe({
+      next: (bookings) => {
+        // Transformiere die Buchungen für die Tabelle
+        const transformedBookings = bookings.map((booking: any) => ({
+          borrower: booking.userName || booking.user?.name || 'N/A',
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          status: this.getBookingStatusLabel(booking.status),
+          statusSeverity: this.getBookingStatusSeverity(booking.status)
+        }));
+        this.loanHistory.set(transformedBookings);
+      },
+      error: (err) => {
+        console.error('Fehler beim Laden der Buchungen:', err);
+        this.loanHistory.set([]);
+      }
+    });
+  }
+
   private checkNamesMatch(name1: string, name2: string): boolean {
     if (!name1 || !name2) return false;
 
@@ -205,5 +283,29 @@ export class ItemDetailComponent implements OnInit {
 
   getStatusLabel(available: boolean): string {
     return available ? 'Verfügbar' : 'Ausgeliehen';
+  }
+
+  getBookingStatusLabel(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'PENDING': 'Ausstehend',
+      'CONFIRMED': 'Bestätigt',
+      'REJECTED': 'Abgelehnt',
+      'PICKED_UP': 'Ausgegeben',
+      'RETURNED': 'Zurückgegeben',
+      'CANCELLED': 'Storniert'
+    };
+    return statusMap[status] || status;
+  }
+
+  getBookingStatusSeverity(status: string): 'success' | 'danger' | 'warning' | 'info' {
+    const severityMap: { [key: string]: 'success' | 'danger' | 'warning' | 'info' } = {
+      'PENDING': 'warning',
+      'CONFIRMED': 'info',
+      'REJECTED': 'danger',
+      'PICKED_UP': 'info',
+      'RETURNED': 'success',
+      'CANCELLED': 'danger'
+    };
+    return severityMap[status] || 'info';
   }
 }

@@ -35,4 +35,9 @@ export class ItemService {
   createItem(item: ItemCreate): Observable<Item> {
     return this.http.post<Item>(this.apiUrl, item);
   }
+
+  // GET /api/items/{id}/bookings (Get all bookings for an item)
+  getItemBookings(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/bookings`);
+  }
 }

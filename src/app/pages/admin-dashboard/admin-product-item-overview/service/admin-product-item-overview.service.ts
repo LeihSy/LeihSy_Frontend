@@ -160,7 +160,7 @@ export class LenderItemsService {
   }
 
   navigateToItemDetail(itemId: number): void {
-    this.router.navigate(['/admin/items', itemId]);
+    this.router.navigate(['/admin/items/detail', itemId]);
   }
 }
 

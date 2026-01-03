@@ -121,7 +121,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
     if (!this.itemForm.valid) return;
 
     this.formSubmit.emit({
-      formValue: this.itemForm.value,
+      formValue: {
+        ...this.itemForm.value,
       relatedItems: this.selectedRelatedItems()
     },
       imageFile: this.selectedFile(),

@@ -16,6 +16,12 @@ import { FormRowComponent } from './form-row/form-row.component';
 import { FormInputFieldComponent } from './form-input-field/form-input-field.component';
 import { ValidationMessageComponent } from './validation-message/validation-message.component';
 
+type RelatedItemType = 'required' | 'recommended';
+
+interface RelatedItem {
+  productId: number;
+  type: RelatedItemType;
+}
 @Component({
   selector: 'app-product-form',
   standalone: true,
@@ -40,7 +46,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
   @Input() categories: Category[] = [];
   @Input() locations: Location[] = [];
   @Input() isEditMode = false;
-
+  @Input() products: Product[] = [];  //Zusatzgegenstände
   @Output() formSubmit = new EventEmitter<{ formValue: any, imageFile: File | null }>();
   @Output() formCancel = new EventEmitter<void>();
   @Output() locationRoomNrChange = new EventEmitter<string>();

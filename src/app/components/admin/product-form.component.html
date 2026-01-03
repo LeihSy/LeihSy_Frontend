@@ -194,7 +194,109 @@
             >
               {{ relatedTypeLabel(item.type) }}
             </span>
+             <!-- Actions -->
+             <div class="flex gap-1">
+              <button
+                pButton
+                type="button"
+                class="p-button-text h-8 w-8 p-0"
+                [ngClass]="item.type === 'required' ? 'bg-red-50 text-red-700' : 'text-gray-700'"
+                (click)="toggleRelatedItem(item.productId, 'required')"
+                title="Erforderlich"
+              >
+                <i class="pi pi-exclamation-circle"></i>
+              </button>
 
+              <button
+                pButton
+                type="button"
+                class="p-button-text h-8 w-8 p-0"
+                [ngClass]="item.type === 'recommended' ? 'bg-blue-50 text-blue-700' : 'text-gray-700'"
+                (click)="toggleRelatedItem(item.productId, 'recommended')"
+                title="Empfohlen"
+              >
+              <i class="pi pi-link"></i>
+                    </button>
+
+                    <button
+                      pButton
+                      type="button"
+                      class="p-button-text h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      (click)="removeRelatedItem(item.productId)"
+                      title="Entfernen"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+    <!-- Verfügbare Produkte -->
+    <div class="space-y-2">
+      <p class="text-sm font-medium text-gray-900">Verfügbare Produkte</p>
+
+      <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-white">
+        @if (availableRelatedProducts().length > 0) {
+          @for (p of availableRelatedProducts(); track p.id) {
+            <div
+              class="flex items-center justify-between gap-2 p-2 rounded transition-colors"
+              [ngClass]="
+                getRelatedItemStatus(p.id)
+                  ? 'bg-blue-50 border border-blue-200'
+                  : 'hover:bg-gray-50 border border-transparent'
+              "
+            >
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">{{ p.name }}</p>
+                <p class="text-xs text-gray-500">
+                  @if (p.categoryId) { Kategorie: {{ categoryNameById(p.categoryId) }} }
+                </p>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-outlined h-8 text-xs"
+                  [ngClass]="
+                    getRelatedItemStatus(p.id) === 'required'
+                      ? 'bg-red-50 border-red-300 text-red-700'
+                      : 'hover:bg-red-50'
+                  "
+                  (click)="toggleRelatedItem(p.id, 'required')"
+                >
+                  <i class="pi pi-exclamation-circle mr-2"></i>
+                  Erforderlich
+                </button>
+                <button
+                  pButton
+                  type="button"
+                  class="p-button-outlined h-8 text-xs"
+                  [ngClass]="
+                    getRelatedItemStatus(p.id) === 'recommended'
+                      ? 'bg-blue-50 border-blue-300 text-blue-700'
+                      : 'hover:bg-blue-50'
+                  "
+                  (click)="toggleRelatedItem(p.id, 'recommended')"
+                >
+                  <i class="pi pi-link mr-2"></i>
+                  Empfohlen
+                </button>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="text-center py-8 text-gray-500 text-sm">
+            {{ relatedItemsSearch().trim() ? 'Keine Produkte gefunden' : 'Keine Produkte verfügbar' }}
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</p-tabpanel>
       </p-tabpanels>
     </p-tabs>
 

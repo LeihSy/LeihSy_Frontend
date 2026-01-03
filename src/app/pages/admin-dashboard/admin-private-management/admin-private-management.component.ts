@@ -1,13 +1,12 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { ManagementCardComponent } from '../../../components/admin/management-card/management-card.component';
 import { JsonImportDialogComponent } from '../../../components/admin/json-import-dialog/json-import-dialog.component';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AdminPrivateImportService } from './admin-private-import.service';
+import { AdminPrivateManagementPageService } from './page-services/admin-private-management-page.service';
 
 @Component({
   selector: 'app-admin-private-management',
@@ -20,144 +19,46 @@ import { AdminPrivateImportService } from './admin-private-import.service';
     JsonImportDialogComponent,
     ToastModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, AdminPrivateManagementPageService],
   templateUrl: './admin-private-management.component.html',
   styleUrls: ['./admin-private-management.component.scss']
 })
 export class AdminPrivateManagementComponent {
-  private readonly router = inject(Router);
-  private readonly importService = inject(AdminPrivateImportService);
-  private readonly messageService = inject(MessageService);
+  private readonly pageService = inject(AdminPrivateManagementPageService);
 
-  showProductDialog = signal(false);
-  showItemDialog = signal(false);
-  productJsonInput = signal('');
-  itemJsonInput = signal('');
-  processingProduct = signal(false);
-  processingItem = signal(false);
+  // Expose service signals via getters
+  get showProductDialog() { return this.pageService.showProductDialog; }
+  get showItemDialog() { return this.pageService.showItemDialog; }
+  get productJsonInput() { return this.pageService.productJsonInput; }
+  get itemJsonInput() { return this.pageService.itemJsonInput; }
+  get processingProduct() { return this.pageService.processingProduct; }
+  get processingItem() { return this.pageService.processingItem; }
 
   openProductDialog(): void {
-    this.productJsonInput.set('');
-    this.showProductDialog.set(true);
+    this.pageService.openProductDialog();
   }
 
   openItemDialog(): void {
-    this.itemJsonInput.set('');
-    this.showItemDialog.set(true);
+    this.pageService.openItemDialog();
   }
 
   closeProductDialog(): void {
-    this.showProductDialog.set(false);
-    this.productJsonInput.set('');
+    this.pageService.closeProductDialog();
   }
 
   closeItemDialog(): void {
-    this.showItemDialog.set(false);
-    this.itemJsonInput.set('');
+    this.pageService.closeItemDialog();
   }
 
   createProductFromJson(): void {
-    const jsonString = this.productJsonInput();
-
-    if (!jsonString.trim()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warnung',
-        detail: 'Bitte geben Sie einen JSON-String ein.'
-      });
-      return;
-    }
-
-    this.processingProduct.set(true);
-
-    const result = this.importService.processJsonImport(jsonString);
-
-    if (result.success && result.observable) {
-      result.observable.subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Erfolg',
-            detail: 'Privates Produkt wurde erfolgreich erstellt!'
-          });
-          this.closeProductDialog();
-          this.processingProduct.set(false);
-        },
-        error: (err) => {
-          console.error('Fehler beim Erstellen:', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fehler',
-            detail: 'Produkt konnte nicht erstellt werden: ' + (err.error?.message || err.message || 'Unbekannter Fehler')
-          });
-          this.processingProduct.set(false);
-        }
-      });
-    } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'JSON Fehler',
-        detail: result.error || 'Unbekannter Fehler'
-      });
-      this.processingProduct.set(false);
-    }
+    this.pageService.createProductFromJson();
   }
 
   createItemFromJson(): void {
-    const jsonString = this.itemJsonInput();
-
-    if (!jsonString.trim()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warnung',
-        detail: 'Bitte geben Sie einen JSON-String ein.'
-      });
-      return;
-    }
-
-    this.processingItem.set(true);
-
-    const result = this.importService.processJsonImport(jsonString);
-
-    if (result.success && result.observable) {
-      result.observable.subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Erfolg',
-            detail: 'Privater Gegenstand wurde erfolgreich erstellt!'
-          });
-          this.closeItemDialog();
-          this.processingItem.set(false);
-        },
-        error: (err) => {
-          console.error('Fehler beim Erstellen:', err);
-          console.error('Error Details:', {
-            status: err.status,
-            statusText: err.statusText,
-            error: err.error,
-            message: err.message
-          });
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Fehler',
-            detail: 'Gegenstand konnte nicht erstellt werden: ' + (err.error?.message || err.statusText || err.message || 'Unbekannter Fehler')
-          });
-          this.processingItem.set(false);
-        }
-      });
-    } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'JSON Fehler',
-        detail: result.error || 'Unbekannter Fehler'
-      });
-      this.processingItem.set(false);
-    }
+    this.pageService.createItemFromJson();
   }
 
   goBack(): void {
-    void this.router.navigate(['/admin']);
+    this.pageService.goBack();
   }
 }
-

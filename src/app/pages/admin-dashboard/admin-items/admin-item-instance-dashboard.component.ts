@@ -17,7 +17,7 @@ import { Product } from '../../../models/product.model';
 import { ColumnDef } from '../../../components/table/table.component';
 import { ProductListItemComponent } from '../../../components/admin/product-list-item/product-list-item.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
-import { AdminItemInstanceDashboardService } from './services/admin-item-instance-dashboard.service';
+import { AdminItemInstanceDashboardService } from './page-services/admin-item-instance-dashboard.service';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 
 @Component({
@@ -51,7 +51,7 @@ export class AdminItemInstanceComponent implements OnInit {
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use service signals
+  // Use page-page-services signals
   allItems = this.pageService.items;
   allProducts = this.pageService.products;
   isLoading = this.pageService.isLoading;
@@ -118,7 +118,7 @@ export class AdminItemInstanceComponent implements OnInit {
           this.loadItems();
         },
         error: () => {
-          // Error handling is done in service
+          // Error handling is done in page-page-services
         }
       });
     });

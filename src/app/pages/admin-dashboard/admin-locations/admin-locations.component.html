@@ -9,7 +9,7 @@
 
   <div class="mb-6">
     <div class="flex gap-2 items-center">
-      <input pInputText type="text" placeholder="Standort" [(ngModel)]="newLocation.roomNr" class="flex-1 p-2 border rounded" />
+      <input pInputText type="text" placeholder="Standort" [value]="newLocation().roomNr" (input)="pageService.updateNewLocationRoomNr($any($event.target).value)" class="flex-1 p-2 border rounded" />
       <app-filled-button label="Erstellen" (buttonClick)="create()"></app-filled-button>
     </div>
   </div>

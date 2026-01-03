@@ -3,8 +3,8 @@ import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
-import { Location } from '../../../models/location.model';
-import { LocationService } from '../../../services/location.service';
+import { Location } from '../../../../models/location.model';
+import { LocationService } from '../../../../services/location.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminLocationsService {

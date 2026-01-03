@@ -54,7 +54,7 @@ export class UserBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
-  // Use service signals
+  // Use page-page-services signals
   isLoading = this.userBookingsService.isLoading;
   filteredBookings = this.userBookingsService.filteredBookings;
 

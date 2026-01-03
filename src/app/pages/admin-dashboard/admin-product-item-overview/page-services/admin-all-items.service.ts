@@ -1,11 +1,11 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ItemService } from '../../../services/item.service';
-import { ProductService } from '../../../services/product.service';
-import { AuthService } from '../../../services/auth.service';
-import { Item } from '../../../models/item.model';
-import { Product } from '../../../models/product.model';
+import { ItemService } from '../../../../services/item.service';
+import { ProductService } from '../../../../services/product.service';
+import { AuthService } from '../../../../services/auth.service';
+import { Item } from '../../../../models/item.model';
+import { Product } from '../../../../models/product.model';
 
 export interface ProductWithItems {
   product: Product;

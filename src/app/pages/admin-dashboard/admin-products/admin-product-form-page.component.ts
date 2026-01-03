@@ -16,7 +16,7 @@ import { BackButtonComponent } from '../../../components/buttons/back-button/bac
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { LocationService } from '../../../services/location.service';
-import { AdminProductFormLogicService } from './services/admin-product-form-logic.service';
+import { AdminProductFormLogicService } from './page-services/admin-product-form-logic.service';
 import { Product } from '../../../models/product.model';
 import { Category } from '../../../models/category.model';
 import { Location } from '../../../models/location.model';

@@ -40,6 +40,12 @@ export class AdminItemFormPageService {
   allItems = signal<Item[]>([]);
   isLoading = signal(false);
 
+  // Dialog state
+  showJsonDialog = signal(false);
+  jsonString = signal('');
+  copySuccess = signal(false);
+  pendingImportData = signal<any>(null);
+
   // Expose userService for direct use in component
   get user() {
     return this.userService;
@@ -229,6 +235,167 @@ export class AdminItemFormPageService {
 
   navigateToItemList(): void {
     this.router.navigate(['/admin/items']);
+  }
+
+  // Private Mode Detection
+  isPrivateMode(): boolean {
+    const url = (globalThis as any).location?.pathname || '';
+    return url.includes('/user-dashboard/private-lend');
+  }
+
+  // JSON Dialog Methods
+  createJsonPayload(formValue: any, currentUser: any, userRoles: string[], generatedInventoryNumbers: string[]): string {
+    const payload = { ...formValue };
+
+    // Verwende die erste generierte Inventarnummer, falls vorhanden
+    if (generatedInventoryNumbers.length > 0) {
+      payload.invNumber = generatedInventoryNumbers[0];
+    } else {
+      payload.invNumber = 'PRV-' + Date.now();
+    }
+
+    // Setze Location ID fest auf 7 (privat)
+    payload.locationId = 7;
+
+    // Füge User-IDs hinzu
+    payload.ownerId = currentUser.id;
+    payload.ownerName = payload.ownerName || currentUser.name;
+    payload.lenderId = currentUser.id;
+    payload.lenderName = payload.lenderName || currentUser.name;
+
+    // Füge User-Rollen hinzu
+    payload.userRoles = userRoles;
+
+    // Erstelle JSON-String
+    const jsonData = {
+      type: 'item',
+      timestamp: new Date().toISOString(),
+      payload: payload
+    };
+
+    return JSON.stringify(jsonData, null, 2);
+  }
+
+  copyToClipboard(text: string): Promise<void> {
+    return navigator.clipboard.writeText(text);
+  }
+
+  // Handle Private Mode Submission
+  handlePrivateModeSubmit(formValue: any, currentUser: any, userRoles: string[], generatedInventoryNumbers: string[]): boolean {
+    const isLenderOrAdmin = userRoles.includes('lender') || userRoles.includes('admin');
+
+    if (!isLenderOrAdmin) {
+      this.showPermissionWarning();
+      return false;
+    }
+
+    if (!currentUser?.id) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Kein Benutzer eingeloggt'
+      });
+      return false;
+    }
+
+    // Erstelle JSON und zeige Dialog
+    const jsonString = this.createJsonPayload(formValue, currentUser, userRoles, generatedInventoryNumbers);
+
+    this.jsonString.set(jsonString);
+    this.showJsonDialog.set(true);
+    this.copySuccess.set(false);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Erfolg',
+      detail: 'Gegenstand-Daten als JSON vorbereitet.'
+    });
+
+    return true;
+  }
+
+  // Show Permission Warning
+  showPermissionWarning(): void {
+    const keycloakUrl = 'http://localhost:8081/admin/master/console/#/LeihSy/users';
+
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Fehlende Berechtigung',
+      detail: 'Sie benötigen die "Lender" oder "Admin" Rolle um Gegenstände zu erstellen.'
+    });
+
+    if (confirm('Sie benötigen die "Lender" oder "Admin" Rolle um Gegenstände zu erstellen.\n\nMöchten Sie zur Keycloak-Admin-Konsole weitergeleitet werden, um die Rolle zu erhalten?')) {
+      window.open(keycloakUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  // Handle Update Item
+  handleUpdateItem(itemId: number, formValue: any): Observable<any> {
+    const payload = {
+      invNumber: formValue.invNumber,
+      owner: formValue.ownerName,
+      lenderId: formValue.lenderId,
+      productId: formValue.productId,
+      available: formValue.available
+    };
+
+    return this.updateItem(itemId, payload);
+  }
+
+  // Dialog Management
+  closeJsonDialog(): void {
+    this.showJsonDialog.set(false);
+    this.copySuccess.set(false);
+  }
+
+  // Clipboard with Success Handling
+  copyToClipboardWithFeedback(text: string): Promise<void> {
+    return this.copyToClipboard(text).then(() => {
+      this.copySuccess.set(true);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Kopiert',
+        detail: 'JSON wurde in die Zwischenablage kopiert!'
+      });
+
+      setTimeout(() => this.copySuccess.set(false), 3000);
+    }).catch(err => {
+      console.error('Fehler beim Kopieren:', err);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Konnte nicht in Zwischenablage kopieren.'
+      });
+      throw err;
+    });
+  }
+
+  // Load Imported Data
+  loadImportedData(itemFormComponent: any): void {
+    const importedData = this.pendingImportData();
+
+    if (!importedData || !itemFormComponent?.itemForm) {
+      return;
+    }
+
+    // Befülle das Formular mit den importierten Daten
+    itemFormComponent.itemForm.patchValue({
+      invNumber: importedData.invNumber || 'PRV',
+      ownerName: importedData.ownerName || '',
+      lenderName: importedData.lenderName || '',
+      productId: importedData.productId || null,
+      available: importedData.available !== undefined ? importedData.available : true,
+      quantity: importedData.quantity || 1
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Daten geladen',
+      detail: 'Die JSON-Daten wurden erfolgreich in das Formular geladen.'
+    });
+
+    // Lösche die gespeicherten Daten
+    this.pendingImportData.set(null);
   }
 }
 

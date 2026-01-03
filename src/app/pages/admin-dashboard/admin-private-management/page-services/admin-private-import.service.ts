@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ProductService } from '../../../services/product.service';
-import { ItemService } from '../../../services/item.service';
+import { ProductService } from '../../../../services/product.service';
+import { ItemService } from '../../../../services/item.service';
 
 export interface JsonImportData {
   type: 'product' | 'item';

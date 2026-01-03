@@ -1,18 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TableComponent, ColumnDef } from '../../components/table/table.component';
-import { UserService } from '../../services/user.service';
-import { AuthService } from '../../services/auth.service';
-import { Group } from '../../models/group.model';
-import { PageHeaderComponent } from '../../components/page-header/page-header.component';
+import { ColumnDef } from '../../../components/table/table.component';
+import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
+import { Group } from '../../../models/group.model';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
+import { GroupsTableCardComponent } from '../../../components/user/groups-table-card/groups-table-card.component';
 
 @Component({
   selector: 'app-user-groups',
   standalone: true,
-  imports: [CommonModule, CardModule, ButtonModule, TableComponent, PageHeaderComponent],
+  imports: [CommonModule, PageHeaderComponent, GroupsTableCardComponent],
   templateUrl: './user-groups.component.html',
   styleUrls: ['./user-groups.component.scss']
 })

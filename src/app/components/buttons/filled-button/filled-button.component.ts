@@ -26,7 +26,7 @@ export class FilledButtonComponent {
   @Output() buttonClick = new EventEmitter<void>();
 
   get buttonClass(): string {
-    const baseClasses = 'font-semibold px-6 py-3 transition-all duration-200 hover:scale-102';
+    const baseClasses = 'font-semibold shadow-sm transition-all duration-200 hover:scale-102';
 
     switch (this.color) {
       case 'blue':

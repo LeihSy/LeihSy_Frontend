@@ -1,20 +1,15 @@
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { TextareaModule } from 'primeng/textarea';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { GroupService } from '../../../services/group.service';
 import { StudentGroupDTO, UpdateStudentGroupDTO } from '../../../models/group.model';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { GroupFormCardComponent } from '../../../components/admin/group-form-card/group-form-card.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, InputNumberModule, TextareaModule, ButtonModule, CardModule, ToastModule],
+  imports: [CommonModule, ToastModule, GroupFormCardComponent],
   templateUrl: './admin-student-group-edit.component.html',
   styleUrls: ['./admin-student-group-edit.component.scss'],
   providers: [MessageService]

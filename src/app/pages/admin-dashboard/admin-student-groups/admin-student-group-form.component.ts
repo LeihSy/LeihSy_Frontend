@@ -1,18 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { TextareaModule } from 'primeng/textarea';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { GroupService } from '../../../services/group.service';
 import { GroupCreateDTO } from '../../../models/group.model';
+import { GroupFormCardComponent } from '../../../components/admin/group-form-card/group-form-card.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, InputNumberModule, TextareaModule, CardModule, ButtonModule],
+  imports: [CommonModule, GroupFormCardComponent],
   templateUrl: './admin-student-group-form.component.html'
 })
 export class AdminStudentGroupFormComponent {

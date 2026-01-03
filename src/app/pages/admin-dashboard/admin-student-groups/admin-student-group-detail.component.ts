@@ -1,25 +1,36 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { InfoCardGridComponent } from '../../../components/admin/info-card-grid/info-card-grid.component';
+import { InfoFieldItem } from '../../../components/admin/info-field/info-field.component';
+import { AddMemberDialogComponent, UserPreview } from '../../../components/admin/add-member-dialog/add-member-dialog.component';
 import { UserService } from '../../../services/user.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { CardModule } from 'primeng/card';
 import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ButtonModule, DialogModule, InputTextModule, InputNumberModule, TableComponent, BackButtonComponent, ToastModule, ConfirmDialogModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardModule,
+    TableComponent,
+    BackButtonComponent,
+    FilledButtonComponent,
+    InfoCardGridComponent,
+    AddMemberDialogComponent,
+    ToastModule,
+    ConfirmDialogModule
+  ],
   templateUrl: './admin-student-group-detail.component.html',
   styleUrls: ['./admin-student-group-detail.component.scss'],
   providers: [MessageService, ConfirmationService]
@@ -51,9 +62,45 @@ export class AdminStudentGroupDetailComponent {
   addError = signal<string | undefined>(undefined);
 
   // Benutzer-Vorschau
-  userPreview = signal<{ name: string; email: string } | null>(null);
+  userPreview = signal<UserPreview | null>(null);
   loadingPreview = signal(false);
   private userIdChange$ = new Subject<number>();
+
+  // Computed signal für Gruppeninformationen
+  groupInfoItems = computed<InfoFieldItem[]>(() => {
+    const currentGroup = this.group();
+    if (!currentGroup) return [];
+
+    const items: InfoFieldItem[] = [
+      { label: 'Gruppen-ID', value: currentGroup.id },
+      { label: 'Anzahl Mitglieder', value: this.members().length }
+    ];
+
+    if (currentGroup.budget !== undefined && currentGroup.budget !== null) {
+      items.push({
+        label: 'Budget',
+        value: currentGroup.budget,
+        type: 'currency',
+        className: 'text-green-600'
+      });
+    }
+
+    items.push({
+      label: 'Beschreibung',
+      value: currentGroup.description || 'Keine Beschreibung vorhanden',
+      fullWidth: true
+    });
+
+    if (currentGroup.createdAt) {
+      items.push({ label: 'Erstellt am', value: currentGroup.createdAt, type: 'date' });
+    }
+
+    if (currentGroup.updatedAt) {
+      items.push({ label: 'Zuletzt aktualisiert', value: currentGroup.updatedAt, type: 'date' });
+    }
+
+    return items;
+  });
 
   // Getter für ngModel binding
   get currentNewMemberId() {

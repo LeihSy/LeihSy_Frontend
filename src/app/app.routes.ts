@@ -59,12 +59,12 @@ export const routes: Routes = [
   },
   {
     path: 'user-dashboard/groups',
-    loadComponent: () => import('./pages/user-dashboard/user-groups.component').then(m => m.UserGroupsComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-groups.component').then(m => m.UserGroupsComponent),
     canActivate: [authGuard]
   },
   {
     path: 'user-dashboard/groups/:id',
-    loadComponent: () => import('./pages/user-dashboard/user-group-detail.component').then(m => m.UserGroupDetailComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-detail.component').then(m => m.UserGroupDetailComponent),
     canActivate: [authGuard]
   },
   {

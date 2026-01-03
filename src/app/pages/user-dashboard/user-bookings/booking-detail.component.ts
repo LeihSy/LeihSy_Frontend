@@ -16,10 +16,10 @@ import { BookingService } from '../../../services/booking.service';
 import { BookingQrComponent } from './booking-qr.component';
 import { UserBookingExportService } from './services/user-booking-export.service';
 import { BookingHeaderComponent } from '../../../components/booking-components/booking-header/booking-header.component';
-import { BookingTimelineComponent, TimelineEvent as ComponentTimelineEvent } from '../../../components/booking-components/booking-timeline/booking-timeline.component';
+import { BookingProgressComponent } from '../../../components/admin/booking-components/booking-progress.component';
+import { BookingMessageComponent } from '../../../components/admin/booking-components/booking-message.component';
+import { TimelineEvent } from '../../../components/booking-components/booking-timeline/booking-timeline.component';
 import { InfoCardComponent, InfoItem } from '../../../components/info-card/info-card.component';
-
-type TimelineEvent = ComponentTimelineEvent;
 
 @Component({
   selector: 'app-booking-detail',
@@ -35,7 +35,8 @@ type TimelineEvent = ComponentTimelineEvent;
     ToastModule,
     BookingQrComponent,
     BookingHeaderComponent,
-    BookingTimelineComponent,
+    BookingProgressComponent,
+    BookingMessageComponent,
     InfoCardComponent
   ],
   templateUrl: './booking-detail.component.html',
@@ -261,11 +262,11 @@ export class BookingDetailComponent implements OnInit {
     return labelMap[status] || status;
   }
 
-  formatDate(date: string | null): string {
+  formatDate(date: Date | string | null): string {
     if (!date) return '-';
 
     try {
-      const d = new Date(date);
+      const d = typeof date === 'string' ? new Date(date) : date;
       if (Number.isNaN(d.getTime())) return '-';
 
       const day = String(d.getDate()).padStart(2, '0');

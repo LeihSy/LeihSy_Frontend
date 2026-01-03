@@ -48,7 +48,7 @@
       </app-booking-header>
 
       <!-- Content Grid: 2 columns on large screens -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
         <!-- Left column (info cards) -->
         <div class="space-y-6">
@@ -71,17 +71,7 @@
             [items]="itemItems()">
           </app-info-card>
 
-          @if (booking()!.message) {
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#253359] px-4 py-3">Nachricht</div>
-              <div class="p-4">
-                <div class="flex gap-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-md">
-                  <i class="pi pi-comment text-blue-400 text-xl"></i>
-                  <p class="text-blue-800 text-sm leading-relaxed m-0">{{ booking()!.message }}</p>
-                </div>
-              </div>
-            </div>
-          }
+          <app-booking-message [message]="booking()!.message"></app-booking-message>
 
           <!-- Termine & Daten -->
           <app-info-card
@@ -91,13 +81,11 @@
 
         </div>
 
-        <!-- Right column: Timeline -->
-        <div class="space-y-6">
-          <app-booking-timeline
-            [events]="timelineEvents()"
-            [formatDateTime]="formatDate.bind(this)">
-          </app-booking-timeline>
-        </div>
+        <!-- Right column: Booking Progress -->
+        <app-booking-progress
+          [timelineEvents]="timelineEvents()"
+          [formatDateTime]="formatDate.bind(this)">
+        </app-booking-progress>
 
       </div>
 

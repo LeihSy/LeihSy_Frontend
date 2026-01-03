@@ -1,31 +1,23 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
-import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
 import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { TextareaModule } from 'primeng/textarea';
-import { FormsModule } from '@angular/forms';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
+import { ManagementCardComponent } from '../../../components/admin/management-card/management-card.component';
+import { JsonImportDialogComponent } from '../../../components/admin/json-import-dialog/json-import-dialog.component';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AdminPrivateImportService, ImportResult } from './admin-private-import.service';
+import { AdminPrivateImportService } from './admin-private-import.service';
 
 @Component({
   selector: 'app-admin-private-management',
   standalone: true,
   imports: [
     CommonModule,
-    CardModule,
-    FilledButtonComponent,
-    SecondaryButtonComponent,
     PageHeaderComponent,
-    ButtonModule,
-    DialogModule,
-    TextareaModule,
-    FormsModule,
+    BackButtonComponent,
+    ManagementCardComponent,
+    JsonImportDialogComponent,
     ToastModule
   ],
   providers: [MessageService],

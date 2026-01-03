@@ -1,8 +1,8 @@
-<p-card header="Buchungsverlauf" class="border border-gray-200 shadow-sm">
+<div class="booking-timeline-wrapper">
   @if (events.length > 0) {
-    <p-timeline [value]="events" align="left">
+    <p-timeline [value]="events" align="left" styleClass="!border-none !shadow-none">
       <ng-template pTemplate="content" let-event>
-        <div class="py-2">
+        <div class="py-2 pl-6">
           <div class="flex items-center gap-2 mb-2">
             <i [class]="event.icon" [style.color]="event.color" class="text-xl"></i>
             <h4 class="text-base font-semibold text-gray-900 m-0">{{ event.status }}</h4>
@@ -21,9 +21,21 @@
           <i [class]="event.icon" class="text-white"></i>
         </div>
       </ng-template>
+      <ng-template pTemplate="opposite" let-event>
+        <div class="hidden"></div>
+      </ng-template>
     </p-timeline>
   } @else {
     <p class="text-gray-500 text-center py-4">Kein Verlauf verfügbar</p>
   }
-</p-card>
+</div>
 
+<style>
+  .booking-timeline-wrapper ::ng-deep .p-timeline.p-timeline-left .p-timeline-event-opposite {
+    display: none;
+  }
+
+  .booking-timeline-wrapper ::ng-deep .p-timeline.p-timeline-left .p-timeline-event-content {
+    padding-left: 0;
+  }
+</style>

@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TimelineModule } from 'primeng/timeline';
-import { CardModule } from 'primeng/card';
 
 export interface TimelineEvent {
   status: string;
@@ -14,7 +13,7 @@ export interface TimelineEvent {
 @Component({
   selector: 'app-booking-timeline',
   standalone: true,
-  imports: [CommonModule, TimelineModule, CardModule],
+  imports: [CommonModule, TimelineModule],
   templateUrl: './booking-timeline.component.html'
 })
 export class BookingTimelineComponent {

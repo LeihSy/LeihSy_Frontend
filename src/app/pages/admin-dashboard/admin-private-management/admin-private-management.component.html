@@ -2,12 +2,10 @@
   <p-toast position="bottom-right"></p-toast>
 
   <div class="mb-6">
-    <button
-      class="inline-flex items-center text-primary hover:underline mb-4"
-      (click)="goBack()">
-      <i class="pi pi-arrow-left mr-2"></i>
-      Zurück zum Dashboard
-    </button>
+    <app-back-button
+      label="Zurück zum Dashboard"
+      (backClick)="goBack()">
+    </app-back-button>
 
     <app-page-header
       title="Private Gegenstände & Produkte"
@@ -17,134 +15,50 @@
 
   <div class="grid md:grid-cols-2 gap-6">
     <!-- Produkte verwalten -->
-    <p-card header="Produkte erstellen">
-      <div class="py-4">
-        <div class="flex items-center gap-3 mb-4">
-          <i class="pi pi-tag text-3xl text-primary"></i>
-          <p class="text-gray-600">
-            Erstellen Sie ein privates Produkt, indem Sie den JSON-String aus einer Benutzeranfrage einfügen.
-          </p>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <app-filled-button
-            label="Produkt aus JSON erstellen"
-            icon="pi pi-plus-circle"
-            (buttonClick)="openProductDialog()"
-            class="w-full">
-          </app-filled-button>
-        </div>
-      </div>
-    </p-card>
+    <app-management-card
+      header="Produkte erstellen"
+      icon="pi-tag"
+      description="Erstellen Sie ein privates Produkt, indem Sie den JSON-String aus einer Benutzeranfrage einfügen."
+      buttonLabel="Produkt aus JSON erstellen"
+      buttonIcon="pi pi-plus-circle"
+      (buttonClick)="openProductDialog()">
+    </app-management-card>
 
     <!-- Gegenstände verwalten -->
-    <p-card header="Gegenstände erstellen">
-      <div class="py-4">
-        <div class="flex items-center gap-3 mb-4">
-          <i class="pi pi-box text-3xl text-primary"></i>
-          <p class="text-gray-600">
-            Erstellen Sie einen privaten Gegenstand, indem Sie den JSON-String aus einer Benutzeranfrage einfügen.
-          </p>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <app-filled-button
-            label="Gegenstand aus JSON erstellen"
-            icon="pi pi-plus-circle"
-            (buttonClick)="openItemDialog()"
-            class="w-full">
-          </app-filled-button>
-        </div>
-      </div>
-    </p-card>
+    <app-management-card
+      header="Gegenstände erstellen"
+      icon="pi-box"
+      description="Erstellen Sie einen privaten Gegenstand, indem Sie den JSON-String aus einer Benutzeranfrage einfügen."
+      buttonLabel="Gegenstand aus JSON erstellen"
+      buttonIcon="pi pi-plus-circle"
+      (buttonClick)="openItemDialog()">
+    </app-management-card>
   </div>
 
   <!-- Produkt JSON Dialog -->
-  <p-dialog
+  <app-json-import-dialog
     header="Produkt aus JSON erstellen"
-    [(visible)]="showProductDialog"
-    [modal]="true"
-    [style]="{width: '800px', maxHeight: '80vh'}"
-    [draggable]="false"
-    [resizable]="false">
-    <div class="flex flex-col gap-4">
-      <p class="text-sm text-gray-600">
-        Fügen Sie den JSON-String ein, den Sie vom Benutzer erhalten haben:
-      </p>
-
-      <div class="flex flex-col gap-2">
-        <label for="productJson" class="font-bold">JSON-Daten</label>
-        <textarea
-          pInputTextarea
-          id="productJson"
-          [(ngModel)]="productJsonInput"
-          rows="15"
-          class="w-full font-mono text-sm"
-          placeholder='{"type": "product", "timestamp": "...", "payload": {...}}'
-          [autoResize]="true">
-        </textarea>
-        <small class="text-gray-500">
-          Erwartetes Format: JSON mit "payload" Objekt, das die Produktdaten enthält
-        </small>
-      </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-      <app-secondary-button
-        label="Abbrechen"
-        color="red"
-        (buttonClick)="closeProductDialog()">
-      </app-secondary-button>
-      <app-filled-button
-        label="Produkt erstellen"
-        icon="pi pi-check"
-        (buttonClick)="createProductFromJson()">
-      </app-filled-button>
-    </ng-template>
-  </p-dialog>
+    [visible]="showProductDialog()"
+    inputId="productJson"
+    placeholder='{"type": "product", "timestamp": "...", "payload": {...}}'
+    helperText='Erwartetes Format: JSON mit "payload" Objekt, das die Produktdaten enthält'
+    submitButtonLabel="Produkt erstellen"
+    [jsonInput]="productJsonInput"
+    (cancel)="closeProductDialog()"
+    (submit)="createProductFromJson()">
+  </app-json-import-dialog>
 
   <!-- Gegenstand JSON Dialog -->
-  <p-dialog
+  <app-json-import-dialog
     header="Gegenstand aus JSON erstellen"
-    [(visible)]="showItemDialog"
-    [modal]="true"
-    [style]="{width: '800px', maxHeight: '80vh'}"
-    [draggable]="false"
-    [resizable]="false">
-    <div class="flex flex-col gap-4">
-      <p class="text-sm text-gray-600">
-        Fügen Sie den JSON-String ein, den Sie vom Benutzer erhalten haben:
-      </p>
-
-      <div class="flex flex-col gap-2">
-        <label for="itemJson" class="font-bold">JSON-Daten</label>
-        <textarea
-          pInputTextarea
-          id="itemJson"
-          [(ngModel)]="itemJsonInput"
-          rows="15"
-          class="w-full font-mono text-sm"
-          placeholder='{"type": "item", "timestamp": "...", "payload": {...}}'
-          [autoResize]="true">
-        </textarea>
-        <small class="text-gray-500">
-          Erwartetes Format: JSON mit "payload" Objekt, das die Gegenstandsdaten enthält
-        </small>
-      </div>
-    </div>
-
-    <ng-template pTemplate="footer">
-      <app-secondary-button
-        label="Abbrechen"
-        color="red"
-        (buttonClick)="closeItemDialog()">
-      </app-secondary-button>
-      <app-filled-button
-        label="Gegenstand erstellen"
-        icon="pi pi-check"
-        (buttonClick)="createItemFromJson()">
-      </app-filled-button>
-    </ng-template>
-  </p-dialog>
+    [visible]="showItemDialog()"
+    inputId="itemJson"
+    placeholder='{"type": "item", "timestamp": "...", "payload": {...}}'
+    helperText='Erwartetes Format: JSON mit "payload" Objekt, das die Gegenstandsdaten enthält'
+    submitButtonLabel="Gegenstand erstellen"
+    [jsonInput]="itemJsonInput"
+    (cancel)="closeItemDialog()"
+    (submit)="createItemFromJson()">
+  </app-json-import-dialog>
 </div>
 

@@ -181,5 +181,60 @@ export class ProductFormComponent implements OnInit, OnChanges {
     this.imagePreview.set(null);
     this.itemForm.patchValue({ imageUrl: null });
   }
-}
 
+availableRelatedProducts(): Product[] {
+  const q = this.relatedItemsSearch().toLowerCase().trim();
+  const currentId: number | null = (this.product as any)?.id ?? null;
+
+  return (this.products ?? []).filter((p: any) => {
+    if (!p) return false;
+    if (currentId != null && p.id === currentId) return false;
+
+    if (!q) return true;
+
+    const name = String(p.name ?? '').toLowerCase();
+    const idStr = String(p.id ?? '');
+    return name.includes(q) || idStr.includes(q);
+  });
+}
+getRelatedItemStatus(productId: number): RelatedItemType | null {
+  const item = this.selectedRelatedItems().find(x => x.productId === productId);
+  return item ? item.type : null;
+}
+toggleRelatedItem(productId: number, type: RelatedItemType): void {
+  const items = this.selectedRelatedItems();
+  const existing = items.find(x => x.productId === productId);
+
+  if (existing) {
+    if (existing.type === type) {
+      // gleicher Typ -> entfernen
+      this.selectedRelatedItems.set(items.filter(x => x.productId !== productId));
+    } else {
+      // Typ wechseln
+      this.selectedRelatedItems.set(
+        items.map(x => (x.productId === productId ? { ...x, type } : x))
+      );
+    }
+    return;
+  }
+   // neu hinzufügen
+   this.selectedRelatedItems.set([...items, { productId, type }]);
+  }
+  removeRelatedItem(productId: number): void {
+    this.selectedRelatedItems.set(
+      this.selectedRelatedItems().filter(x => x.productId !== productId)
+    );
+  }
+  relatedTypeLabel(type: RelatedItemType): string {
+    return type === 'required' ? 'Erforderlich' : 'Empfohlen';
+  }
+
+  findProductById(id: number): Product | undefined {
+    return (this.products ?? []).find((p: any) => p?.id === id);
+  }
+
+  categoryNameById(categoryId: number): string {
+    const c = (this.categories ?? []).find(x => x.id === categoryId);
+    return c?.name ?? `#${categoryId}`;
+  }
+}

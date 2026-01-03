@@ -8,19 +8,20 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
-import { Select } from 'primeng/select';
+import { SelectModule } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 
-import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
-import { InsyImportRequest, ImportStatus } from '../../../models/insy-import.model';
+import { InsyImportRequest, ImportStatus} from '../../../models/insy-import.model';
 import { AdminInsyImportService } from './services/admin-insy-import.service';
 
 @Component({
@@ -35,11 +36,13 @@ import { AdminInsyImportService } from './services/admin-insy-import.service';
     TagModule,
     ConfirmDialogModule,
     ToastModule,
-    Select,
+    SelectModule,
     DialogModule,
     ChipModule,
     TooltipModule,
     TextareaModule,
+    InputNumberModule,
+    RadioButtonModule,
     IconFieldModule,
     InputIconModule,
     InputTextModule,
@@ -57,32 +60,48 @@ export class AdminInsyImportComponent implements OnInit {
   isLoading = this.pageService.isLoading;
   selectedRequests = this.pageService.selectedRequests;
 
+  // Dropdown-Optionen
+  categories = this.pageService.categories;
+  locations = this.pageService.locations;
+  products = this.pageService.products;
+
   // Filter Signals
   statusFilter: WritableSignal<ImportStatus | 'ALL'> = signal('ALL');
   searchQuery: WritableSignal<string> = signal('');
 
-  // Für ngModel Binding (normale Variable)
+  // Fuer ngModel Binding
   statusFilterValue: ImportStatus | 'ALL' = 'ALL';
 
-  // Dialog Signals
-  showApproveDialog = signal(false);
-  showRejectDialog = signal(false);
+  // Import Dialog State
+  showImportDialog = signal(false);
   currentRequest = signal<InsyImportRequest | null>(null);
+  importType = signal<'NEW_PRODUCT' | 'EXISTING_PRODUCT'>('NEW_PRODUCT');
+
+  // Import Dialog Form Values
+  selectedCategoryId: number | null = null;
+  selectedLocationId: number | null = null;
+  selectedProductId: number | null = null;
+  importPrice: number | null = null;
+  importExpiryDate: number | null = 14;
+
+  // Reject Dialog State
+  showRejectDialog = signal(false);
   rejectReason: string = '';
 
-  // Status Options für Dropdown
+  // Batch Import Dialog State
+  showBatchDialog = signal(false);
+  batchProductId: number | null = null;
+  batchInvPrefix: string = '';
+
+  // Status Options fuer Dropdown
   statusOptions = [
     { label: 'Alle', value: 'ALL' },
     { label: 'Ausstehend', value: ImportStatus.PENDING },
-    { label: 'Genehmigt', value: ImportStatus.APPROVED },
+    { label: 'Importiert', value: ImportStatus.IMPORTED },
     { label: 'Abgelehnt', value: ImportStatus.REJECTED }
   ];
 
-  constructor() {
-    // Constructor bleibt leer - keine Debug-Logs mehr
-  }
-
-  // Gefilterte Requests - reagiert automatisch auf beide Filter
+  // Gefilterte Requests
   filteredRequests = computed(() => {
     const requests = this.allRequests();
     const status = this.statusFilter();
@@ -90,18 +109,15 @@ export class AdminInsyImportComponent implements OnInit {
 
     let filtered = requests;
 
-    // Status-Filter
     if (status !== 'ALL') {
       filtered = filtered.filter(r => r.status === status);
     }
 
-    // Such-Filter
     if (query) {
       filtered = filtered.filter(r =>
         r.name?.toLowerCase().includes(query) ||
         r.invNumber?.toLowerCase().includes(query) ||
-        r.category?.toLowerCase().includes(query) ||
-        r.roomNr?.toLowerCase().includes(query) ||
+        r.location?.toLowerCase().includes(query) ||
         r.description?.toLowerCase().includes(query)
       );
     }
@@ -115,12 +131,18 @@ export class AdminInsyImportComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0];
     return requests.filter(r =>
       r.status === ImportStatus.PENDING &&
-      r.createdAt.split('T')[0] === today
+      r.createdAt?.split('T')[0] === today
     );
+  });
+
+  // Pending Requests aus Selektion
+  pendingSelectedRequests = computed(() => {
+    return this.selectedRequests().filter(r => r.status === ImportStatus.PENDING);
   });
 
   ngOnInit(): void {
     this.loadData();
+    this.pageService.loadDropdownOptions();
   }
 
   loadData(): void {
@@ -129,69 +151,100 @@ export class AdminInsyImportComponent implements OnInit {
   }
 
   refreshImports(): void {
-    this.pageService.refreshImports();
+    this.pageService.createMockImports(5);
   }
 
-  // Handler für SearchBar-Component
-  onSearchChange(value: string): void {
-    this.searchQuery.set(value);
-  }
-
-  // Handler für Status-Filter Änderung
   onStatusFilterChange(value: ImportStatus | 'ALL'): void {
     this.statusFilter.set(value);
   }
 
-  // Status-Badge Severity
-  getStatusSeverity(status: ImportStatus): "success" | "secondary" | "info" | "warn" | "danger" | "contrast" | undefined {
+  getStatusSeverity(status: ImportStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' | undefined {
     switch (status) {
       case ImportStatus.PENDING:
         return 'warn';
-      case ImportStatus.APPROVED:
+      case ImportStatus.IMPORTED:
         return 'success';
       case ImportStatus.REJECTED:
         return 'danger';
-      default:
+      case ImportStatus.UPDATED:
         return 'info';
+      default:
+        return 'secondary';
     }
   }
 
-  // Status-Badge Label
   getStatusLabel(status: ImportStatus): string {
     switch (status) {
       case ImportStatus.PENDING:
         return 'Ausstehend';
-      case ImportStatus.APPROVED:
-        return 'Genehmigt';
+      case ImportStatus.IMPORTED:
+        return 'Importiert';
       case ImportStatus.REJECTED:
         return 'Abgelehnt';
+      case ImportStatus.UPDATED:
+        return 'Aktualisiert';
       default:
         return status;
     }
   }
 
-  // Prüft ob Request neu ist (heute erstellt)
   isNewRequest(request: InsyImportRequest): boolean {
+    if (!request.createdAt) return false;
     const today = new Date().toISOString().split('T')[0];
     return request.createdAt.split('T')[0] === today;
   }
 
-  // Einzelnen Import genehmigen
-  openApproveDialog(request: InsyImportRequest): void {
+  // Import Dialog oeffnen
+  openImportDialog(request: InsyImportRequest): void {
     this.currentRequest.set(request);
-    this.showApproveDialog.set(true);
-  }
 
-  confirmApprove(): void {
-    const request = this.currentRequest();
-    if (request) {
-      this.pageService.approveImport(request);
-      this.showApproveDialog.set(false);
-      this.currentRequest.set(null);
+    // Wenn Matching-Product vorhanden, vorauswählen
+    if (request.hasMatchingProduct && request.matchingProductId) {
+      this.importType.set('EXISTING_PRODUCT');
+      this.selectedProductId = request.matchingProductId;
+    } else {
+      this.importType.set('NEW_PRODUCT');
+      this.selectedProductId = null;
     }
+
+    // Reset andere Felder
+    this.selectedCategoryId = null;
+    this.selectedLocationId = null;
+    this.importPrice = null;
+    this.importExpiryDate = 14;
+
+    this.showImportDialog.set(true);
   }
 
-  // Einzelnen Import ablehnen
+  confirmImport(): void {
+    const request = this.currentRequest();
+    if (!request) return;
+
+    if (this.importType() === 'EXISTING_PRODUCT') {
+      if (!this.selectedProductId) {
+        return; // Validierung
+      }
+      this.pageService.importToExistingProduct(request, this.selectedProductId);
+    } else {
+      if (!this.selectedCategoryId || !this.selectedLocationId) {
+        return; // Validierung
+      }
+      this.pageService.importAsNewProduct(
+        request,
+        this.selectedCategoryId,
+        this.selectedLocationId,
+        {
+          price: this.importPrice || undefined,
+          expiryDate: this.importExpiryDate || undefined
+        }
+      );
+    }
+
+    this.showImportDialog.set(false);
+    this.currentRequest.set(null);
+  }
+
+  // Reject Dialog oeffnen
   openRejectDialog(request: InsyImportRequest): void {
     this.currentRequest.set(request);
     this.rejectReason = '';
@@ -200,44 +253,40 @@ export class AdminInsyImportComponent implements OnInit {
 
   confirmReject(): void {
     const request = this.currentRequest();
-    const reason = this.rejectReason;
     if (request) {
-      this.pageService.rejectImport(request, reason || undefined);
+      this.pageService.rejectImport(request, this.rejectReason || undefined);
       this.showRejectDialog.set(false);
       this.currentRequest.set(null);
       this.rejectReason = '';
     }
   }
 
-  // Bulk-Aktionen
-  bulkApprove(): void {
-    const selected = this.selectedRequests();
-    const pendingOnly = selected.filter(r => r.status === ImportStatus.PENDING);
-
-    if (pendingOnly.length === selected.length) {
-      this.pageService.bulkApprove(selected);
-    } else {
-      this.pageService.bulkApprove(pendingOnly);
-    }
+  // Batch Dialog oeffnen
+  openBatchDialog(): void {
+    this.batchProductId = null;
+    this.batchInvPrefix = '';
+    this.showBatchDialog.set(true);
   }
 
+  confirmBatchImport(): void {
+    const selected = this.pendingSelectedRequests();
+    if (selected.length === 0 || !this.batchProductId) return;
+
+    this.pageService.batchImportToProduct(
+      selected,
+      this.batchProductId,
+      { invNumberPrefix: this.batchInvPrefix || undefined }
+    );
+    this.showBatchDialog.set(false);
+  }
+
+  // Bulk Reject
   bulkReject(): void {
-    const selected = this.selectedRequests();
-    const pendingOnly = selected.filter(r => r.status === ImportStatus.PENDING);
-
-    if (pendingOnly.length === selected.length) {
-      this.pageService.bulkReject(selected);
-    } else {
-      this.pageService.bulkReject(pendingOnly);
-    }
+    const selected = this.pendingSelectedRequests();
+    if (selected.length === 0) return;
+    this.pageService.batchReject(selected);
   }
 
-  // Import löschen
-  deleteImport(request: InsyImportRequest): void {
-    this.pageService.deleteImport(request);
-  }
-
-  // Formatiert Datum
   formatDate(dateString: string | null): string {
     if (!dateString) return '-';
     const date = new Date(dateString);

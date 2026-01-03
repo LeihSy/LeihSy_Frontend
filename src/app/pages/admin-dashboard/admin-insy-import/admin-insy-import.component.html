@@ -7,7 +7,7 @@
         <p class="text-gray-600 mt-2">Verwaltung von Import-Anfragen aus dem InSy-System</p>
       </div>
       <p-button
-        label="Aktualisieren"
+        label="Mock-Daten laden"
         icon="pi pi-refresh"
         [loading]="isLoading()"
         (onClick)="refreshImports()"
@@ -30,8 +30,8 @@
       <p-card class="shadow-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600 mb-1">Genehmigt</p>
-            <p class="text-2xl font-bold text-green-500">{{ statistics().totalApproved }}</p>
+            <p class="text-sm text-gray-600 mb-1">Importiert</p>
+            <p class="text-2xl font-bold text-green-500">{{ statistics().totalImported }}</p>
           </div>
           <i class="pi pi-check-circle text-4xl text-green-300"></i>
         </div>
@@ -62,7 +62,7 @@
   <!-- Filter und Suche -->
   <p-card class="shadow-sm mb-6">
     <div class="flex flex-wrap gap-4 items-end">
-      <!-- Suche mit wiederverwendbarer SearchBar-Komponente -->
+      <!-- Suche -->
       <div class="flex-1 min-w-[300px]">
         <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
           Suche
@@ -72,7 +72,7 @@
           <input
             type="text"
             pInputText
-            placeholder="Suche nach Name, Beschreibung, Kategorie..."
+            placeholder="Suche nach Name, Beschreibung, Inventarnummer..."
             [value]="searchQuery()"
             (input)="searchQuery.set($any($event.target).value)"
             class="w-full"
@@ -93,23 +93,23 @@
           (ngModelChange)="onStatusFilterChange($event)"
           optionLabel="label"
           optionValue="value"
-          placeholder="Status wählen"
+          placeholder="Status waehlen"
           class="w-full"
         />
       </div>
 
       <!-- Bulk-Aktionen -->
-      @if (selectedRequests().length > 0) {
+      @if (pendingSelectedRequests().length > 0) {
         <div class="flex gap-2">
           <p-button
-            label="Ausgewählte genehmigen ({{ selectedRequests().length }})"
+            label="Batch-Import ({{ pendingSelectedRequests().length }})"
             icon="pi pi-check"
-            (onClick)="bulkApprove()"
+            (onClick)="openBatchDialog()"
             severity="success"
             size="small"
           />
           <p-button
-            label="Ausgewählte ablehnen ({{ selectedRequests().length }})"
+            label="Alle ablehnen ({{ pendingSelectedRequests().length }})"
             icon="pi pi-times"
             (onClick)="bulkReject()"
             severity="danger"
@@ -131,10 +131,9 @@
       [rows]="10"
       [rowsPerPageOptions]="[5, 10, 25, 50]"
       [showCurrentPageReport]="true"
-      currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Einträgen"
+      currentPageReportTemplate="Zeige {first} bis {last} von {totalRecords} Eintraegen"
       class="p-datatable-sm"
     >
-      <!-- Checkbox-Spalte -->
       <ng-template pTemplate="header">
         <tr>
           <th scope="col" style="width: 4rem">
@@ -149,11 +148,11 @@
           <th scope="col" pSortableColumn="invNumber">
             Inv-Nr <p-sortIcon field="invNumber" />
           </th>
-          <th scope="col" pSortableColumn="category">
-            Kategorie <p-sortIcon field="category" />
+          <th scope="col" pSortableColumn="location">
+            Standort <p-sortIcon field="location" />
           </th>
-          <th scope="col" pSortableColumn="roomNr">
-            Raum <p-sortIcon field="roomNr" />
+          <th scope="col">
+            Matching
           </th>
           <th scope="col" pSortableColumn="status">
             Status <p-sortIcon field="status" />
@@ -165,7 +164,6 @@
         </tr>
       </ng-template>
 
-      <!-- Tabellen-Körper -->
       <ng-template pTemplate="body" let-request>
         <tr [class.bg-blue-50]="isNewRequest(request)">
           <td>
@@ -175,7 +173,7 @@
             <div class="flex items-center gap-2">
               {{ request.id }}
               @if (isNewRequest(request)) {
-                <p-chip label="NEU" class="bg-blue-500 text-white text-xs" />
+                <p-chip label="NEU" class="text-xs" />
               }
             </div>
           </td>
@@ -192,10 +190,20 @@
               {{ request.invNumber }}
             </code>
           </td>
+          <td>{{ request.location || '-' }}</td>
           <td>
-            <p-tag [value]="request.category" severity="info" />
+            @if (request.hasMatchingProduct) {
+              <p-tag
+                [value]="request.matchingProductName"
+                severity="info"
+                icon="pi pi-link"
+                pTooltip="Passendes Produkt gefunden"
+                tooltipPosition="top"
+              />
+            } @else {
+              <span class="text-gray-400">Kein Match</span>
+            }
           </td>
-          <td>{{ request.roomNr }}</td>
           <td>
             <p-tag
               [value]="getStatusLabel(request.status)"
@@ -204,16 +212,16 @@
           </td>
           <td>{{ formatDate(request.createdAt) }}</td>
           <td>
-            <div class="flex gap-2">
+            <div class="flex gap-1">
               @if (request.status === 'PENDING') {
                 <p-button
                   icon="pi pi-check"
                   [rounded]="true"
                   [text]="true"
                   severity="success"
-                  pTooltip="Genehmigen"
+                  pTooltip="Importieren"
                   tooltipPosition="top"
-                  (onClick)="openApproveDialog(request)"
+                  (onClick)="openImportDialog(request)"
                 />
                 <p-button
                   icon="pi pi-times"
@@ -225,21 +233,11 @@
                   (onClick)="openRejectDialog(request)"
                 />
               }
-              <p-button
-                icon="pi pi-trash"
-                [rounded]="true"
-                [text]="true"
-                severity="danger"
-                pTooltip="Löschen"
-                tooltipPosition="top"
-                (onClick)="deleteImport(request)"
-              />
             </div>
           </td>
         </tr>
       </ng-template>
 
-      <!-- Empty State -->
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="9" class="text-center py-8">
@@ -247,7 +245,7 @@
               <i class="pi pi-inbox text-6xl text-gray-300"></i>
               <p class="text-gray-500">Keine Import-Anfragen gefunden</p>
               <p-button
-                label="Jetzt aktualisieren"
+                label="Mock-Daten laden"
                 icon="pi pi-refresh"
                 (onClick)="refreshImports()"
                 [outlined]="true"
@@ -260,18 +258,16 @@
   </p-card>
 </div>
 
-<!-- Approve Dialog -->
+<!-- Import Dialog -->
 <p-dialog
-  header="Import genehmigen"
-  [(visible)]="showApproveDialog"
+  header="Import konfigurieren"
+  [(visible)]="showImportDialog"
   [modal]="true"
-  [style]="{ width: '500px' }"
+  [style]="{ width: '600px' }"
 >
   @if (currentRequest()) {
-    <div class="py-4">
-      <p class="mb-4">
-        Möchten Sie folgenden Import genehmigen?
-      </p>
+    <div class="py-4 space-y-6">
+      <!-- Item Info -->
       <div class="bg-gray-50 p-4 rounded-lg space-y-2">
         <div class="flex justify-between">
           <span class="font-medium">Name:</span>
@@ -282,17 +278,144 @@
           <span>{{ currentRequest()!.invNumber }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="font-medium">Kategorie:</span>
-          <span>{{ currentRequest()!.category }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="font-medium">Raum:</span>
-          <span>{{ currentRequest()!.roomNr }}</span>
+          <span class="font-medium">Standort:</span>
+          <span>{{ currentRequest()!.location || '-' }}</span>
         </div>
       </div>
-      <p class="mt-4 text-sm text-gray-500">
-        Das Item wird als neues Produkt angelegt und kann anschließend bearbeitet werden.
-      </p>
+
+      <!-- Matching Product Hinweis -->
+      @if (currentRequest()!.hasMatchingProduct) {
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <div class="flex items-center gap-2 text-blue-700">
+            <i class="pi pi-info-circle"></i>
+            <span class="font-medium">Passendes Produkt gefunden:</span>
+            <span>{{ currentRequest()!.matchingProductName }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Import Type Auswahl -->
+      <div class="space-y-3">
+        <label class="block text-sm font-medium text-gray-700">Import-Typ</label>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center">
+            <p-radioButton
+              name="importType"
+              value="NEW_PRODUCT"
+              [(ngModel)]="importType"
+              inputId="newProduct"
+            />
+            <label for="newProduct" class="ml-2">
+              Als neues Produkt anlegen
+            </label>
+          </div>
+          <div class="flex items-center">
+            <p-radioButton
+              name="importType"
+              value="EXISTING_PRODUCT"
+              [(ngModel)]="importType"
+              inputId="existingProduct"
+            />
+            <label for="existingProduct" class="ml-2">
+              Zu bestehendem Produkt hinzufuegen
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Felder fuer Neues Produkt -->
+      @if (importType() === 'NEW_PRODUCT') {
+        <div class="space-y-4 border-t pt-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Kategorie <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              [options]="categories()"
+              [(ngModel)]="selectedCategoryId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Kategorie waehlen"
+              class="w-full"
+              name="categorySelect"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Standort <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              [options]="locations()"
+              [(ngModel)]="selectedLocationId"
+              optionLabel="roomNr"
+              optionValue="id"
+              placeholder="Standort waehlen"
+              class="w-full"
+              name="locationSelect"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Preis/Tag (EUR)
+              </label>
+              <p-inputNumber
+                [(ngModel)]="importPrice"
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                class="w-full"
+                name="priceInput"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Max. Ausleihdauer (Tage)
+              </label>
+              <p-inputNumber
+                [(ngModel)]="importExpiryDate"
+                [min]="1"
+                [max]="365"
+                class="w-full"
+                name="expiryInput"
+              />
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Felder fuer Bestehendes Produkt -->
+      @if (importType() === 'EXISTING_PRODUCT') {
+        <div class="space-y-4 border-t pt-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Produkt auswaehlen <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              [options]="products()"
+              [(ngModel)]="selectedProductId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Produkt waehlen"
+              [filter]="true"
+              filterPlaceholder="Suchen..."
+              class="w-full"
+              name="productSelect"
+            >
+              <ng-template let-product pTemplate="item">
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ product.name }}</span>
+                  @if (product.categoryName) {
+                    <span class="text-sm text-gray-500">{{ product.categoryName }}</span>
+                  }
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+        </div>
+      }
     </div>
   }
 
@@ -300,14 +423,16 @@
     <p-button
       label="Abbrechen"
       icon="pi pi-times"
-      (onClick)="showApproveDialog.set(false)"
+      (onClick)="showImportDialog.set(false)"
       [text]="true"
     />
     <p-button
-      label="Genehmigen"
+      label="Importieren"
       icon="pi pi-check"
-      (onClick)="confirmApprove()"
+      (onClick)="confirmImport()"
       severity="success"
+      [disabled]="(importType() === 'NEW_PRODUCT' && (!selectedCategoryId || !selectedLocationId)) ||
+                  (importType() === 'EXISTING_PRODUCT' && !selectedProductId)"
     />
   </ng-template>
 </p-dialog>
@@ -322,7 +447,7 @@
   @if (currentRequest()) {
     <div class="py-4">
       <p class="mb-4">
-        Möchten Sie folgenden Import ablehnen?
+        Moechten Sie folgenden Import ablehnen?
       </p>
       <div class="bg-gray-50 p-4 rounded-lg space-y-2 mb-4">
         <div class="flex justify-between">
@@ -338,13 +463,15 @@
       <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2">
         Grund (optional)
       </label>
-      <p-textarea
+      <textarea
+        pTextarea
         id="rejectReason"
+        name="rejectReason"
         [(ngModel)]="rejectReason"
         rows="3"
-        placeholder="Grund für die Ablehnung..."
+        placeholder="Grund fuer die Ablehnung..."
         class="w-full">
-      </p-textarea>
+      </textarea>
     </div>
   }
 
@@ -364,7 +491,71 @@
   </ng-template>
 </p-dialog>
 
-<!-- Toast für Benachrichtigungen -->
+<!-- Batch Import Dialog -->
+<p-dialog
+  header="Batch-Import"
+  [(visible)]="showBatchDialog"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+>
+  <div class="py-4 space-y-4">
+    <p>
+      <strong>{{ pendingSelectedRequests().length }}</strong> Items werden zu einem Produkt importiert.
+    </p>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Ziel-Produkt <span class="text-red-500">*</span>
+      </label>
+      <p-select
+        [options]="products()"
+        [(ngModel)]="batchProductId"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Produkt waehlen"
+        [filter]="true"
+        filterPlaceholder="Suchen..."
+        class="w-full"
+        name="batchProductSelect"
+      />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        Inventarnummer-Praefix (optional)
+      </label>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="batchInvPrefix"
+        placeholder="z.B. VR"
+        class="w-full"
+        name="batchInvPrefix"
+      />
+      <p class="text-sm text-gray-500 mt-1">
+        Leer lassen um InSy-Inventarnummern zu verwenden
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Abbrechen"
+      icon="pi pi-times"
+      (onClick)="showBatchDialog.set(false)"
+      [text]="true"
+    />
+    <p-button
+      label="Importieren"
+      icon="pi pi-check"
+      (onClick)="confirmBatchImport()"
+      severity="success"
+      [disabled]="!batchProductId"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- Toast -->
 <p-toast />
 
 <!-- Confirm Dialog -->

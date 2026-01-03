@@ -166,6 +166,34 @@
                 (input)="relatedItemsSearch.set(($any($event.target)).value)"
                  />
             </div>
+            <!-- Ausgewählte Zusatzgegenstände -->
+    @if (selectedRelatedItems().length > 0) {
+      <div class="space-y-2">
+        <p class="text-sm font-medium text-gray-900">
+          Ausgewählte Zusatzgegenstände ({{ selectedRelatedItems().length }})
+        </p>
+
+        <div class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 rounded-lg p-3 border border-gray-200">
+          @for (item of selectedRelatedItems(); track item.productId) {
+            <div class="flex items-center justify-between gap-2 bg-white p-2 rounded border border-gray-200">
+              @if (findProductById(item.productId); as p) {
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium truncate">{{ p.name }}</p>
+                  <p class="text-xs text-gray-500">
+                    @if (p.categoryId) { Kategorie: {{ categoryNameById(p.categoryId) }} }
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2 flex-shrink-0">
+              <!-- Badge -->
+              <span
+              class="text-xs px-2 py-1 rounded border"
+              [ngClass]="item.type === 'required'
+                ? 'bg-red-100 text-red-700 border-red-300'
+                : 'bg-blue-100 text-blue-700 border-blue-300'"
+            >
+              {{ relatedTypeLabel(item.type) }}
+            </span>
 
       </p-tabpanels>
     </p-tabs>

@@ -64,6 +64,16 @@ export class ProductFormComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.initForm();
+    // Mock nur wenn keine Produkte vom Parent kommen
+  if (!this.products || this.products.length === 0) {
+    this.products = [
+      { id: 101, name: 'Stativ', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 102, name: 'Akkupack', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 103, name: 'SD-Karte 128GB', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 104, name: 'Ladekabel USB-C', categoryId: this.categories?.[0]?.id ?? 1 } as any
+    ];
+  }
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {

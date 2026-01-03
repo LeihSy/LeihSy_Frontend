@@ -57,6 +57,8 @@ export class ProductFormComponent implements OnInit, OnChanges {
   locationDisplayValue = signal<string>('');
   isLoadingLocation = signal<boolean>(false);
   locationExists = signal<boolean>(false);
+  selectedRelatedItems = signal<RelatedItem[]>([]);
+  relatedItemsSearch = signal('');
 
   constructor(private readonly fb: FormBuilder) {}
 
@@ -108,6 +110,11 @@ export class ProductFormComponent implements OnInit, OnChanges {
     if (this.product.imageUrl) {
       this.imagePreview.set('http://localhost:8080' + this.product.imageUrl);
     }
+    //Zusatzgegenstände aus Produkt laden (falls vorhanden)
+    const related = (this.product as any)?.relatedItems as RelatedItem[] | undefined;
+    this.selectedRelatedItems.set(Array.isArray(related) ? [...related] : []);
+    this.relatedItemsSearch.set('');
+  
   }
 
   submitForm(): void {

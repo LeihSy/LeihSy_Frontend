@@ -44,7 +44,7 @@ interface LenderRequest {
     providers: [MessageService],
     templateUrl: './lender-requests.component.html'
   })
-
+  export class LenderRequestsComponent {
   searchQuery = '';
   campusFilter = 'all';
   sortBy: 'newest' | 'oldest' | 'student' = 'newest';
@@ -103,7 +103,7 @@ interface LenderRequest {
     selectedRequest: LenderRequest | null = null;
     declineReason = '';
     declineError = '';
-
+    constructor(private messageService: MessageService) {}
     pendingCount = computed(() => this.requests.filter(r => r.status === 'pending').length);
     acceptedCount = computed(() => this.requests.filter(r => r.status === 'accepted').length);
     declinedCount = computed(() => this.requests.filter(r => r.status === 'declined').length);
@@ -114,6 +114,7 @@ interface LenderRequest {
     private applyAll(list: LenderRequest[]): LenderRequest[] {
         const q = this.searchQuery.toLowerCase().trim();
         const campus = this.campusFilter;
+        let res = [...list];
 
         if (q) {
             res = res.filter(r =>

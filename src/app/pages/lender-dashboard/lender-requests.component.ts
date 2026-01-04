@@ -13,3 +13,34 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 
 type RequestStatus = 'pending' | 'accepted' | 'declined';
+
+interface LenderRequest {
+    id: number;
+    studentName: string;
+    studentId: string;
+    productName: string;
+    inventoryNumber: string;
+    campus: string;
+    fromDate: string; 
+    toDate: string;   
+    status: RequestStatus;
+    declineReason?: string;
+  }
+  
+  @Component({
+    selector: 'app-lender-requests',
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      ToastModule,
+      ButtonModule,
+      DialogModule,
+      TagModule,
+      InputTextModule,
+      SelectModule,
+      TableModule
+    ],
+    providers: [MessageService],
+    templateUrl: './lender-requests.component.html'
+  })

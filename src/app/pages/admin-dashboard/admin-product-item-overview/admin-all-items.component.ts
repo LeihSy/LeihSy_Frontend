@@ -51,7 +51,7 @@ export class AdminAllItemsComponent implements OnInit {
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use page-page-services signals
+  // Use page-page-page-page-services signals
   currentUser = this.lenderService.currentUser;
   isLoading = this.lenderService.isLoading;
   productsWithItems = this.lenderService.productsWithItems;

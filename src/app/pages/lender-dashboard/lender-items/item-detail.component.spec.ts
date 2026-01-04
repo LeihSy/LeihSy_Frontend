@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import Keycloak from 'keycloak-js';
 import { ItemDetailComponent } from './item-detail.component';
-import { ItemService } from '../../services/item.service';
+import { ItemService } from '../../../services/item.service';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';

@@ -9,7 +9,7 @@
   </app-back-button>
 
   <!-- Loading State -->
-  @if (isLoading()) {
+  @if (pageService.isLoading()) {
     <div class="text-center py-8">
       <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
       <p class="mt-4 text-gray-600">Lade Item-Details...</p>
@@ -17,15 +17,15 @@
   }
 
   <!-- Item Details -->
-  @if (!isLoading() && item()) {
+  @if (!pageService.isLoading() && pageService.item()) {
     <div class="space-y-6">
 
       <!-- Header Card -->
       <app-item-header
-        [invNumber]="item()!.invNumber"
-        [productName]="product()?.name || item()!.productName || 'Unbekanntes Produkt'"
-        [statusLabel]="getStatusLabel(item()!.isAvailable)"
-        [statusSeverity]="getStatusSeverity(item()!.isAvailable)">
+        [invNumber]="pageService.item()!.invNumber"
+        [productName]="pageService.product()?.name || pageService.item()!.productName || 'Unbekanntes Produkt'"
+        [statusLabel]="pageService.getStatusLabel(pageService.item()!.isAvailable)"
+        [statusSeverity]="pageService.getStatusSeverity(pageService.item()!.isAvailable)">
       </app-item-header>
 
       <!-- Zwei-Spalten Layout -->
@@ -37,21 +37,21 @@
           <!-- Basis Informationen -->
           <app-info-section
             header="Item Informationen"
-            [items]="itemInfoItems()">
+            [items]="pageService.itemInfoItems()">
             <span tag>
               <p-tag
-                [value]="getStatusLabel(item()!.isAvailable)"
-                [severity]="getStatusSeverity(item()!.isAvailable)"
+                [value]="pageService.getStatusLabel(pageService.item()!.isAvailable)"
+                [severity]="pageService.getStatusSeverity(pageService.item()!.isAvailable)"
                 class="font-medium px-3 py-1.5">
               </p-tag>
             </span>
           </app-info-section>
 
           <!-- Produkt Informationen -->
-          @if (product()) {
+          @if (pageService.product()) {
             <app-info-section
               header="Produktgruppe"
-              [items]="productGroupItems()">
+              [items]="pageService.productGroupItems()">
             </app-info-section>
           }
 
@@ -61,18 +61,18 @@
         <div class="space-y-6">
 
           <!-- Verleiher Informationen -->
-          @if (product()) {
+          @if (pageService.product()) {
             <app-info-section
               header="Produkt-Info"
-              [items]="productInfoItems()">
+              [items]="pageService.productInfoItems()">
             </app-info-section>
           }
 
           <!-- Ausleihkonditionen -->
-          @if (product()) {
+          @if (pageService.product()) {
             <app-info-section
               header="Ausleihkonditionen"
-              [items]="loanConditionsItems()">
+              [items]="pageService.loanConditionsItems()">
             </app-info-section>
           }
 
@@ -83,7 +83,7 @@
       <!-- Ausleihhistorie (Full Width) -->
       <app-loan-history
         header="Ausleihzeiträume"
-        [loanHistory]="loanHistory()"
+        [loanHistory]="pageService.loanHistory()"
         [columns]="loanHistoryColumns"
         [rows]="10"
         emptyStateMessage="Noch keine Ausleihvorgänge vorhanden">

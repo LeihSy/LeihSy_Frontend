@@ -22,7 +22,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 export class AdminLocationsComponent implements OnInit {
   constructor(public readonly pageService: AdminLocationsPageService) {}
 
-  // Expose page-page-services signals and properties via getters
+  // Expose page-page-page-page-services signals and properties via getters
   get locations() { return this.pageService.locations; }
   get isLoading() { return this.pageService.isLoading; }
   get newLocation() { return this.pageService.newLocation; }

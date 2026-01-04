@@ -51,7 +51,7 @@ export class AdminItemInstanceComponent implements OnInit {
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use page-page-services signals
+  // Use page-page-page-page-services signals
   allItems = this.pageService.items;
   allProducts = this.pageService.products;
   isLoading = this.pageService.isLoading;
@@ -118,7 +118,7 @@ export class AdminItemInstanceComponent implements OnInit {
           this.loadItems();
         },
         error: () => {
-          // Error handling is done in page-page-services
+          // Error handling is done in page-page-page-page-services
         }
       });
     });

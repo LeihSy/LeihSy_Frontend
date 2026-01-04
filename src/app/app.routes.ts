@@ -81,13 +81,13 @@ export const routes: Routes = [
   },
   {
     path: 'lender/items',
-    loadComponent: () => import('./pages/lender-dashboard/lender-items.component').then(m => m.LenderItemsComponent),
+    loadComponent: () => import('./pages/lender-dashboard/lender-items/lender-items.component').then(m => m.LenderItemsComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'lender/items/:id',
-    loadComponent: () => import('./pages/lender-dashboard/item-detail.component').then(m => m.ItemDetailComponent),
+    loadComponent: () => import('./pages/lender-dashboard/lender-items/item-detail.component').then(m => m.ItemDetailComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },

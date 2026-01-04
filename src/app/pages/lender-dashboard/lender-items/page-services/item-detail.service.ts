@@ -1,59 +1,33 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
-import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { ItemService } from '../../services/item.service';
-import { ProductService } from '../../services/product.service';
-import { CategoryService } from '../../services/category.service';
-import { LocationService } from '../../services/location.service';
-import { AuthService } from '../../services/auth.service';
-import { Item } from '../../models/item.model';
-import { Product } from '../../models/product.model';
-import { TableComponent, ColumnDef } from '../../components/table/table.component';
-import { BackButtonComponent } from '../../components/buttons/back-button/back-button.component';
-import { ItemHeaderComponent } from '../../components/lender/item-header/item-header.component';
-import { InfoSectionComponent, InfoSectionItem } from '../../components/lender/info-section/info-section.component';
-import { LoanHistoryComponent } from '../../components/shared/loan-history/loan-history.component';
+import { ItemService } from '../../../../services/item.service';
+import { ProductService } from '../../../../services/product.service';
+import { CategoryService } from '../../../../services/category.service';
+import { LocationService } from '../../../../services/location.service';
+import { AuthService } from '../../../../services/auth.service';
+import { Item } from '../../../../models/item.model';
+import { Product } from '../../../../models/product.model';
+import { InfoSectionItem } from '../../../../components/lender/info-section/info-section.component';
 
-@Component({
-  selector: 'app-item-detail',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TagModule,
-    ToastModule,
-    BackButtonComponent,
-    ItemHeaderComponent,
-    InfoSectionComponent,
-    LoanHistoryComponent
-  ],
-  templateUrl: './item-detail.component.html',
-  styleUrls: ['./item-detail.component.scss'],
-  providers: [MessageService]
-})
-export class ItemDetailComponent implements OnInit {
-
-  // Spalten-Definition für die Loan History Tabelle
-  loanHistoryColumns: ColumnDef[] = [
-    { field: 'borrower', header: 'Ausleiher', sortable: true },
-    { field: 'startDate', header: 'Von', type: 'date', sortable: true, width: '120px' },
-    { field: 'endDate', header: 'Bis', type: 'date', sortable: true, width: '120px' },
-    { field: 'status', header: 'Status', type: 'status', sortable: true, width: '130px' }
-  ];
+@Injectable()
+export class ItemDetailService {
+  private readonly router = inject(Router);
+  private readonly itemService = inject(ItemService);
+  private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly locationService = inject(LocationService);
+  private readonly authService = inject(AuthService);
+  private readonly messageService = inject(MessageService);
 
   item = signal<Item | null>(null);
   product = signal<Product | null>(null);
   isLoading = signal(true);
-  itemId: number | null = null;
-  keycloakFullName = '';
-
   loanHistory = signal<any[]>([]);
+  keycloakFullName = '';
 
   // Computed signals für Info-Section Daten
   itemInfoItems = computed<InfoSectionItem[]>(() => {
@@ -111,33 +85,8 @@ export class ItemDetailComponent implements OnInit {
     return items;
   });
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly itemService: ItemService,
-    private readonly productService: ProductService,
-    private readonly categoryService: CategoryService,
-    private readonly locationService: LocationService,
-    private readonly authService: AuthService,
-    private readonly messageService: MessageService
-  ) {}
-
-  ngOnInit(): void {
-    // Extrahiere Keycloak-Namen (given_name + family_name)
+  constructor() {
     this.extractKeycloakName();
-
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.itemId = Number.parseInt(id, 10);
-      this.loadItemDetails();
-    } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Keine Item-ID gefunden.'
-      });
-      this.goBack();
-    }
   }
 
   private extractKeycloakName(): void {
@@ -155,11 +104,8 @@ export class ItemDetailComponent implements OnInit {
     }
   }
 
-  loadItemDetails(): void {
-    if (!this.itemId) return;
-
-
-    this.itemService.getItemById(this.itemId).subscribe({
+  loadItemDetails(itemId: number): void {
+    this.itemService.getItemById(itemId).subscribe({
       next: (item) => {
         this.item.set(item);
 
@@ -169,7 +115,7 @@ export class ItemDetailComponent implements OnInit {
         }
 
         // Lade Ausleih-Historie
-        this.loadItemBookings(this.itemId!);
+        this.loadItemBookings(itemId);
 
         this.isLoading.set(false);
       },
@@ -254,25 +200,6 @@ export class ItemDetailComponent implements OnInit {
     });
   }
 
-  private checkNamesMatch(name1: string, name2: string): boolean {
-    if (!name1 || !name2) return false;
-
-    const normalize = (name: string) =>
-      name.toLowerCase().trim().split(/\s+/).sort().join(' ');
-
-    const normalized1 = normalize(name1);
-    const normalized2 = normalize(name2);
-
-    if (normalized1 === normalized2) return true;
-
-    const parts1 = name1.toLowerCase().trim().split(/\s+/);
-    const parts2 = name2.toLowerCase().trim().split(/\s+/);
-
-    return parts1.every(part => parts2.includes(part)) ||
-           parts2.every(part => parts1.includes(part));
-  }
-
-
   goBack(): void {
     this.router.navigate(['/lender/items']);
   }
@@ -309,3 +236,4 @@ export class ItemDetailComponent implements OnInit {
     return severityMap[status] || 'info';
   }
 }
+

@@ -13,7 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { UserBookingsService } from './services/user-bookings.service';
+import { UserBookingsService } from './page-services/user-bookings.service';
 import { UserStatsCardsComponent, UserStatCard } from '../components/user-stats-cards.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
 import { Booking } from '../../../models/booking.model';
@@ -54,7 +54,7 @@ export class UserBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
-  // Use page-page-services signals
+  // Use page-page-page-page-services signals
   isLoading = this.userBookingsService.isLoading;
   filteredBookings = this.userBookingsService.filteredBookings;
 

@@ -27,24 +27,24 @@
     </div>
   </div>
 
-  @if (isLoading()) {
+  @if (pageService.isLoading()) {
     <div class="text-center py-8 flex flex-col items-center justify-center">
       <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
       <p class="mt-4 text-gray-600">Lade Buchungsdetails...</p>
     </div>
   }
 
-  @if (!isLoading() && booking()) {
+  @if (!pageService.isLoading() && pageService.booking()) {
     <div class="mt-4 space-y-6">
 
       <!-- Header -->
       <app-booking-header
-        [bookingId]="booking()!.id"
-        [productName]="booking()!.productName"
-        [itemInvNumber]="booking()!.itemInvNumber"
-        [status]="booking()!.status"
-        [statusLabel]="getStatusLabel(booking()!.status)"
-        [statusSeverity]="getStatusSeverity(booking()!.status)">
+        [bookingId]="pageService.booking()!.id"
+        [productName]="pageService.booking()!.productName"
+        [itemInvNumber]="pageService.booking()!.itemInvNumber"
+        [status]="pageService.booking()!.status"
+        [statusLabel]="pageService.getStatusLabel(pageService.booking()!.status)"
+        [statusSeverity]="pageService.getStatusSeverity(pageService.booking()!.status)">
       </app-booking-header>
 
       <!-- Content Grid: 2 columns on large screens -->
@@ -56,35 +56,35 @@
           <!-- Ausleihzeitraum Card -->
           <app-info-card
             header="Ausleihzeitraum"
-            [items]="rentalPeriodItems()">
+            [items]="pageService.rentalPeriodItems()">
           </app-info-card>
 
           <!-- Verleiher Card -->
           <app-info-card
             header="Verleiher"
-            [items]="lenderItems()">
+            [items]="pageService.lenderItems()">
           </app-info-card>
 
           <!-- Gegenstand Card -->
           <app-info-card
             header="Gegenstand"
-            [items]="itemItems()">
+            [items]="pageService.itemItems()">
           </app-info-card>
 
-          <app-booking-message [message]="booking()!.message"></app-booking-message>
+          <app-booking-message [message]="pageService.booking()!.message"></app-booking-message>
 
           <!-- Termine & Daten -->
           <app-info-card
             header="Termine & Daten"
-            [items]="datesItems()">
+            [items]="pageService.datesItems()">
           </app-info-card>
 
         </div>
 
         <!-- Right column: Booking Progress -->
         <app-booking-progress
-          [timelineEvents]="timelineEvents()"
-          [formatDateTime]="formatDate.bind(this)">
+          [timelineEvents]="pageService.timelineEvents()"
+          [formatDateTime]="pageService.formatDate.bind(pageService)">
         </app-booking-progress>
 
       </div>
@@ -93,15 +93,15 @@
   }
 
   <!-- Booking QR Dialog Component -->
-  @if (!isLoading() && booking()) {
+  @if (!pageService.isLoading() && pageService.booking()) {
     <app-booking-qr
-      [visible]="showQrDialog()"
-      [bookingId]="booking()!.id"
+      [visible]="pageService.showQrDialog()"
+      [bookingId]="pageService.booking()!.id"
       (closed)="onQrClosed()">
     </app-booking-qr>
   }
 
-  @if (!isLoading() && !booking()) {
+  @if (!pageService.isLoading() && !pageService.booking()) {
     <div class="text-center flex flex-col items-center justify-center py-8">
       <i class="pi pi-exclamation-triangle text-red-500 text-5xl mb-4"></i>
       <h2 class="text-xl font-bold text-gray-800 mb-2">Buchung nicht gefunden</h2>

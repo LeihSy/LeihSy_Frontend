@@ -39,7 +39,7 @@ export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
   private readonly logicService = inject(AdminItemFormLogicService);
   private readonly authService = inject(AuthService);
 
-  // Use page-page-services signals directly
+  // Use page-page-page-page-services signals directly
   item = this.pageService.item;
   allProducts = this.pageService.products;
   allItemsIncludingDeleted = this.pageService.allItems;
@@ -115,7 +115,7 @@ export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
         this.selectedProduct.set(product);
       },
       error: () => {
-        // Error handling is done in page-page-services
+        // Error handling is done in page-page-page-page-services
       }
     });
   }

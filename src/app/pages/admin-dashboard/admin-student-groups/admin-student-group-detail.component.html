@@ -4,22 +4,22 @@
 
   <app-back-button (click)="goBack()"></app-back-button>
 
-  @if (loading()) {
+  @if (pageService.loading()) {
     <div class="text-center py-8">
       <i class="pi pi-spin pi-spinner text-4xl"></i>
       <p class="mt-2">Lade Gruppendaten...</p>
     </div>
   }
 
-  @if (error() && !loading()) {
+  @if (pageService.error() && !pageService.loading()) {
     <div class="text-red-600 p-4 bg-red-50 rounded">
-      {{ error() }}
+      {{ pageService.error() }}
     </div>
   }
 
-  @if (group() && !loading()) {
+  @if (pageService.group() && !pageService.loading()) {
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-3xl font-bold">{{ group()!.name }}</h2>
+      <h2 class="text-3xl font-bold">{{ pageService.group()!.name }}</h2>
       <div class="flex gap-2">
         <app-filled-button
           label="Bearbeiten"
@@ -37,7 +37,7 @@
 
     <app-info-card-grid
       header="Gruppeninformationen"
-      [items]="groupInfoItems()">
+      [items]="pageService.groupInfoItems()">
     </app-info-card-grid>
 
     <p-card header="Mitglieder" class="mb-4">
@@ -51,7 +51,7 @@
 
       <app-table
         [columns]="memberColumns"
-        [data]="members()"
+        [data]="pageService.members()"
         [paginator]="true"
         [rows]="10"
         [showActions]="true"
@@ -66,10 +66,10 @@
     header="Mitglied hinzufügen"
     [(visible)]="dialogVisible"
     [(memberId)]="currentNewMemberId"
-    [userPreview]="userPreview()"
-    [loadingPreview]="loadingPreview()"
-    [adding]="adding()"
-    [errorMessage]="addError() || ''"
+    [userPreview]="pageService.userPreview()"
+    [loadingPreview]="pageService.loadingPreview()"
+    [adding]="pageService.adding()"
+    [errorMessage]="pageService.addError() || ''"
     inputId="newMemberId"
     inputLabel="User ID"
     inputPlaceholder="z.B. 5"

@@ -51,7 +51,7 @@ export class AdminProductDashboardComponent implements OnInit {
     { field: 'price', header: 'Preis/Tag', type: 'currency', sortable: true, width: '120px' }
   ];
 
-  // Use page-page-services signals
+  // Use page-page-page-page-services signals
   allProducts = this.pageService.products;
   isLoading = this.pageService.isLoading;
   searchQuery = signal('');
@@ -99,7 +99,7 @@ export class AdminProductDashboardComponent implements OnInit {
           this.loadProducts();
         },
         error: () => {
-          // Error handling is done in page-page-services
+          // Error handling is done in page-page-page-page-services
         }
       });
     });

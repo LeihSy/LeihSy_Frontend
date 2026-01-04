@@ -107,7 +107,21 @@ interface LenderRequest {
     pendingCount(): number {
         return this.requests.filter(r => r.status === 'pending').length;
       }
-
+      acceptedCount(): number {
+        return this.requests.filter(r => r.status === 'accepted').length;
+      }
+      
+      declinedCount(): number {
+        return this.requests.filter(r => r.status === 'declined').length;
+      }
+      
+      filteredPending(): LenderRequest[] {
+        return this.applyAll(this.requests.filter(r => r.status === 'pending'));
+      }
+      
+      filteredDone(): LenderRequest[] {
+        return this.applyAll(this.requests.filter(r => r.status !== 'pending'));
+      }
     private applyAll(list: LenderRequest[]): LenderRequest[] {
         const q = this.searchQuery.toLowerCase().trim();
         const campus = this.campusFilter;

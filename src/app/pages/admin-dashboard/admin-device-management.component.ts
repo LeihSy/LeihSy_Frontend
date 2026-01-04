@@ -72,14 +72,9 @@ export class AdminDeviceManagementComponent implements OnInit {
     { label: 'Alle Kategorien', value: 'all' }
   ]);
 
-  // Beispiel-Verleiher wie in React
+  // mock data
   private readonly exampleLenders = [
-    'Dr. Maria Schmidt',
-    'Prof. Thomas Müller',
-    'Sarah Weber',
-    'Michael Klein',
-    'Lisa Hoffmann',
-    'Dr. Frank Bauer'
+
   ];
 
   // Eindeutige Verleiher für Vorschläge

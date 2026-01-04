@@ -82,70 +82,7 @@ sortBy: SortBy= 'date';
     { label: 'Nach Gerät', value: 'device' },
   ];
   //Mock-daten
-  activeLoans: ActiveLoan[] = [
-    {
-      id: 'AL-001',
-      studentName: 'Max Mustermann',
-      studentId: 'ST-123456',
-      studentEmail: 'max.mustermann@hs-esslingen.de',
-      deviceName: 'Canon EOS R6 Mark II',
-      inventoryNumber: 'K-401',
-      borrowedDate: '2024-10-08',
-      dueDate: '2024-10-14',
-      campus: 'Campus Esslingen Flandernstraße',
-      status: 'overdue',
-      daysOverdue: 3
-    },
-    {
-      id: 'AL-002',
-      studentName: 'Anna Schmidt',
-      studentId: 'ST-234567',
-      studentEmail: 'anna.schmidt@hs-esslingen.de',
-      deviceName: 'MacBook Pro M4',
-      inventoryNumber: 'L-220',
-      borrowedDate: '2024-10-10',
-      dueDate: '2024-10-15',
-      campus: 'Campus Esslingen Stadtmitte',
-      status: 'overdue',
-      daysOverdue: 2
-    },
-    {
-      id: 'AL-003',
-      studentName: 'Thomas Müller',
-      studentId: 'ST-345678',
-      studentEmail: 'thomas.mueller@hs-esslingen.de',
-      deviceName: 'Meta Quest 3',
-      inventoryNumber: 'VR-215',
-      borrowedDate: '2024-10-15',
-      dueDate: '2024-10-18',
-      campus: 'Campus Esslingen Flandernstraße',
-      status: 'active'
-    },
-    {
-      id: 'AL-004',
-      studentName: 'Lisa Weber',
-      studentId: 'ST-456789',
-      studentEmail: 'lisa.weber@hs-esslingen.de',
-      deviceName: 'iPad Pro 12.9"',
-      inventoryNumber: 'T-158',
-      borrowedDate: '2024-10-14',
-      dueDate: '2024-10-19',
-      campus: 'Campus Göppingen',
-      status: 'active'
-    },
-    {
-      id: 'AL-005',
-      studentName: 'Michael Klein',
-      studentId: 'ST-567890',
-      studentEmail: 'michael.klein@hs-esslingen.de',
-      deviceName: 'Sony A7 IV',
-      inventoryNumber: 'K-512',
-      borrowedDate: '2024-10-12',
-      dueDate: '2024-10-19',
-      campus: 'Campus Esslingen Flandernstraße',
-      status: 'active'
-    },
-  ];
+  activeLoans: ActiveLoan[] = [];
 
   pendingPickups: PendingPickup[] = [
     {

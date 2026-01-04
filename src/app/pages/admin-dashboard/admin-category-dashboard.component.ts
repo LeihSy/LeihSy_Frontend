@@ -51,14 +51,6 @@ export class AdminCategoryDashboardComponent {
 
   // Mock-Daten
   categories: Category[] = [
-    { id: '1', name: 'VR-Geräte',       icon: '🥽', deviceCount: 12 },
-    { id: '2', name: 'Kameras',         icon: '📷', deviceCount: 24 },
-    { id: '3', name: 'Laptops',         icon: '💻', deviceCount: 35 },
-    { id: '4', name: 'Tablets',         icon: '📱', deviceCount: 18 },
-    { id: '5', name: 'Audio-Equipment', icon: '🎙️', deviceCount: 15 },
-    { id: '6', name: 'Licht-Equipment', icon: '💡', deviceCount: 20 },
-    { id: '7', name: 'Kamera-Zubehör',  icon: '🎥', deviceCount: 42 },
-    { id: '8', name: 'Drohnen',         icon: '🚁', deviceCount: 8 },
   ];
 
   // Icon-Auswahl

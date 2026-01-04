@@ -1,53 +1,35 @@
 import { Component, signal, computed, inject, OnInit, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 
-import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
-import { SelectModule } from 'primeng/select';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { DialogModule } from 'primeng/dialog';
-import { ChipModule } from 'primeng/chip';
-import { TooltipModule } from 'primeng/tooltip';
-import { TextareaModule } from 'primeng/textarea';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { RadioButtonModule } from 'primeng/radiobutton';
 
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { InputTextModule } from 'primeng/inputtext';
-
-import { InsyImportRequest, ImportStatus} from '../../../models/insy-import.model';
+import { InsyImportRequest, ImportStatus } from '../../../models/insy-import.model';
 import { AdminInsyImportService } from './services/admin-insy-import.service';
+
+// Sub-Components
+import { InsyStatisticsCardsComponent } from './components/insy-statistics-cards/insy-statistics-cards.component';
+import { InsyImportTableComponent } from './components/insy-import-table/insy-import-table.component';
+import { InsyImportDialogComponent, ImportDialogResult } from './components/insy-import-dialog/insy-import-dialog.component';
+import { InsyRejectDialogComponent } from './components/insy-reject-dialog/insy-reject-dialog.component';
+import { InsyBatchDialogComponent, BatchImportResult } from './components/insy-batch-dialog/insy-batch-dialog.component';
 
 @Component({
   selector: 'app-admin-insy-import',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    RouterLink,
-    CardModule,
     ButtonModule,
-    TableModule,
-    TagModule,
-    ConfirmDialogModule,
     ToastModule,
-    SelectModule,
-    DialogModule,
-    ChipModule,
-    TooltipModule,
-    TextareaModule,
-    InputNumberModule,
-    RadioButtonModule,
-    IconFieldModule,
-    InputIconModule,
-    InputTextModule,
+    ConfirmDialogModule,
+    // Sub-Components
+    InsyStatisticsCardsComponent,
+    InsyImportTableComponent,
+    InsyImportDialogComponent,
+    InsyRejectDialogComponent,
+    InsyBatchDialogComponent
   ],
   templateUrl: './admin-insy-import.component.html',
   styleUrls: ['./admin-insy-import.component.css'],
@@ -71,37 +53,11 @@ export class AdminInsyImportComponent implements OnInit {
   statusFilter: WritableSignal<ImportStatus | 'ALL'> = signal('ALL');
   searchQuery: WritableSignal<string> = signal('');
 
-  // Fuer ngModel Binding
-  statusFilterValue: ImportStatus | 'ALL' = 'ALL';
-
-  // Import Dialog State
+  // Dialog State
   showImportDialog = signal(false);
-  currentRequest = signal<InsyImportRequest | null>(null);
-  importType = signal<'NEW_PRODUCT' | 'EXISTING_PRODUCT'>('NEW_PRODUCT');
-
-  // Import Dialog Form Values
-  selectedCategoryId: number | null = null;
-  selectedLocationId: number | null = null;
-  selectedProductId: number | null = null;
-  importPrice: number | null = null;
-  importExpiryDate: number | null = 14;
-
-  // Reject Dialog State
   showRejectDialog = signal(false);
-  rejectReason: string = '';
-
-  // Batch Import Dialog State
   showBatchDialog = signal(false);
-  batchProductId: number | null = null;
-  batchInvPrefix: string = '';
-
-  // Status Options fuer Dropdown
-  statusOptions = [
-    { label: 'Alle', value: 'ALL' },
-    { label: 'Ausstehend', value: ImportStatus.PENDING },
-    { label: 'Importiert', value: ImportStatus.IMPORTED },
-    { label: 'Abgelehnt', value: ImportStatus.REJECTED }
-  ];
+  currentRequest = signal<InsyImportRequest | null>(null);
 
   // Gefilterte Requests
   filteredRequests = computed(() => {
@@ -128,13 +84,13 @@ export class AdminInsyImportComponent implements OnInit {
   });
 
   // Neue Requests (heute erstellt)
-  newRequests = computed(() => {
+  newRequestsCount = computed(() => {
     const requests = this.allRequests();
     const today = new Date().toISOString().split('T')[0];
     return requests.filter(r =>
       r.status === ImportStatus.PENDING &&
       r.createdAt?.split('T')[0] === today
-    );
+    ).length;
   });
 
   // Pending Requests aus Selektion
@@ -156,148 +112,76 @@ export class AdminInsyImportComponent implements OnInit {
     this.pageService.createMockImports(5);
   }
 
-  onStatusFilterChange(value: ImportStatus | 'ALL'): void {
-    this.statusFilter.set(value);
+  // Filter Handlers
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
   }
 
-  getStatusSeverity(status: ImportStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' | undefined {
-    switch (status) {
-      case ImportStatus.PENDING:
-        return 'warn';
-      case ImportStatus.IMPORTED:
-        return 'success';
-      case ImportStatus.REJECTED:
-        return 'danger';
-      case ImportStatus.UPDATED:
-        return 'info';
-      default:
-        return 'secondary';
-    }
+  onStatusFilterChange(status: ImportStatus | 'ALL'): void {
+    this.statusFilter.set(status);
   }
 
-  getStatusLabel(status: ImportStatus): string {
-    switch (status) {
-      case ImportStatus.PENDING:
-        return 'Ausstehend';
-      case ImportStatus.IMPORTED:
-        return 'Importiert';
-      case ImportStatus.REJECTED:
-        return 'Abgelehnt';
-      case ImportStatus.UPDATED:
-        return 'Aktualisiert';
-      default:
-        return status;
-    }
-  }
-
-  isNewRequest(request: InsyImportRequest): boolean {
-    if (!request.createdAt) return false;
-    const today = new Date().toISOString().split('T')[0];
-    return request.createdAt.split('T')[0] === today;
-  }
-
-  // Import Dialog oeffnen
-  openImportDialog(request: InsyImportRequest): void {
+  // Import Dialog
+  onOpenImportDialog(request: InsyImportRequest): void {
     this.currentRequest.set(request);
-
-    // Wenn Matching-Product vorhanden, vorauswählen
-    if (request.hasMatchingProduct && request.matchingProductId) {
-      this.importType.set('EXISTING_PRODUCT');
-      this.selectedProductId = request.matchingProductId;
-    } else {
-      this.importType.set('NEW_PRODUCT');
-      this.selectedProductId = null;
-    }
-
-    // Reset andere Felder
-    this.selectedCategoryId = null;
-    this.selectedLocationId = null;
-    this.importPrice = null;
-    this.importExpiryDate = 14;
-
     this.showImportDialog.set(true);
   }
 
-  confirmImport(): void {
+  onImportConfirm(result: ImportDialogResult): void {
     const request = this.currentRequest();
     if (!request) return;
 
-    if (this.importType() === 'EXISTING_PRODUCT') {
-      if (!this.selectedProductId) {
-        return; // Validierung
-      }
-      this.pageService.importToExistingProduct(request, this.selectedProductId);
-    } else {
-      if (!this.selectedCategoryId || !this.selectedLocationId) {
-        return; // Validierung
-      }
+    if (result.type === 'EXISTING_PRODUCT' && result.productId) {
+      this.pageService.importToExistingProduct(request, result.productId);
+    } else if (result.type === 'NEW_PRODUCT' && result.categoryId && result.locationId) {
       this.pageService.importAsNewProduct(
         request,
-        this.selectedCategoryId,
-        this.selectedLocationId,
+        result.categoryId,
+        result.locationId,
         {
-          price: this.importPrice || undefined,
-          expiryDate: this.importExpiryDate || undefined
+          price: result.price,
+          expiryDate: result.expiryDate
         }
       );
     }
 
-    this.showImportDialog.set(false);
     this.currentRequest.set(null);
   }
 
-  // Reject Dialog oeffnen
-  openRejectDialog(request: InsyImportRequest): void {
+  // Reject Dialog
+  onOpenRejectDialog(request: InsyImportRequest): void {
     this.currentRequest.set(request);
-    this.rejectReason = '';
     this.showRejectDialog.set(true);
   }
 
-  confirmReject(): void {
+  onRejectConfirm(reason: string | undefined): void {
     const request = this.currentRequest();
     if (request) {
-      this.pageService.rejectImport(request, this.rejectReason || undefined);
-      this.showRejectDialog.set(false);
+      this.pageService.rejectImport(request, reason);
       this.currentRequest.set(null);
-      this.rejectReason = '';
     }
   }
 
-  // Batch Dialog oeffnen
-  openBatchDialog(): void {
-    this.batchProductId = null;
-    this.batchInvPrefix = '';
+  // Batch Dialog
+  onOpenBatchDialog(): void {
     this.showBatchDialog.set(true);
   }
 
-  confirmBatchImport(): void {
+  onBatchConfirm(result: BatchImportResult): void {
     const selected = this.pendingSelectedRequests();
-    if (selected.length === 0 || !this.batchProductId) return;
+    if (selected.length === 0) return;
 
     this.pageService.batchImportToProduct(
       selected,
-      this.batchProductId,
-      { invNumberPrefix: this.batchInvPrefix || undefined }
+      result.productId,
+      { invNumberPrefix: result.invNumberPrefix }
     );
-    this.showBatchDialog.set(false);
   }
 
   // Bulk Reject
-  bulkReject(): void {
+  onBulkReject(): void {
     const selected = this.pendingSelectedRequests();
     if (selected.length === 0) return;
     this.pageService.batchReject(selected);
-  }
-
-  formatDate(dateString: string | null): string {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 }

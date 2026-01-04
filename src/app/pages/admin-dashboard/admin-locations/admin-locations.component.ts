@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
 import { AdminLocationsPageService } from './page-services/admin-locations-page.service';
@@ -20,7 +20,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   providers: [ConfirmationService, MessageService, AdminLocationsPageService]
 })
 export class AdminLocationsComponent implements OnInit {
-  constructor(public readonly pageService: AdminLocationsPageService) {}
+  public readonly pageService = inject(AdminLocationsPageService);
 
   // Expose page-page-page-page-services signals and properties via getters
   get locations() { return this.pageService.locations; }

@@ -94,18 +94,16 @@ export class DeviceDetailPageComponent implements OnInit {
   public pickupTime: string = '';
 
   // --- UI Configuration ---
-  public minDate: Date;
-
-  constructor() {
-    // Mindestdatum auf heute setzen
-    this.minDate = new Date();
-    this.minDate.setHours(0, 0, 0, 0);
-
-    // Deutsche Lokalisierung für den DatePicker
-    this.setupGermanLocale();
-  }
+  public minDate: Date = (() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  })();
 
   ngOnInit(): void {
+    // Deutsche Lokalisierung für den DatePicker
+    this.setupGermanLocale();
+
     // Device-ID aus der URL holen
     const deviceId = this.route.snapshot.paramMap.get('id');
 

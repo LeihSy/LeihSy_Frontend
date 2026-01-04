@@ -83,8 +83,7 @@ export class ItemFormComponent implements OnInit, OnChanges {
   availabilityValue: boolean = true;
 
   private readonly authService = inject(AuthService);
-
-  constructor(private readonly fb: FormBuilder) {}
+  private readonly fb = inject(FormBuilder);
 
   ngOnInit(): void {
     this.initForm();

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../../models/booking.model';
@@ -19,11 +19,10 @@ export class AdminBookingDetailPageService {
   isLoading = signal(true);
   timelineEvents = signal<TimelineEvent[]>([]);
 
-  constructor(
-    private readonly bookingService: BookingService,
-    private readonly messageService: MessageService,
-    private readonly router: Router
-  ) {}
+
+    private readonly bookingService = inject(BookingService);
+    private readonly messageService = inject(MessageService);
+    private readonly router = inject(Router);
 
   loadBookingDetails(id: number): void {
     this.isLoading.set(true);

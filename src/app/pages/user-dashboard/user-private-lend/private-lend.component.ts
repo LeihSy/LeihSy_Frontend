@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -26,7 +26,7 @@ export class PrivateLendComponent {
 
   jsonPreview = '';
 
-  constructor(private svc: PrivateLendService) {}
+  private svc = inject(PrivateLendService);
 
   buildJson() {
     const item = {

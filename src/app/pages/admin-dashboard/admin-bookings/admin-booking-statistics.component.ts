@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -42,9 +42,7 @@ import { AdminBookingStatisticsPageService } from './page-services/admin-booking
   templateUrl: './admin-booking-statistics.component.html'
 })
 export class AdminBookingStatisticsComponent implements OnInit {
-  constructor(
-    private readonly pageService: AdminBookingStatisticsPageService
-  ) {}
+    private readonly pageService = inject(AdminBookingStatisticsPageService);
 
   // Delegiere alle Signals und Computed an den Service
   get isLoading() { return this.pageService.isLoading; }

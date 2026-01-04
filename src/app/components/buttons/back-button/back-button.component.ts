@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {Component, Input, Output, EventEmitter, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -25,7 +25,7 @@ export class BackButtonComponent {
   @Input() routerLink?: string;
   @Output() backClick = new EventEmitter<void>();
 
-  constructor(private readonly router: Router) {}
+  private readonly router = inject( Router);
 
   handleClick(): void {
     if (this.routerLink) {

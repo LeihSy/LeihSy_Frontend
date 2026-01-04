@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import {Injectable, signal, computed, inject} from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { BookingService } from '../../../../services/booking.service';
 import { Booking } from '../../../../models/booking.model';
@@ -171,11 +171,9 @@ export class AdminBookingStatisticsPageService {
     };
   });
 
-  constructor(
-    private readonly bookingService: BookingService,
-    private readonly messageService: MessageService,
-    private readonly exportService: BookingStatisticsExportService
-  ) {}
+    private readonly bookingService= inject(BookingService);
+    private readonly messageService = inject(MessageService);
+    private readonly exportService = inject(BookingStatisticsExportService);
 
   loadData(): void {
     this.isLoading.set(true);

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import {Injectable, signal, computed, inject} from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Booking, BookingStatus } from '../../../../models/booking.model';
@@ -75,11 +75,10 @@ export class AdminBookingsPageService {
     );
   });
 
-  constructor(
-    private readonly bookingService: BookingService,
-    private readonly messageService: MessageService,
-    private readonly router: Router
-  ) {}
+    private readonly bookingService = inject(BookingService);
+    private readonly messageService = inject(MessageService);
+    private readonly router = inject(Router);
+
 
   loadAllBookings(): void {
     this.isLoading.set(true);

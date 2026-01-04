@@ -108,15 +108,13 @@ export class AdminProductFormPageComponent implements OnInit {
   jsonString = signal('');
   copySuccess = signal(false);
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly productService: ProductService,
-    private readonly categoryService: CategoryService,
-    private readonly locationService: LocationService,
-    private readonly messageService: MessageService,
-    private readonly logicService: AdminProductFormLogicService
-  ) {}
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
+    private readonly productService = inject(ProductService);
+    private readonly categoryService = inject(CategoryService);
+    private readonly locationService = inject(LocationService);
+    private readonly messageService = inject(MessageService);
+    private readonly logicService = inject(AdminProductFormLogicService);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

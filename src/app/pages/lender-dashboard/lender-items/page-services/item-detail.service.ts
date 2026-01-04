@@ -27,7 +27,7 @@ export class ItemDetailService {
   product = signal<Product | null>(null);
   isLoading = signal(true);
   loanHistory = signal<any[]>([]);
-  keycloakFullName = '';
+  keycloakFullName = this.extractKeycloakName();
 
   // Computed signals für Info-Section Daten
   itemInfoItems = computed<InfoSectionItem[]>(() => {
@@ -85,22 +85,17 @@ export class ItemDetailService {
     return items;
   });
 
-  constructor() {
-    this.extractKeycloakName();
-  }
-
-  private extractKeycloakName(): void {
+  private extractKeycloakName(): string {
     try {
       const keycloakInstance = (this.authService as any).keycloak;
       if (keycloakInstance?.tokenParsed) {
         const givenName = keycloakInstance.tokenParsed['given_name'] || '';
         const familyName = keycloakInstance.tokenParsed['family_name'] || '';
-        this.keycloakFullName = `${givenName} ${familyName}`.trim();
-      } else {
-        this.keycloakFullName = this.authService.getUsername();
+        return `${givenName} ${familyName}`.trim();
       }
+      return this.authService.getUsername();
     } catch (error) {
-      this.keycloakFullName = this.authService.getUsername();
+      return this.authService.getUsername();
     }
   }
 

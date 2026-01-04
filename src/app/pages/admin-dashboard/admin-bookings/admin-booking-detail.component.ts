@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -40,11 +40,9 @@ import { AdminBookingDetailPageService } from './page-services/admin-booking-det
   providers: [MessageService, AdminBookingDetailPageService]
 })
 export class AdminBookingDetailComponent implements OnInit {
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly pageService: AdminBookingDetailPageService,
-    private readonly messageService: MessageService
-  ) {}
+    private readonly route = inject(ActivatedRoute);
+    private readonly pageService = inject(AdminBookingDetailPageService);
+    private readonly messageService = inject(MessageService);
 
   // Delegiere alle Signals an den Service
   get booking() { return this.pageService.booking; }

@@ -162,3 +162,15 @@
                           {{ req.inventoryNumber }}
                         </code>
                       </td>
+                      <td class="text-slate-900">{{ formatDate(req.fromDate) }}</td>
+                      <td class="text-slate-900">{{ formatDate(req.toDate) }}</td>
+                    </td>
+                    <td class="flex gap-2">
+                        <button
+                          pButton
+                          type="button"
+                          class="bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
+                          (click)="accept(req)"
+                        >
+                          Annehmen
+                        </button>

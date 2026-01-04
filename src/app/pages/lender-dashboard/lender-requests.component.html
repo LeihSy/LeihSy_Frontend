@@ -128,3 +128,23 @@
                 <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Offene Anfragen</h2>
                 <p class="text-xs sm:text-sm text-gray-600">Bitte annehmen oder ablehnen</p>
               </div>
+              <div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
+                <p-table [value]="filteredPending()" [tableStyle]="{ 'min-width': '60rem' }">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Status</th>
+                      <th>Student</th>
+                      <th>Produkt</th>
+                      <th>Inventar-Nr.</th>
+                      <th>Von</th>
+                      <th>Bis</th>
+                      <th>Campus</th>
+                      <th>Aktion</th>
+                    </tr>
+                  </ng-template>
+      
+                  <ng-template pTemplate="body" let-req>
+                    <tr>
+                      <td>
+                        <p-tag [value]="statusTag(req).value" [styleClass]="statusTag(req).cls"></p-tag>
+                      </td>

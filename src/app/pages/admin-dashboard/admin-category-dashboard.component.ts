@@ -55,8 +55,7 @@ export class AdminCategoryDashboardComponent {
 
   // Icon-Auswahl
   commonIconOptions: string[] = [
-    '📦', '🥽', '📷', '💻', '📱', '🎙️', '💡', '🎥', '🚁',
-    '🎧', '⌨️', '🖱️', '🖨️', '📡', '🔌'
+    
   ];
 
   constructor(private messageService: MessageService) {}

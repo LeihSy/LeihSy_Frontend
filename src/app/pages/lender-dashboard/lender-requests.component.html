@@ -148,3 +148,17 @@
                       <td>
                         <p-tag [value]="statusTag(req).value" [styleClass]="statusTag(req).cls"></p-tag>
                       </td>
+                      <td>
+                        <div>
+                          <p class="font-medium text-slate-900">{{ req.studentName }}</p>
+                          <p class="text-sm text-gray-600">{{ req.studentId }}</p>
+                        </div>
+                      </td>
+      
+                      <td class="text-slate-900">{{ req.productName }}</td>
+      
+                      <td>
+                        <code class="bg-gray-100 px-2 py-1 rounded text-sm">
+                          {{ req.inventoryNumber }}
+                        </code>
+                      </td>

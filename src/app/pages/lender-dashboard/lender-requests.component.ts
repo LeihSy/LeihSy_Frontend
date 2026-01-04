@@ -98,3 +98,32 @@ interface LenderRequest {
         status: 'accepted'
       }
     ];
+
+    isDeclineDialogOpen = false;
+    selectedRequest: LenderRequest | null = null;
+    declineReason = '';
+    declineError = '';
+
+    pendingCount = computed(() => this.requests.filter(r => r.status === 'pending').length);
+    acceptedCount = computed(() => this.requests.filter(r => r.status === 'accepted').length);
+    declinedCount = computed(() => this.requests.filter(r => r.status === 'declined').length);
+
+    filteredPending = computed(() => this.applyAll(this.requests.filter(r => r.status === 'pending')));
+    filteredDone = computed(() => this.applyAll(this.requests.filter(r => r.status !== 'pending')));
+
+    private applyAll(list: LenderRequest[]): LenderRequest[] {
+        const q = this.searchQuery.toLowerCase().trim();
+        const campus = this.campusFilter;
+
+        if (q) {
+            res = res.filter(r =>
+              r.studentName.toLowerCase().includes(q) ||
+              r.studentId.toLowerCase().includes(q) ||
+              r.productName.toLowerCase().includes(q) ||
+              r.inventoryNumber.toLowerCase().includes(q)
+            );
+          }
+      
+          if (campus !== 'all') {
+            res = res.filter(r => r.campus === campus);
+          }

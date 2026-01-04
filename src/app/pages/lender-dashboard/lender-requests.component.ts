@@ -139,3 +139,30 @@ interface LenderRequest {
       
             return res;
     }
+    //Aktionen 
+    accept(req: LenderRequest): void {
+        if (req.status !== 'pending') return;
+    
+        req.status = 'accepted';
+        req.declineReason = undefined;
+    
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Anfrage angenommen',
+          detail: `${req.studentName} • ${req.productName}`
+        });
+      }
+      openDecline(req: LenderRequest): void {
+        if (req.status !== 'pending') return;
+    
+        this.selectedRequest = req;
+        this.declineReason = '';
+        this.declineError = '';
+        this.isDeclineDialogOpen = true;
+      }
+      closeDecline(): void {
+        this.isDeclineDialogOpen = false;
+        this.selectedRequest = null;
+        this.declineReason = '';
+        this.declineError = '';
+      }

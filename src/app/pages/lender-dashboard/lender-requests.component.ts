@@ -44,8 +44,19 @@ interface LenderRequest {
     providers: [MessageService],
     templateUrl: './lender-requests.component.html'
   })
-  
+
   searchQuery = '';
   campusFilter = 'all';
   sortBy: 'newest' | 'oldest' | 'student' = 'newest';
   tab: 'pending' | 'done' = 'pending';
+
+  campusOptions = [
+    { label: 'Alle Campus', value: 'all' },
+    { label: 'ES', value: 'Esslingen' },
+    { label: 'GO', value: 'Göppingen' }
+  ];
+  sortOptions = [
+    { label: 'Neueste zuerst', value: 'newest' },
+    { label: 'Älteste zuerst', value: 'oldest' },
+    { label: 'Student A-Z', value: 'student' }
+  ];

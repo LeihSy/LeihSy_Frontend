@@ -186,3 +186,13 @@ interface LenderRequest {
         this.closeDecline();
       }
       
+      statusTag(req: LenderRequest): { value: string; cls: string } {
+        if (req.status === 'pending') {
+          return { value: 'Offen', cls: 'bg-orange-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
+        }
+        if (req.status === 'accepted') {
+          return { value: 'Angenommen', cls: 'bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
+        }
+        return { value: 'Abgelehnt', cls: 'bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
+      }
+    }

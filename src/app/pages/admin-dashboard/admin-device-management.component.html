@@ -1,0 +1,265 @@
+<div class="min-h-[calc(100vh-4rem)] bg-gray-50">
+  <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="mb-2 text-2xl sm:text-3xl font-semibold text-[#2c3e7a]">
+        Verleiher Zuordnung
+      </h1>
+      <p class="text-sm text-gray-600 mb-6">
+        Übersicht aller Verleiher-Zuordnungen und Standorte
+      </p>
+
+      <!-- Suche & Filter -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-6">
+        <!-- Gerätesuche -->
+        <div class="flex-1 relative">
+          <i
+            class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+          ></i>
+          <input
+            pInputText
+            type="text"
+            placeholder="Gerät oder Inventarnummer suchen..."
+            class="w-full pl-9 bg-white border border-gray-300"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event); applyFilters()"
+          />
+        </div>
+
+        <!-- Kategorie -->
+        <p-select
+          class="w-full sm:w-[220px]"
+          [options]="categoryOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="selectedCategory()"
+          (onChange)="selectedCategory.set($event.value); applyFilters()"
+          placeholder="Kategorie"
+        ></p-select>
+
+        <!-- Verleiher-Filter -->
+        <div class="relative w-full sm:w-[240px]">
+          <i
+            class="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+          ></i>
+          <input
+            pInputText
+            type="text"
+            placeholder="Nach Verleiher filtern..."
+            class="w-full pl-9 bg-white border border-gray-300"
+            [ngModel]="lenderFilterQuery()"
+            (ngModelChange)="lenderFilterQuery.set($event); applyFilters()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Ergebnisanzahl -->
+    <div class="mb-6">
+      <p class="text-sm text-gray-700">
+        {{ resultCount() }}
+        {{ resultCount() === 1 ? 'Gerät' : 'Geräte' }} gefunden
+      </p>
+    </div>
+
+    <!-- Geräteliste / Empty State -->
+    @if (filteredDevices().length > 0) {
+      <div class="space-y-4">
+        @for (device of filteredDevices(); track device.id) {
+          <div
+            class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+          >
+            <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
+              <!-- Icon -->
+              <div
+                class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0 text-2xl"
+              >
+                {{ device.category | deviceIcon }}
+              </div>
+
+              <!-- Infos -->
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                  {{ device.name }}
+                </h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  {{ device.category }} • {{ device.inventoryNumber }}
+                </p>
+
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="bg-[#2c3e7a] text-white px-2 py-0.5 rounded text-xs">
+                    {{ device.availability.available }} von {{ device.availability.total }} verfügbar
+                  </span>
+                </div>
+              </div>
+
+              <!-- Bearbeiten -->
+              <button
+                pButton
+                type="button"
+                (click)="openEditDialog(device)"
+                class="p-button-text p-button-plain text-[#2c3e7a] hover:text-[#1f2d56] hover:bg-blue-50 flex-shrink-0"
+              >
+                <i class="pi pi-pencil mr-2 text-sm"></i>
+                <span>Bearbeiten</span>
+              </button>
+            </div>
+
+            <!-- Verleiher-Zuordnung -->
+            <div class="border-t border-gray-100 pt-4 mt-4">
+              <div class="flex items-start gap-3">
+                <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
+
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900 mb-1">
+                    Zugewiesener Verleiher:
+                  </p>
+
+                  @if (device.assignedLender) {
+                    <p class="text-sm text-gray-700 font-medium">
+                      {{ device.assignedLender }}
+                    </p>
+
+                    @if (device.lenderLocation) {
+                      <div class="flex items-center gap-2 mt-1">
+                        <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                        <p class="text-sm text-gray-600">
+                          {{ device.lenderLocation }}
+                        </p>
+                      </div>
+                    }
+                  } @else {
+                    <p class="text-sm text-gray-500 italic">
+                      Kein Verleiher zugeordnet
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="bg-white border border-gray-200 rounded-lg p-12 text-center">
+        <p class="text-gray-500">Keine Geräte gefunden</p>
+      </div>
+    }
+  </main>
+
+  <!-- Dialog -->
+  <p-dialog
+    [visible]="isEditDialogOpen()"
+    (visibleChange)="isEditDialogOpen.set($event)"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '600px', maxWidth: '95vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
+    header="Gerät bearbeiten"
+  >
+    @if (selectedDevice(); as device) {
+      <p class="text-sm text-gray-600 mb-4">
+        {{ device.name }} ({{ device.inventoryNumber }})
+      </p>
+
+      <!-- Tabs -->
+      <p-tabs [value]="activeDialogTab()">
+        <p-tablist>
+          <p-tab value="lender">Verleiher</p-tab>
+        </p-tablist>
+
+        <p-tabpanels class="mt-4">
+          <!-- Tab: Verleiher -->
+          <p-tabpanel value="lender">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p class="text-sm text-blue-800">
+                <strong>Hinweis:</strong> Ein Gerät kann nur einem Verleiher zugeordnet werden.
+              </p>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label for="lender" class="block text-sm font-medium text-gray-700 mb-1">
+                  Name des Verleihers *
+                </label>
+                <input
+                  id="lender"
+                  pInputText
+                  type="text"
+                  placeholder="z.B. Dr. Maria Schmidt"
+                  class="w-full bg-white border border-gray-300"
+                  [ngModel]="assignedLender()"
+                  (ngModelChange)="assignedLender.set($event)"
+                  list="lender-suggestions"
+                />
+
+                <small class="text-xs text-gray-500 mt-1 block">
+                  Geben Sie den vollständigen Namen ein (z.B. Titel Name).
+                </small>
+
+                <datalist id="lender-suggestions">
+                  @for (lender of uniqueLenders(); track lender) {
+                    <option [value]="lender"></option>
+                  }
+                </datalist>
+              </div>
+
+              <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">
+                  Standort/Campus *
+                </label>
+                <input
+                  id="location"
+                  pInputText
+                  type="text"
+                  placeholder="z.B. Campus Esslingen Flandernstraße, Raum 301"
+                  class="w-full bg-white border border-gray-300"
+                  [ngModel]="lenderLocation()"
+                  (ngModelChange)="lenderLocation.set($event)"
+                />
+              </div>
+
+              @if (assignedLender().trim() && lenderLocation().trim()) {
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div class="flex items-start gap-3">
+                    <i class="pi pi-user text-[#2c3e7a] text-base flex-shrink-0 mt-0.5"></i>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 mb-1">Zuordnung:</p>
+                      <p class="text-sm text-gray-700 font-medium">
+                        {{ assignedLender() }}
+                      </p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <i class="pi pi-map-marker text-gray-400 text-sm"></i>
+                        <p class="text-sm text-gray-600">
+                          {{ lenderLocation() }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-2 mt-6">
+        <button pButton type="button" class="p-button-outlined" (click)="closeDialog()">
+          Abbrechen
+        </button>
+
+        <button
+          pButton
+          type="button"
+          class="bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
+          (click)="handleSaveAssignment()"
+        >
+          Änderungen speichern
+        </button>
+      </div>
+    }
+  </p-dialog>
+</div>

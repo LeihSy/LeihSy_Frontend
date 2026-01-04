@@ -104,7 +104,9 @@ interface LenderRequest {
     declineReason = '';
     declineError = '';
     constructor(private messageService: MessageService) {}
-    
+    pendingCount(): number {
+        return this.requests.filter(r => r.status === 'pending').length;
+      }
 
     private applyAll(list: LenderRequest[]): LenderRequest[] {
         const q = this.searchQuery.toLowerCase().trim();

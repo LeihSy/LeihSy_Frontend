@@ -60,3 +60,41 @@ interface LenderRequest {
     { label: 'Älteste zuerst', value: 'oldest' },
     { label: 'Student A-Z', value: 'student' }
   ];
+
+  //Mock
+
+  requests: LenderRequest[] = [
+    {
+      id: 1,
+      studentName: 'Max Mustermann',
+      studentId: 'S123456',
+      productName: 'Canon EOS R5',
+      inventoryNumber: 'INV-10021',
+      campus: 'Esslingen',
+      fromDate: '2026-01-10',
+      toDate: '2026-01-12',
+      status: 'pending'
+    },
+    {
+      id: 2,
+      studentName: 'Lisa Hoffmann',
+      studentId: 'S987654',
+      productName: 'DJI Mic 2',
+      inventoryNumber: 'INV-20011',
+      campus: 'Göppingen',
+      fromDate: '2026-01-15',
+      toDate: '2026-01-16',
+      status: 'pending'
+    },
+    {
+        id: 3,
+        studentName: 'Maria Schmidt',
+        studentId: 'S555111',
+        productName: 'Stativ Manfrotto',
+        inventoryNumber: 'INV-30007',
+        campus: 'Esslingen',
+        fromDate: '2026-01-05',
+        toDate: '2026-01-06',
+        status: 'accepted'
+      }
+    ];

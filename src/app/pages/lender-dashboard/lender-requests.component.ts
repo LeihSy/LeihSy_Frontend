@@ -166,3 +166,23 @@ interface LenderRequest {
         this.declineReason = '';
         this.declineError = '';
       }
+      confirmDecline(): void {
+        if (!this.selectedRequest) return;
+    
+        const reason = this.declineReason.trim();
+        if (!reason) {
+          this.declineError = 'Bitte geben Sie eine Begründung an (Pflichtfeld).';
+          return;
+        }
+        this.selectedRequest.status = 'declined';
+        this.selectedRequest.declineReason = reason;
+    
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Anfrage abgelehnt',
+          detail: `${this.selectedRequest.studentName} • ${this.selectedRequest.productName}`
+        });
+    
+        this.closeDecline();
+      }
+      

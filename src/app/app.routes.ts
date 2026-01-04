@@ -77,7 +77,14 @@ export const routes: Routes = [
     data: { roles: ['lender', 'admin'] }
   },
   // Admin Bereich
-  
+  {
+    path: 'admin/category',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-category-dashboard.component')
+        .then(m => m.AdminCategoryDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
   {
     path: 'admin',
     loadComponent: () =>

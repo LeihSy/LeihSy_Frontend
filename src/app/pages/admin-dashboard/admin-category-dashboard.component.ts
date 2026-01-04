@@ -30,7 +30,6 @@ interface Category {
     ToastModule
   ],
   templateUrl: './admin-category-dashboard.component.html',
-  styleUrls: ['./admin-category-dashboard.component.scss'],
   providers: [MessageService]
 })
 export class AdminCategoryDashboardComponent {

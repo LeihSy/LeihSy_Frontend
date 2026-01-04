@@ -127,3 +127,15 @@ interface LenderRequest {
           if (campus !== 'all') {
             res = res.filter(r => r.campus === campus);
           }
+        
+        // sort
+        if (this.sortBy === 'student') {
+        res.sort((a, b) => a.studentName.localeCompare(b.studentName));
+            } else if (this.sortBy === 'oldest') {
+        res.sort((a, b) => a.fromDate.localeCompare(b.fromDate));
+            } else {
+        res.sort((a, b) => b.fromDate.localeCompare(a.fromDate));
+      }
+      
+            return res;
+    }

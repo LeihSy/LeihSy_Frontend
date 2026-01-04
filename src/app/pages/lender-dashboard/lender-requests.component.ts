@@ -44,3 +44,8 @@ interface LenderRequest {
     providers: [MessageService],
     templateUrl: './lender-requests.component.html'
   })
+  
+  searchQuery = '';
+  campusFilter = 'all';
+  sortBy: 'newest' | 'oldest' | 'student' = 'newest';
+  tab: 'pending' | 'done' = 'pending';

@@ -68,7 +68,14 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['lender'] },
   },
-
+  {
+    path: 'lender/requests',
+    loadComponent: () =>
+      import('./pages/lender-dashboard/lender-requests.component')
+        .then(m => m.LenderRequestsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
   // Admin Bereich
   
   {

@@ -104,12 +104,7 @@ interface LenderRequest {
     declineReason = '';
     declineError = '';
     constructor(private messageService: MessageService) {}
-    pendingCount = computed(() => this.requests.filter(r => r.status === 'pending').length);
-    acceptedCount = computed(() => this.requests.filter(r => r.status === 'accepted').length);
-    declinedCount = computed(() => this.requests.filter(r => r.status === 'declined').length);
-
-    filteredPending = computed(() => this.applyAll(this.requests.filter(r => r.status === 'pending')));
-    filteredDone = computed(() => this.applyAll(this.requests.filter(r => r.status !== 'pending')));
+    
 
     private applyAll(list: LenderRequest[]): LenderRequest[] {
         const q = this.searchQuery.toLowerCase().trim();
@@ -196,4 +191,24 @@ interface LenderRequest {
         }
         return { value: 'Abgelehnt', cls: 'bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
       }
+      formatDate(dateStr: string): string {
+        // erwartet "YYYY-MM-DD"
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return dateStr;
+      
+        return new Intl.DateTimeFormat('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).format(d);
+      }
+      
+      campusShort(campus: string): string {
+        if (!campus) return '';
+        const c = campus.toLowerCase();
+        if (c.includes('esslingen')) return 'ES';
+        if (c.includes('göppingen') || c.includes('goeppingen')) return 'GO';
+        return campus; // fallback
+      }
+      
     }

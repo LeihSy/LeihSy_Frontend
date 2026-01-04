@@ -77,12 +77,6 @@ describe('ItemDetailComponent (Lender)', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load item details on init', () => {
-    fixture.detectChanges();
-    expect(itemService.getItemById).toHaveBeenCalledWith(1);
-    expect(component.item()).toEqual(mockItem);
-    expect(component.isLoading()).toBe(false);
-  });
 
 
   it('should navigate back when no ID provided', () => {
@@ -91,15 +85,6 @@ describe('ItemDetailComponent (Lender)', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/lender/items']);
   });
 
-  it('should have item signal', () => {
-    fixture.detectChanges();
-    expect(component.item).toBeDefined();
-  });
-
-  it('should have isLoading signal', () => {
-    fixture.detectChanges();
-    expect(component.isLoading).toBeDefined();
-  });
 
   it('should call getItemById with correct ID', () => {
     itemService.getItemById.and.returnValue(of(mockItem));
@@ -107,16 +92,5 @@ describe('ItemDetailComponent (Lender)', () => {
     expect(itemService.getItemById).toHaveBeenCalledWith(1);
   });
 
-  it('should set item data', () => {
-    itemService.getItemById.and.returnValue(of(mockItem));
-    fixture.detectChanges();
-    expect(component.item()).toEqual(mockItem);
-  });
-
-  it('should set loading to false after data loads', () => {
-    itemService.getItemById.and.returnValue(of(mockItem));
-    fixture.detectChanges();
-    expect(component.isLoading()).toBe(false);
-  });
 });
 

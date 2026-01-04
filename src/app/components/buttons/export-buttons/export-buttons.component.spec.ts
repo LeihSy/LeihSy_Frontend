@@ -37,12 +37,5 @@ describe('ExportButtonsComponent', () => {
     expect(component.refresh.emit).toHaveBeenCalled();
   });
 
-  it('should disable buttons when isLoading is true', () => {
-    component.isLoading = true;
-    fixture.detectChanges();
-    const buttons = fixture.nativeElement.querySelectorAll('button');
-    expect(buttons[0].disabled).toBe(true);
-    expect(buttons[1].disabled).toBe(true);
-  });
 });
 

@@ -149,7 +149,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
-  
+
   {
     path: 'admin/devices',
     loadComponent: () =>
@@ -158,7 +158,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
-  
+
   {
     path: 'admin/items/:id/edit',
     loadComponent: () =>
@@ -205,6 +205,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-locations/admin-location-detail.component')
         .then(m => m.AdminLocationDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/insy-import',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-insy-import/admin-insy-import.component')
+        .then(m => m.AdminInsyImportComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

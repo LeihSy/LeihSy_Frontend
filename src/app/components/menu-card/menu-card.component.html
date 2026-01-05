@@ -1,35 +1,40 @@
-<div class="h-full min-h-[280px] flex flex-col transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(0,0,128,0.1)]">
+<div class="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(0,0,128,0.08)]">
   <p-card
-    class="h-full border border-gray-200 rounded-lg overflow-hidden shadow-sm flex flex-col"
+    class="h-full border border-gray-200 rounded-lg overflow-hidden shadow-sm"
     [pt]="{
-      header: { class: 'bg-gradient-to-br from-gray-50 to-gray-100 border-b-2 border-gray-200 p-4 md:p-6' },
-      body: { class: 'p-4 md:p-6 flex flex-col flex-1 min-h-[140px]' },
-      content: { class: 'flex-1 flex flex-col justify-between min-h-[120px]' }
+      body: { class: 'p-3 md:p-4' }
     }"
   >
-    <ng-template pTemplate="header">
-      <div class="flex flex-col items-center text-center gap-2">
+    <div class="flex items-center gap-3">
+      <!-- Icon links -->
+      <div class="flex-shrink-0">
         @if (icon) {
-          <i [class]="'pi pi-' + icon + ' text-2xl md:text-3xl text-[#253359] mb-2'"></i>
+          <i [class]="'pi pi-' + icon + ' text-2xl md:text-3xl text-[#253359]'"></i>
         }
         @if (iconClass) {
-          <i [class]="iconClass + ' text-2xl md:text-3xl text-[#253359] mb-2'"></i>
+          <i [class]="iconClass + ' text-2xl md:text-3xl text-[#253359]'"></i>
         }
-        <h3 class="text-lg md:text-xl font-semibold text-[#253359]">{{ header }}</h3>
       </div>
-    </ng-template>
 
-    <p class="text-gray-600 mb-4 flex-0 auto min-h-[3rem]">{{ description }}</p>
+      <!-- Überschrift und Beschreibung in der Mitte -->
+      <div class="flex-1 min-w-0">
+        <h3 class="text-base md:text-lg font-semibold text-[#253359] mb-1">{{ header }}</h3>
+        <p class="text-gray-600 text-xs md:text-sm">{{ description }}</p>
+      </div>
 
-    <button
-      pButton
-      [label]="buttonLabel"
-      class="w-full !bg-[#253359] !border-[#253359] font-semibold py-3 px-6 transition-all duration-200
-             hover:!bg-[#000066] hover:!border-[#000066] hover:scale-[1.02]
-             disabled:!bg-gray-400 disabled:!border-gray-400 disabled:opacity-60 disabled:cursor-not-allowed
-             focus:!ring-2 focus:!ring-[#253359]/25 shadow-none"
-      [routerLink]="routerLink"
-      [disabled]="disabled">
-    </button>
+      <!-- Button rechts mit Pfeil -->
+      <div class="flex-shrink-0">
+        <button
+          pButton
+          icon="pi pi-arrow-right"
+          class="!bg-[#253359] !border-[#253359] transition-all duration-200
+                 hover:!bg-[#000066] hover:!border-[#000066] hover:scale-[1.02]
+                 disabled:!bg-gray-400 disabled:!border-gray-400 disabled:opacity-60 disabled:cursor-not-allowed
+                 focus:!ring-2 focus:!ring-[#253359]/25 shadow-none !p-2"
+          [routerLink]="routerLink"
+          [disabled]="disabled">
+        </button>
+      </div>
+    </div>
   </p-card>
 </div>

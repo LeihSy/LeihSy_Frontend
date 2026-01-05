@@ -20,7 +20,7 @@ export interface ProductWithItems {
       <div class="bg-gray-50 border-b border-gray-200 p-4">
         <div class="flex items-center justify-between">
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-[#000080] mb-1">
+            <h3 class="text-lg font-semibold text-[#253359] mb-1">
               {{ productData.product.name }}
             </h3>
             <div class="flex items-center gap-4 text-sm text-gray-600">

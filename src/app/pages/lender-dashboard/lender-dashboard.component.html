@@ -15,13 +15,6 @@
       icon="box">
     </app-menu-card>
 
-    <app-menu-card
-      header="Ausleihvorgänge verwalten"
-      description="Verwalten Sie Ausleihvorgänge und beantworten Sie Anfragen."
-      buttonLabel="Zu den Ausleihvorgängen"
-      [disabled]="true"
-      icon="calendar">
-    </app-menu-card>
 
     <app-menu-card
     header="Ausleihe Übersicht"
@@ -40,6 +33,15 @@
     </app-menu-card>
 
   </div>
+
+  <div class="mt-8">
+    <h2 class="text-2xl font-semibold mb-4">Schnellzugriff</h2>
+    <div class="flex gap-3">
+      <button pButton label="QR-Code scannen" icon="pi pi-camera" (click)="openScanner()"></button>
+    </div>
+  </div>
+
+  <app-qr-scanner [(visible)]="scannerVisible" (scanned)="onScanned($event)"></app-qr-scanner>
 
 </div>
 

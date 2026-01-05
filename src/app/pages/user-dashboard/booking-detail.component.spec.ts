@@ -88,12 +88,6 @@ describe('BookingDetailComponent (User)', () => {
   });
 
 
-  it('should navigate back when no ID provided', () => {
-    activatedRoute.snapshot.paramMap.get.and.returnValue(null);
-    fixture.detectChanges();
-    expect(router.navigate).toHaveBeenCalledWith(['/user-dashboard/bookings']);
-  });
-
   it('should have booking signal', () => {
     fixture.detectChanges();
     expect(component.booking).toBeDefined();

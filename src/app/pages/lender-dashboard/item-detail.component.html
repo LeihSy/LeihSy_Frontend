@@ -4,13 +4,13 @@
 
   <!-- Back Button -->
   <button pButton icon="pi pi-arrow-left" label="Zurück zur Übersicht"
-          class="p-button-text mb-4 text-[#000080] hover:bg-[rgba(0,0,128,0.1)]"
+          class="p-button-text mb-4 text-[#253359] hover:bg-[rgba(0,0,128,0.1)]"
           (click)="goBack()"></button>
 
   <!-- Loading State -->
   @if (isLoading()) {
     <div class="text-center py-8">
-      <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
+      <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
       <p class="mt-4 text-gray-600">Lade Item-Details...</p>
     </div>
   }
@@ -23,7 +23,7 @@
       <div class="bg-white border border-gray-200 rounded-lg p-6">
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <h1 class="text-3xl font-bold text-[#000080] mb-2">
+            <h1 class="text-3xl font-bold text-[#253359] mb-2">
               {{ item()!.invNumber }}
             </h1>
             <p class="text-lg text-gray-600 mb-4">{{ item()!.productName }}</p>
@@ -46,7 +46,7 @@
 
           <!-- Basis Informationen -->
           <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-[#000080] mb-4">Item Informationen</h2>
+            <h2 class="text-xl font-semibold text-[#253359] mb-4">Item Informationen</h2>
 
             <div class="space-y-3">
               <div class="flex items-start">
@@ -75,7 +75,7 @@
           <!-- Produkt Informationen -->
           @if (product()) {
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 class="text-xl font-semibold text-[#000080] mb-4">Produktgruppe</h2>
+              <h2 class="text-xl font-semibold text-[#253359] mb-4">Produktgruppe</h2>
 
               <div class="space-y-3">
                 <div class="flex items-start">
@@ -119,7 +119,7 @@
           <!-- Verleiher Informationen -->
           @if (product()) {
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 class="text-xl font-semibold text-[#000080] mb-4">Produkt-Info</h2>
+              <h2 class="text-xl font-semibold text-[#253359] mb-4">Produkt-Info</h2>
 
               <div class="space-y-3">
                 <div class="flex items-start">
@@ -138,7 +138,7 @@
           <!-- Ausleihkonditionen -->
           @if (product()) {
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 class="text-xl font-semibold text-[#000080] mb-4">Ausleihkonditionen</h2>
+              <h2 class="text-xl font-semibold text-[#253359] mb-4">Ausleihkonditionen</h2>
 
               <div class="space-y-3">
                 <div class="flex items-start">
@@ -163,7 +163,7 @@
 
           <!-- Ausleihhistorie -->
           <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-[#000080] mb-4">Ausleihzeiträume</h2>
+            <h2 class="text-xl font-semibold text-[#253359] mb-4">Ausleihzeiträume</h2>
 
             @if (loanHistory().length > 0) {
               <app-table

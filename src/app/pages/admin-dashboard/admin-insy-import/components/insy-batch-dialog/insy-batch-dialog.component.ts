@@ -1,4 +1,4 @@
-import { Component, input, Output, EventEmitter, model, computed } from '@angular/core';
+import { Component, input, Output, EventEmitter, model, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -40,22 +40,23 @@ export class InsyBatchDialogComponent {
   @Output() confirm = new EventEmitter<BatchImportResult>();
 
   // Local state
-  selectedProductId: number | null = null;
-  invNumberPrefix = '';
+  selectedProductId = signal<number | null>(null);
+  invNumberPrefix = signal('');
 
-  isValid = computed(() => this.selectedProductId !== null);
+  isValid = computed(() => this.selectedProductId() !== null);
 
   onShow(): void {
-    this.selectedProductId = null;
-    this.invNumberPrefix = '';
+    this.selectedProductId.set(null);
+    this.invNumberPrefix.set('');
   }
 
   onConfirm(): void {
-    if (!this.selectedProductId) return;
+    const productId = this.selectedProductId();
+    if (!productId) return;
 
     this.confirm.emit({
-      productId: this.selectedProductId,
-      invNumberPrefix: this.invNumberPrefix || undefined
+      productId: productId,
+      invNumberPrefix: this.invNumberPrefix() || undefined
     });
     this.visible.set(false);
   }

@@ -255,8 +255,8 @@ export class DeviceDetailPageComponent implements OnInit {
     // Füge Item zu lokalem Warenkorb hinzu und überprüfe auf Erfolg
     if(this.cartService.addItem(
       this.device.id,
-      this.pickupDate.toISOString(),
-      this.returnDate.toISOString()
+      this.pickupDate,
+      this.returnDate
     )) {
       this.addedToCart = true;
     } else {
@@ -264,7 +264,7 @@ export class DeviceDetailPageComponent implements OnInit {
     }
   }
 
-  onSelectPickupDate(date: Date, device: Device) {
+  public onSelectPickupDate(date: Date, device: Device) {
     if (!date) {
       return;
     }

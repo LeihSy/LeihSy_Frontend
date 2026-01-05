@@ -20,15 +20,15 @@
             <div
               class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded flex items-center justify-center text-xl sm:text-2xl shrink-0"
             >
-              {{ device?.category | deviceIcon }}
+              {{ device.category | deviceIcon }}
             </div>
 
             <div class="flex-1 min-w-0">
               <h1 class="text-lg font-semibold text-[#253359] mb-1">
-                {{ device?.name }}
+                {{ device.name }}
               </h1>
               <p class="text-sm sm:text-base text-gray-600 text-muted-foreground">
-                {{ device?.category }}
+                {{ device.category }}
               </p>
             </div>
 
@@ -37,9 +37,9 @@
 
           <div class="flex flex-wrap gap-2 mb-4 sm:mb-6">
             <p-tag
-              [value]="device?.availability?.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
+              [value]="device.availability.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
               [class]="
-                (device?.availability?.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
+                (device.availability.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
                 ' text-white text-xs sm:text-sm font-normal'
               "
             ></p-tag>
@@ -53,7 +53,7 @@
             <p
               class="text-xs sm:text-sm text-muted-foreground text-slate-800 leading-relaxed"
             >
-              {{ device?.description }}
+              {{ device.description }}
             </p>
           </div>
 
@@ -65,20 +65,20 @@
             <div
               class="bg-gray-100 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm"
             >
-              <div *ngIf="device?.technicalSpecs?.storage" class="flex">
+              <div *ngIf="device.technicalSpecs?.storage" class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Speicher:
                 </span>
                 <span class="text-slate-800">
-                  {{ device?.technicalSpecs?.storage }}
+                  {{ device.technicalSpecs?.storage }}
                 </span>
               </div>
-              <div *ngIf="device?.technicalSpecs?.sensor" class="flex">
+              <div *ngIf="device.technicalSpecs?.sensor" class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Sensor:
                 </span>
                 <span class="text-slate-800">
-                  {{ device?.technicalSpecs?.sensor }}
+                  {{ device.technicalSpecs?.sensor }}
                 </span>
               </div>
             </div>
@@ -91,7 +91,7 @@
             </h2>
             <div class="flex flex-wrap gap-2">
               <p-tag
-                *ngFor="let acc of device?.technicalSpecs?.accessories"
+                *ngFor="let acc of device.technicalSpecs?.accessories"
                 [value]="acc"
                 class="text-slate-800 bg-gray-300 font-normal"
               ></p-tag>
@@ -105,7 +105,7 @@
             </h2>
             <div class="flex flex-wrap gap-2">
               <p-tag
-                *ngFor="let keyword of device?.keywords"
+                *ngFor="let keyword of device.keywords"
                 [value]="keyword"
                 class="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
               ></p-tag>
@@ -117,7 +117,7 @@
             <div class="flex items-start gap-2 text-xs sm:text-sm">
               <span class="shrink-0">📋</span>
               <p class="text-muted-foreground text-[#253359]">
-                <strong>Nummer:</strong> {{ device?.inventoryNumber }}
+                <strong>Nummer:</strong> {{ device.inventoryNumber }}
               </p>
             </div>
           </div>
@@ -132,15 +132,15 @@
         <div class="space-y-3 text-xs sm:text-sm p-4 sm:p-6 text-slate-800">
           <div>
             <p class="text-muted-foreground text-[#253359]">Ausleihzeit:</p>
-            <p>{{ device?.loanConditions?.maxLendingDays }}</p>
+            <p>{{ device.loanConditions.maxLendingDays }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-[#253359]">Verlängerungen:</p>
-            <p>{{ device?.loanConditions?.extensions }}</p>
+            <p>{{ device.loanConditions.extensions }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-[#253359]">Hinweis:</p>
-            <p>{{ device?.loanConditions?.notes }}</p>
+            <p>{{ device.loanConditions.notes }}</p>
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@
             <p class="text-xs sm:text-sm mb-2 text-slate-800">Gesamt:</p>
             <div class="flex items-center gap-2">
               <p-tag
-                [value]="(device?.availability?.available || 0) + ' Exemplare'"
+                [value]="(device.availability.available || 0) + ' Exemplare'"
                 class="bg-[#253359] text-white text-xs sm:text-sm font-normal"
               ></p-tag>
               <span class="text-xs sm:text-sm text-muted-foreground text-slate-800">

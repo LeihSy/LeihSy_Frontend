@@ -40,9 +40,9 @@
       <a routerLink="/cart"
         class="relative p-2 text-white hover:bg-white/10 hover:text-white rounded-md transition"
         pBadge
-        [value]="(cartCount$ | async) ?? 0"
-        severity="danger"
-        *ngIf="((cartCount$ | async) ?? 0) > 0; else noBadge">
+        [value]="cartService.cartCount()"
+        [badgeDisabled]="cartService.cartCount() === 0"
+        severity="danger">
         <i class="pi pi-shopping-cart text-xl"></i>
       </a>
       <ng-template #noBadge>

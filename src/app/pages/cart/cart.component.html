@@ -5,12 +5,19 @@
     <i class="pi pi-shopping-cart text-[#253359] text-3xl"></i>
     <h1 class="mb-2 text-3xl text-[#253359] font-semibold flex items-center gap-2">Warenkorb</h1>
     <span class="ml-2 inline-flex items-center justify-center bg-[#253359] text-white rounded-xl px-4 py-1 text-md self-center">
-        {{ cartCount$ | async }}
+        {{ cartService.cartCount() }}
     </span>
-
   </div>
+  @if(bookingsCreatedSuccessfully) {
+    <div class="mb-8 bg-white border border-gray-200 rounded-lg">
+      <div class="px-4 pb-4 pt-4 mb-1 flex flex-col items-center justify-center">
+        <i class="pi pi-check text-3xl text-red-600 py-2"></i>
+        <h3 class="text-xl font-semibold text-[#253359]">Ausleihanfrage(n) erfolgreich abgesendet!</h3>
+      </div>
+    </div>
+  }
   <!-- Informationscontainer-->
-  @for (item of cartItemsFull; track item.cartItemId; let i = $index) {
+  @for (item of cartService.getItems(); track item.cartItemId) {
     <div class="mb-8 bg-white border border-gray-200 rounded-lg">
     <!-- Produktinfos -->
     <div class="px-4 pt-4 mb-1 flex items-center justify-between">
@@ -18,7 +25,7 @@
       <button
         pButton
         class="bg-white !border-none !shadow-none hover:bg-gray-100 rounded-md"
-        (click)="onRemoveItem(i)"
+        (click)="onRemoveItem(item.cartItemId)"
         title="Produkt entfernen"
       >
         <i class="pi pi-trash text-xl text-red-600"></i>
@@ -39,33 +46,51 @@
       </div>
     </div>
     <div class="mb-8 flex items-start gap-3 px-4">
+      <!--
       <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
       <div>
         <h3 class="text-xl font-semibold text-[#253359] pb-2">Abholdatum:</h3>
           <p-datepicker
-            [(ngModel)]="item.pickupDate"
+            [ngModel]="item.rentalPeriod.pickupDate"
+            (ngModelChange)="cartService.updateItem(item.cartItemId, item.productId, $event, item.rentalPeriod.returnDate)"
             name="pickupDate-{{ item.cartItemId }}"
             [showIcon]="true"
             inputId="'pickupDate-' + item.cartItemId"
             class="w-full"
             dateFormat="dd.mm.yy"
-            [disabled]="true"
+            [disabled]="false"
           ></p-datepicker>
       </div>
       <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
+
       <div>
         <h3 class="text-xl font-semibold text-[#253359] pb-2">Rückgabedatum:</h3>
           <p-datepicker
-            [(ngModel)]="item.returnDate"
+            [ngModel]="item.rentalPeriod.returnDate"
+            (ngModelChange)="cartService.updateItem(item.cartItemId, item.productId, item.rentalPeriod.pickupDate, $event)"
             name="returnDate-{{ item.cartItemId }}"
             [showIcon]="true"
             inputId="'returnDate-' + item.cartItemId"
             class="w-full"
             dateFormat="dd.mm.yy"
-            [disabled]="true"
+            [disabled]="false"
           ></p-datepicker>
       </div>
+        -->
+      <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
+      <div>
+        <h3 class="text-xl font-semibold text-[#253359] pb-2">Ausleihzeitraum:</h3>
+        <p-datepicker
+          [ngModel]="[item.rentalPeriod.pickupDate, item.rentalPeriod.returnDate]"
+          (ngModelChange)="onRentalPeriodChange(item.cartItemId, item.productId, $event)"
+          selectionMode="range"
+          [showIcon]="true"
+          [dateFormat]="'dd.mm.yy'"
+          [minDate]="today"
+        ></p-datepicker>
+      </div>
     </div>
+
     <div class="bg-blue-50 border border-gray-200 rounded-lg mx-4 mt-2 mb-6 px-4 pt-2 pb-3">
       <h3 class="text-xl font-semibold text-[#253359]">Ausleihbedingungen:</h3>
       <p class="text-l text-gray-800">Ausleihfrist: {{ item.maxLendingDays }} Tage</p>
@@ -74,11 +99,11 @@
   </div>
   }
   <!-- Cart Bestätigungs Abschnitt -->
-  @if (cartCount$ | async) {
+  @if (cartService.cartCount()) {
     <div class="bg-white border border-gray-200 rounded-lg mt-8 px-4">
       <div class="bg-white mt-6 mb-6">
         <h3 class="text-xl font-semibold text-[#253359]">Gesamtanzahl:</h3>
-        <p class="text-l text-gray-800">{{ cartCount$ | async }} Produkt(e)</p>
+        <p class="text-l text-gray-800">{{ cartService.cartCount() }} Produkt(e)</p>
       </div>
       <div class="mt-4 flex items-start gap-3">
         <p-checkbox

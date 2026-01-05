@@ -20,7 +20,6 @@ import { BadgeModule } from 'primeng/badge';
     ButtonModule,
     DrawerModule,
     BadgeModule,
-    AsyncPipe,
   ],
   templateUrl: './header.component.html',
 })
@@ -31,9 +30,6 @@ export class HeaderComponent {
   cartService = inject(CartService);
 
   mobileMenuOpen = false;
-
-  // Auto-Updatender Cart Count aus Service
-  cartCount$ = this.cartService.itemCount$;
 
   // Expose userRole for template
   userRole() {

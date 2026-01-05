@@ -1,12 +1,18 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { ProductService } from './product.service';
+import { forkJoin } from 'rxjs';
+import { Product } from '../models/product.model';
 
-// Interface des Warenkorb-Items
 export interface CartItem {
   cartItemId: string;   // ID eines Eintrags im Cart
   productId: string;
-  pickupDate: string;
-  returnDate: string;
+  rentalPeriod: {
+    pickupDate: Date,
+    returnDate: Date,
+  }
+  name?: string;
+  location?: string;
+  maxLendingDays?: number;
 }
 
 @Injectable({
@@ -14,14 +20,15 @@ export interface CartItem {
 })
 export class CartService {
 
+  private productService = inject(ProductService);
+
   private readonly STORAGE_KEY = 'cart';
 
-  // interner State
-  private cart: CartItem[] = [];
+  // Cart als Signal -> Komponenten werden automatisch geupdated
+  private cart = signal<CartItem[]>([]);
 
-  // Observable für Item-Count (Komponenten können sich darauf subscriben)
-  private itemCountSubject = new BehaviorSubject<number>(0);
-  public itemCount$ = this.itemCountSubject.asObservable();
+  // Cartcount ist abgeleitet von cart, wird automatisch geupdated + updated Komponenten automatisch
+  public cartCount = computed(() => this.cart().length);
 
   constructor() {
     // Initial aus localStorage laden
@@ -37,14 +44,12 @@ export class CartService {
 
   // Gibt alle Items zurück
   getItems(): CartItem[] {
-    return [...this.cart];
+    return [...this.cart()];
   }
 
   getItemByCartItemId(cartItemId: string): CartItem | null {
-    const raw = localStorage.getItem(this.STORAGE_KEY);
-    const localCart = raw ? JSON.parse(raw) : [];
 
-    for(let cartItem of localCart) {
+    for(let cartItem of this.cart()) {
       if (cartItem.cartItemId === cartItemId) {
         return cartItem;
       }
@@ -53,14 +58,16 @@ export class CartService {
   }
 
   // Item zu lokalem Warenkorb hinzufügen
-  addItem(productId: string, pickupDate: string, returnDate: string): boolean {
+  addItem(productId: string, pickupDate: Date, returnDate: Date): boolean {
     const newItem: CartItem = {
         cartItemId: this.generateCartItemId(),
         productId,
-        pickupDate,
-        returnDate,
+        rentalPeriod: {
+          pickupDate,
+          returnDate,
+        }
     };
-    this.cart.push(newItem);
+    this.cart.update(cart => [...cart, newItem]); // Füge neues Item hinzu
     this.saveToStorage();
 
     // Prüfe ob Item erfolgreich erstellt wurde
@@ -71,62 +78,75 @@ export class CartService {
     }
   }
 
-  updateItem(cartItemId: string, productId: string, pickupDate: string, returnDate: string): boolean {
-      const newItem: CartItem = {
-        cartItemId,
-        productId,
-        pickupDate,
-        returnDate,
-    };
-    if(this.removeItem(cartItemId)) { // Falls Item erfolgreich aus lokalem Warenkorb gelöscht wurde
-      this.cart.push(newItem);
-      this.saveToStorage();
-    }
+  // Updated vorhandes Item im Warenkorb
+  updateItem(cartItemId: string, productId: string, rentalPeriod: {pickupDate: Date, returnDate: Date}): void {
+    try {
+      this.cart.update(cart =>
+      cart.map(item => {
+        if (item.cartItemId === cartItemId) {
+          return {
+            ...item,
+            productId,
+            rentalPeriod,
+          };
+        }
+        return item;
+      })
+    );
+    this.saveToStorage();
     //Prüfe ob Item erfolgreich zu lokalem Warenkorb hinzugefügt wurde
-    if(this.getItemByCartItemId(cartItemId)) {
-      console.log("Item geupdated");
-      return true;
-    } else {
-      return false;
+    console.log("Item geupdated");
+    } catch (err) {
+      console.log("Fehler beim Updaten des Items")
     }
   }
 
   // Item aus lokalem Warenkorb entfernen
   removeItem(cartItemId: string): boolean {
-    this.cart = this.cart.filter(i => i.cartItemId !== cartItemId);
+    this.cart.update(cart => cart.filter(i => i.cartItemId !== cartItemId));
     this.saveToStorage();
     if (this.getItemByCartItemId(cartItemId)) {
       return false;
     } else {
-      this.updateItemCount();
       return true;
     }
-
   }
 
   // gesamten lokalen Warenkorb löschen
   clearCart(): void {
-    this.cart = [];
+    this.cart.set([]); // cart leeren
     this.saveToStorage();
   }
 
   // Aus dem LocalStorage lesen
   private loadFromStorage(): void {
-    const raw = localStorage.getItem(this.STORAGE_KEY);
-    this.cart = raw ? JSON.parse(raw) : [];
-    this.updateItemCount();
+    let stored: CartItem[] = [];
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if(raw) {
+        const parsed = JSON.parse(raw);
+        if(Array.isArray(parsed)) {
+          stored = parsed.map(item => ({
+            ...item,
+            rentalPeriod: {
+              pickupDate: new Date(item.rentalPeriod.pickupDate),
+              returnDate: new Date(item.rentalPeriod.returnDate),
+            }
+          }));
+        }
+      }
+    } catch (err) {
+      console.error("Fehler beim Parsen des Carts aus LocalStorage:", err);
+    }
+    this.cart.set(stored);
   }
 
   // in den LocalStorage speichern
-  private saveToStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.cart));
-    this.updateItemCount();
+  private async saveToStorage(): Promise<void> {
+    await this.enrichCartItems(); // Reichere CartItem mit Daten vom Backend an
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.cart()));
   }
 
-  // ItemCount aktualisieren
-  private updateItemCount(): void {
-    this.itemCountSubject.next(this.cart.length);
-  }
   // ID für Cart Item generieren
   generateCartItemId(): string {
     while(true) {
@@ -135,5 +155,35 @@ export class CartService {
         return UUID;
       }
     }
+  }
+
+  enrichCartItems(): Promise<void> {
+    const cartItems = this.cart();
+
+    if (cartItems.length === 0) return Promise.resolve();
+
+    const productsToPull = cartItems.map(item =>
+      this.productService.getProductById(Number(item.productId))
+    );
+
+    return new Promise<void>((resolve, reject) => {
+      forkJoin(productsToPull).subscribe({
+        next: (products: Product[]) => {
+          this.cart.update(cart =>
+            cart.map((item, i) => ({
+              ...item,
+              name: products[i].name,
+              location: products[i].locationRoomNr,
+              maxLendingDays: products[i].expiryDate
+            }))
+          );
+          resolve();
+        },
+        error: (err) => {
+          console.error('Error loading products:', err);
+          reject(err);
+        }
+      });
+    });
   }
 }

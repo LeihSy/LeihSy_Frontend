@@ -61,6 +61,31 @@ export const routes: Routes = [
     data: { roles: ['lender', 'admin'] }
   },
   {
+    path: 'lender/loan',
+    loadComponent: () =>
+      import('./pages/lender-dashboard/admin-loan-dashboard.component')
+        .then(m => m.AdminLoanDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender'] },
+  },
+  {
+    path: 'lender/requests',
+    loadComponent: () =>
+      import('./pages/lender-dashboard/lender-requests.component')
+        .then(m => m.LenderRequestsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  // Admin Bereich
+  {
+    path: 'admin/category',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-category-dashboard.component')
+        .then(m => m.AdminCategoryDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-home-dashboard.component')
@@ -124,6 +149,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
+  
+  {
+    path: 'admin/devices',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-device-management.component')
+        .then(m => m.AdminDeviceManagementComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  
   {
     path: 'admin/items/:id/edit',
     loadComponent: () =>
@@ -132,6 +167,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },
+
   {
     path: 'admin/bookings',
     loadComponent: () =>

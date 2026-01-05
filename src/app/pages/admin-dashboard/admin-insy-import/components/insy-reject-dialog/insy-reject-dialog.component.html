@@ -1,0 +1,55 @@
+<p-dialog
+  header="Import ablehnen"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [focusOnShow]="false"
+  [draggable]="false"
+  (onShow)="onShow()"
+>
+  @if (request()) {
+    <div class="py-4">
+      <p class="mb-4">
+        Moechten Sie folgenden Import ablehnen?
+      </p>
+      <div class="bg-gray-50 p-4 rounded-lg space-y-2 mb-4">
+        <div class="flex justify-between">
+          <span class="font-medium">Name:</span>
+          <span>{{ request()!.name }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Inv-Nr:</span>
+          <span>{{ request()!.invNumber }}</span>
+        </div>
+      </div>
+
+      <label for="rejectReason" class="block text-sm font-medium text-gray-700 mb-2">
+        Grund (optional)
+      </label>
+      <textarea
+        pTextarea
+        id="rejectReason"
+        name="rejectReason"
+        [(ngModel)]="rejectReason"
+        rows="3"
+        placeholder="Grund fuer die Ablehnung..."
+        class="w-full">
+      </textarea>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Abbrechen"
+      icon="pi pi-times"
+      (onClick)="onCancel()"
+      [text]="true"
+    />
+    <p-button
+      label="Ablehnen"
+      icon="pi pi-times"
+      (onClick)="onConfirm()"
+      severity="danger"
+    />
+  </ng-template>
+</p-dialog>

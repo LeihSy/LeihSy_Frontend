@@ -15,12 +15,12 @@ export class UserGroupDetailService {
   group = signal<Group | undefined>(undefined);
   loading = signal(false);
   error = signal<string | undefined>(undefined);
-  members = signal<{ userId: number; userName: string; userEmail: string; owner?: boolean }[]>([]);
+  members = signal<{ userId: number; userName: string; owner?: boolean; ownerDisplay?: string }[]>([]);
 
   memberColumns: ColumnDef[] = [
+    { field: 'userId', header: 'ID' },
     { field: 'userName', header: 'Name', sortable: true },
-    { field: 'userEmail', header: 'E-Mail' },
-    { field: 'owner', header: 'Owner', type: 'badge' }
+    { field: 'ownerDisplay', header: 'Gruppeneigentümer', type: 'badge' }
   ];
 
   // Computed signals für Card-Daten
@@ -84,7 +84,8 @@ export class UserGroupDetailService {
           userId: m.userId,
           userName: m.userName,
           userEmail: m.userEmail,
-          owner: m.owner
+          owner: m.owner,
+          ownerDisplay: m.owner === true ? 'Ja' : ''
         })) || []);
         this.loading.set(false);
       },

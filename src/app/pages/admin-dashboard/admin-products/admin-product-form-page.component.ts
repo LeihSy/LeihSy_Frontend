@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
 import { ProductFormComponent } from '../../../components/admin/forms/product-form/product-form.component';
+import { BackButtonComponent } from '../../../components/back-button/back-button.component';
 import { ProductService } from '../../../services/product.service';
 import { CategoryService } from '../../../services/category.service';
 import { LocationService } from '../../../services/location.service';
@@ -24,7 +25,8 @@ import { Location } from '../../../models/location.model';
     CommonModule,
     ToastModule,
     ButtonModule,
-    ProductFormComponent
+    ProductFormComponent,
+    BackButtonComponent
   ],
   providers: [MessageService, AdminProductFormLogicService],
   template: `
@@ -32,11 +34,7 @@ import { Location } from '../../../models/location.model';
       <p-toast position="bottom-right"></p-toast>
 
       <div class="mb-6">
-        <button pButton
-                icon="pi pi-arrow-left"
-                label="Zurück zur Übersicht"
-                class="p-button-text"
-                (click)="goBack()"></button>
+        <app-back-button (backClick)="goBack()" label="Zurück zur Übersicht"></app-back-button>
       </div>
 
       <app-product-form
@@ -45,8 +43,7 @@ import { Location } from '../../../models/location.model';
         [locations]="allLocations()"
         [isEditMode]="isEditMode()"
         (formSubmit)="handleFormSubmit($event)"
-        (formCancel)="goBack()"
-        (locationRoomNrChange)="handleLocationRoomNrChange($event)">
+        (formCancel)="goBack()">
       </app-product-form>
     </div>
   `
@@ -194,14 +191,7 @@ export class AdminProductFormPageComponent implements OnInit {
     }
   }
 
-  handleLocationRoomNrChange(roomNr: string): void {
-    if (this.productFormComponent) {
-      this.logicService.handleLocationRoomNrChange(roomNr, this.productFormComponent);
-    }
-  }
-
   goBack(): void {
     this.logicService.navigateToProductList();
   }
 }
-

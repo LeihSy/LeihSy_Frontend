@@ -1,0 +1,7 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <app-back-button (backClick)="back()" label="Zurück"></app-back-button>
+
+  <h2 class="text-2xl font-semibold mb-4">Produkte in Standort {{ locationId }}</h2>
+
+  <app-table [columns]="columns" [data]="products" [rows]="20" [paginator]="true"></app-table>
+</div>

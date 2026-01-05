@@ -31,4 +31,3 @@ export class LocationService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
-

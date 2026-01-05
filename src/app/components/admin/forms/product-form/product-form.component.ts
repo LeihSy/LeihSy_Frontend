@@ -124,7 +124,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
     const related = (this.product as any)?.relatedItems as RelatedItem[] | undefined;
     this.selectedRelatedItems.set(Array.isArray(related) ? [...related] : []);
     this.relatedItemsSearch.set('');
-  
+
   }
 
   submitForm(): void {
@@ -165,7 +165,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
     this.isLoadingLocation.set(loading);
   }
 
-  setLocationId(id: number): void {
+  setLocationId(id: number | null): void {
     this.itemForm.patchValue({ locationId: id }, { emitEvent: false });
   }
 
@@ -191,6 +191,26 @@ export class ProductFormComponent implements OnInit, OnChanges {
     this.selectedFile.set(null);
     this.imagePreview.set(null);
     this.itemForm.patchValue({ imageUrl: null });
+  }
+
+  onLocationSelect(event: any): void {
+    const selectedId = event?.value ?? null;
+    if (selectedId) {
+      const selected = this.locations.find(l => l.id === selectedId);
+      if (selected) {
+        this.locationDisplayValue.set(`${selected.roomNr}`);
+        this.locationExists.set(true);
+        this.setLocationId(selected.id);
+      } else {
+        this.locationDisplayValue.set('');
+        this.locationExists.set(false);
+        this.setLocationId(null);
+      }
+    } else {
+      this.locationDisplayValue.set('');
+      this.locationExists.set(false);
+      this.setLocationId(null);
+    }
   }
 
 availableRelatedProducts(): Product[] {

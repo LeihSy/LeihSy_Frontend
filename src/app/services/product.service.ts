@@ -84,9 +84,9 @@ export class ProductService {
 
   // Lädt Produkte mit Items und berechnet availableItemCount und totalItemCount
   // Lädt auch Categories und Locations für jedes Produkt
-  getProductsWithItems(): Observable<Product[]> {
+  getProductsWithItems(filters?: { categoryId?: number, locationId?: number, keyword?: string }): Observable<Product[]> {
     return forkJoin({
-      products: this.getProducts(),
+      products: this.getProducts(filters),
       categories: this.categoryService.getAllCategories().pipe(catchError(() => of([]))),
       locations: this.locationService.getAllLocations().pipe(catchError(() => of([])))
     }).pipe(

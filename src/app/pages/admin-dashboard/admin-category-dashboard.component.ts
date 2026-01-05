@@ -1,0 +1,186 @@
+import { Component } from '@angular/core';
+import { CommonModule, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  deviceCount: number;
+}
+
+@Component({
+  selector: 'app-admin-category-dashboard',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgClass,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    TagModule,
+    ToastModule
+  ],
+  templateUrl: './admin-category-dashboard.component.html',
+  providers: [MessageService]
+})
+export class AdminCategoryDashboardComponent {
+
+  // Suchfeld
+  searchQuery = '';
+
+  // Dialog-States
+  isAddDialogOpen = false;
+  isEditDialogOpen = false;
+  isDeleteDialogOpen = false;
+
+  // Ausgewählte Kategorie für Bearbeiten / Löschen
+  selectedCategory: Category | null = null;
+
+  // Formularfelder für Neu/Bearbeiten
+  newCategoryName = '';
+  newCategoryIcon = '📦';
+
+  // Mock-Daten
+  categories: Category[] = [
+  ];
+
+  // Icon-Auswahl
+  commonIconOptions: string[] = [
+    
+  ];
+
+  constructor(private messageService: MessageService) {}
+
+  // Gefilterte Kategorien für *ngFor
+  get filteredCategories(): Category[] {
+    const query = this.searchQuery.toLowerCase().trim();
+    if (!query) return this.categories;
+    return this.categories.filter(cat =>
+      cat.name.toLowerCase().includes(query)
+    );
+  }
+
+  // --- Dialog-Öffner --------------------------------------
+
+  openAddDialog() {
+    this.newCategoryName = '';
+    this.newCategoryIcon = '📦';
+    this.selectedCategory = null;
+    this.isAddDialogOpen = true;
+  }
+
+  openEditDialog(category: Category) {
+    this.selectedCategory = category;
+    this.newCategoryName = category.name;
+    this.newCategoryIcon = category.icon;
+    this.isEditDialogOpen = true;
+  }
+
+  openDeleteDialog(category: Category) {
+    this.selectedCategory = category;
+    this.isDeleteDialogOpen = true;
+  }
+
+  // --- Aktionen -------------------------------------------
+
+  handleAddCategory() {
+    if (!this.newCategoryName.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Bitte geben Sie einen Kategorienamen ein'
+      });
+      return;
+    }
+
+    const newCategory: Category = {
+      id: Date.now().toString(),
+      name: this.newCategoryName.trim(),
+      icon: this.newCategoryIcon || '📦',
+      deviceCount: 0
+    };
+
+    this.categories = [...this.categories, newCategory];
+
+    this.isAddDialogOpen = false;
+    this.newCategoryName = '';
+    this.newCategoryIcon = '📦';
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Erfolg',
+      detail: 'Kategorie wurde erfolgreich hinzugefügt'
+    });
+  }
+
+  handleEditCategory() {
+    if (!this.selectedCategory || !this.newCategoryName.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Fehler',
+        detail: 'Bitte geben Sie einen Kategorienamen ein'
+      });
+      return;
+    }
+
+    this.categories = this.categories.map(cat =>
+      cat.id === this.selectedCategory!.id
+        ? {
+            ...cat,
+            name: this.newCategoryName.trim(),
+            icon: this.newCategoryIcon || '📦'
+          }
+        : cat
+    );
+
+    this.isEditDialogOpen = false;
+    this.selectedCategory = null;
+    this.newCategoryName = '';
+    this.newCategoryIcon = '📦';
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Erfolg',
+      detail: 'Kategorie wurde erfolgreich aktualisiert'
+    });
+  }
+
+  handleDeleteCategory() {
+    if (!this.selectedCategory) return;
+
+    if (this.selectedCategory.deviceCount > 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Löschen nicht möglich',
+        detail: `Kategorie kann nicht gelöscht werden, sie enthält noch ${this.selectedCategory.deviceCount} Geräte.`
+      });
+      return;
+    }
+
+    this.categories = this.categories.filter(
+      cat => cat.id !== this.selectedCategory!.id
+    );
+
+    this.isDeleteDialogOpen = false;
+    this.selectedCategory = null;
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Erfolg',
+      detail: 'Kategorie wurde erfolgreich gelöscht'
+    });
+  }
+
+  isDeleteDisabled(): boolean {
+    return !this.selectedCategory || this.selectedCategory.deviceCount !== 0;
+  }
+}

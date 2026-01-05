@@ -1,0 +1,69 @@
+<div class="admin-insy-import-container">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">InSy Import-Verwaltung</h1>
+        <p class="text-gray-600 mt-2">Verwaltung von Import-Anfragen aus dem InSy-System</p>
+      </div>
+      <p-button
+        label="Mock-Daten laden"
+        icon="pi pi-refresh"
+        [loading]="isLoading()"
+        (onClick)="refreshImports()"
+        severity="secondary"
+      />
+    </div>
+
+    <!-- Statistik-Karten -->
+    <app-insy-statistics-cards
+      [statistics]="statistics()"
+      [newTodayCount]="newRequestsCount()"
+    />
+  </div>
+
+  <!-- Tabelle mit Filter -->
+  <app-insy-import-table
+    [requests]="filteredRequests()"
+    [isLoading]="isLoading()"
+    [(selectedRequests)]="selectedRequests"
+    (importRequest)="onOpenImportDialog($event)"
+    (rejectRequest)="onOpenRejectDialog($event)"
+    (batchImport)="onOpenBatchDialog()"
+    (batchReject)="onBulkReject()"
+    (refresh)="refreshImports()"
+    (searchChange)="onSearchChange($event)"
+    (statusFilterChange)="onStatusFilterChange($event)"
+  />
+</div>
+
+<!-- Import Dialog -->
+<app-insy-import-dialog
+  [(visible)]="showImportDialog"
+  [request]="currentRequest()"
+  [categories]="categories()"
+  [locations]="locations()"
+  [products]="products()"
+  (confirm)="onImportConfirm($event)"
+/>
+
+<!-- Reject Dialog -->
+<app-insy-reject-dialog
+  [(visible)]="showRejectDialog"
+  [request]="currentRequest()"
+  (confirm)="onRejectConfirm($event)"
+/>
+
+<!-- Batch Dialog -->
+<app-insy-batch-dialog
+  [(visible)]="showBatchDialog"
+  [selectedCount]="pendingSelectedRequests().length"
+  [products]="products()"
+  (confirm)="onBatchConfirm($event)"
+/>
+
+<!-- Toast -->
+<p-toast />
+
+<!-- Confirm Dialog -->
+<p-confirmDialog />

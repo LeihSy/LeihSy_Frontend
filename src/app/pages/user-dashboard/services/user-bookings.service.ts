@@ -129,7 +129,7 @@ export class UserBookingsService {
   }
 
   navigateToBookingDetail(bookingId: number): void {
-    this.router.navigate(['/user/bookings', bookingId]);
+    this.router.navigate(['/user-dashboard/bookings', bookingId]);
   }
 }
 

@@ -9,12 +9,12 @@ import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
 import { InputNumberModule } from 'primeng/inputnumber';
 
-import { Product } from '../../models/product.model';
-import { Category } from '../../models/category.model';
-import { Location } from '../../models/location.model';
-import { FormRowComponent } from './form-row/form-row.component';
-import { FormInputFieldComponent } from './form-input-field/form-input-field.component';
-import { ValidationMessageComponent } from './validation-message/validation-message.component';
+import { Product } from '../../../../models/product.model';
+import { Category } from '../../../../models/category.model';
+import { Location } from '../../../../models/location.model';
+import { FormRowComponent } from '../../form-row/form-row.component';
+import { FormInputFieldComponent } from '../../form-input-field/form-input-field.component';
+import { ValidationMessageComponent } from '../../validation-message/validation-message.component';
 
 type RelatedItemType = 'required' | 'recommended';
 

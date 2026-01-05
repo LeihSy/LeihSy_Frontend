@@ -19,7 +19,7 @@ import { OverviewStatCardComponent } from '../../../components/admin/overview-st
 import { StatsTableComponent, StatusStat } from '../../../components/admin/stats-table/stats-table.component';
 import { RankingListComponent, ProductRanking } from '../../../components/admin/ranking-list/ranking-list.component';
 import { BookingStatisticsExportService } from './services/booking-statistics-export.service';
-import { ExportButtonsComponent } from './components/export-buttons/export-buttons.component';
+import { ExportButtonsComponent } from '../../../components/admin/export-buttons/export-buttons.component';
 
 @Component({
   selector: 'app-admin-booking-statistics',

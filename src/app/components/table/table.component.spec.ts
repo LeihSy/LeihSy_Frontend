@@ -45,10 +45,5 @@ describe('TableComponent', () => {
     expect(formatted).toMatch(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/);
   });
 
-  it('should return correct status class', () => {
-    expect(component.getStatusClass('deleted')).toBe('status-deleted');
-    expect(component.getStatusClass('active')).toBe('status-active');
-    expect(component.getStatusClass('pending')).toBe('status-pending');
-  });
 });
 

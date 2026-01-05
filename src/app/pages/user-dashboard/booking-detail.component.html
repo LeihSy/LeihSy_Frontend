@@ -1,26 +1,27 @@
-<div class="booking-detail-container">
+<div class="p-8 max-w-6xl mx-auto">
   <p-toast position="bottom-right"></p-toast>
 
   <button
     pButton
     icon="pi pi-arrow-left"
     label="Zurück zur Übersicht"
-    class="p-button-text mb-4"
+    class="p-button-text mb-4 text-[#000080] hover:bg-[rgba(0,0,128,0.04)]"
     (click)="goBack()">
   </button>
 
   @if (isLoading()) {
-    <div class="loading-state">
+    <div class="text-center py-8 flex flex-col items-center justify-center">
       <i class="pi pi-spin pi-spinner text-4xl text-[#000080]"></i>
       <p class="mt-4 text-gray-600">Lade Buchungsdetails...</p>
     </div>
   }
 
   @if (!isLoading() && booking()) {
-    <div class="detail-grid">
+    <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-      <div class="header-card">
-        <p-card>
+      <!-- Header (spans full width on lg) -->
+      <div class="lg:col-span-3">
+        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div class="flex items-start justify-between">
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
@@ -37,7 +38,7 @@
               <p-tag
                 [value]="getStatusLabel(booking()!.status)"
                 [severity]="getStatusSeverity(booking()!.status)"
-                styleClass="text-sm font-semibold">
+                class="text-sm font-semibold px-3 py-1.5">
               </p-tag>
             </div>
             <div class="text-right">
@@ -45,184 +46,215 @@
               <p class="text-lg font-bold text-[#000080]">#{{ booking()!.id }}</p>
             </div>
           </div>
-        </p-card>
+        </div>
       </div>
 
-      <div class="info-section">
+      <!-- Left column (info cards) -->
+      <div class="lg:col-span-2 space-y-6">
 
-        <p-card header="Ausleihzeitraum" styleClass="info-card">
-          <div class="info-grid">
-            <div class="info-item">
-              <i class="pi pi-calendar-plus info-icon"></i>
-              <div>
-                <p class="info-label">Geplante Abholung</p>
-                <p class="info-value">{{ formatDateOnly(booking()!.startDate) }}</p>
+        <!-- Ausleihzeitraum Card -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Ausleihzeitraum</div>
+          <div class="p-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-calendar-plus text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Geplante Abholung</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ formatDateOnly(booking()!.startDate) }}</p>
+                </div>
               </div>
-            </div>
-            <div class="info-item">
-              <i class="pi pi-calendar-minus info-icon"></i>
-              <div>
-                <p class="info-label">Geplante Rückgabe</p>
-                <p class="info-value">{{ formatDateOnly(booking()!.endDate) }}</p>
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-calendar-minus text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Geplante Rückgabe</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ formatDateOnly(booking()!.endDate) }}</p>
+                </div>
               </div>
             </div>
           </div>
-        </p-card>
+        </div>
 
-        <p-card header="Verleiher" styleClass="info-card">
-          <div class="info-grid">
-            <div class="info-item">
-              <i class="pi pi-user info-icon"></i>
-              <div>
-                <p class="info-label">Name</p>
-                <p class="info-value">{{ booking()!.lenderName }}</p>
+        <!-- Verleiher Card -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Verleiher</div>
+          <div class="p-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-user text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Name</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ booking()!.lenderName }}</p>
+                </div>
               </div>
-            </div>
-            <div class="info-item">
-              <i class="pi pi-id-card info-icon"></i>
-              <div>
-                <p class="info-label">Verleiher-ID</p>
-                <p class="info-value">#{{ booking()!.lenderId }}</p>
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-id-card text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Verleiher-ID</p>
+                  <p class="text-sm text-gray-800 font-medium">#{{ booking()!.lenderId }}</p>
+                </div>
               </div>
             </div>
           </div>
-        </p-card>
+        </div>
 
-        <p-card header="Gegenstand" styleClass="info-card">
-          <div class="info-grid">
-            <div class="info-item">
-              <i class="pi pi-box info-icon"></i>
-              <div>
-                <p class="info-label">Produkt</p>
-                <p class="info-value">{{ booking()!.productName }}</p>
+        <!-- Gegenstand Card -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Gegenstand</div>
+          <div class="p-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-box text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Produkt</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ booking()!.productName }}</p>
+                </div>
               </div>
-            </div>
-            <div class="info-item">
-              <i class="pi pi-hashtag info-icon"></i>
-              <div>
-                <p class="info-label">Inventarnummer</p>
-                <p class="info-value">{{ booking()!.itemInvNumber }}</p>
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-hashtag text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Inventarnummer</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ booking()!.itemInvNumber }}</p>
+                </div>
               </div>
-            </div>
-            <div class="info-item">
-              <i class="pi pi-tag info-icon"></i>
-              <div>
-                <p class="info-label">Produkt-ID</p>
-                <p class="info-value">#{{ booking()!.productId }}</p>
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-tag text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Produkt-ID</p>
+                  <p class="text-sm text-gray-800 font-medium">#{{ booking()!.productId }}</p>
+                </div>
               </div>
             </div>
           </div>
-        </p-card>
+        </div>
 
         @if (booking()!.message) {
-          <p-card header="Nachricht" styleClass="info-card">
-            <div class="message-box">
-              <i class="pi pi-comment text-gray-400"></i>
-              <p class="message-text">{{ booking()!.message }}</p>
-            </div>
-          </p-card>
-        }
-
-        <p-card header="Termine & Daten" styleClass="info-card">
-          <div class="info-grid">
-            @if (booking()!.proposedPickups) {
-              <div class="info-item">
-                <i class="pi pi-calendar info-icon"></i>
-                <div>
-                  <p class="info-label">Vorgeschlagene Abholtermine</p>
-                  <p class="info-value">{{ booking()!.proposedPickups }}</p>
-                </div>
-              </div>
-            }
-            @if (booking()!.confirmedPickup) {
-              <div class="info-item">
-                <i class="pi pi-check-circle info-icon text-green-600"></i>
-                <div>
-                  <p class="info-label">Bestätigter Abholtermin</p>
-                  <p class="info-value">{{ formatDate(booking()!.confirmedPickup) }}</p>
-                </div>
-              </div>
-            }
-            @if (booking()!.distributionDate) {
-              <div class="info-item">
-                <i class="pi pi-sign-out info-icon text-orange-600"></i>
-                <div>
-                  <p class="info-label">Tatsächliche Ausgabe</p>
-                  <p class="info-value">{{ formatDate(booking()!.distributionDate) }}</p>
-                </div>
-              </div>
-            }
-            @if (booking()!.returnDate) {
-              <div class="info-item">
-                <i class="pi pi-sign-in info-icon text-green-600"></i>
-                <div>
-                  <p class="info-label">Tatsächliche Rückgabe</p>
-                  <p class="info-value">{{ formatDate(booking()!.returnDate) }}</p>
-                </div>
-              </div>
-            }
-            <div class="info-item">
-              <i class="pi pi-clock info-icon"></i>
-              <div>
-                <p class="info-label">Erstellt am</p>
-                <p class="info-value">{{ formatDate(booking()!.createdAt) }}</p>
-              </div>
-            </div>
-            <div class="info-item">
-              <i class="pi pi-history info-icon"></i>
-              <div>
-                <p class="info-label">Zuletzt aktualisiert</p>
-                <p class="info-value">{{ formatDate(booking()!.updatedAt) }}</p>
+          <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Nachricht</div>
+            <div class="p-4">
+              <div class="flex gap-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-md">
+                <i class="pi pi-comment text-blue-400 text-xl"></i>
+                <p class="text-blue-800 text-sm leading-relaxed m-0">{{ booking()!.message }}</p>
               </div>
             </div>
           </div>
-        </p-card>
+        }
+
+        <!-- Termine & Daten -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Termine & Daten</div>
+          <div class="p-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+              @if (booking()!.proposedPickups) {
+                <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <i class="pi pi-calendar text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                  <div>
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Vorgeschlagene Abholtermine</p>
+                    <p class="text-sm text-gray-800 font-medium">{{ booking()!.proposedPickups }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (booking()!.confirmedPickup) {
+                <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <i class="pi pi-check-circle text-green-600 text-xl mt-1 flex-shrink-0"></i>
+                  <div>
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Bestätigter Abholtermin</p>
+                    <p class="text-sm text-gray-800 font-medium">{{ formatDate(booking()!.confirmedPickup) }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (booking()!.distributionDate) {
+                <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <i class="pi pi-sign-out text-orange-600 text-xl mt-1 flex-shrink-0"></i>
+                  <div>
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Tatsächliche Ausgabe</p>
+                    <p class="text-sm text-gray-800 font-medium">{{ formatDate(booking()!.distributionDate) }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (booking()!.returnDate) {
+                <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <i class="pi pi-sign-in text-green-600 text-xl mt-1 flex-shrink-0"></i>
+                  <div>
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Tatsächliche Rückgabe</p>
+                    <p class="text-sm text-gray-800 font-medium">{{ formatDate(booking()!.returnDate) }}</p>
+                  </div>
+                </div>
+              }
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-clock text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Erstellt am</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ formatDate(booking()!.createdAt) }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <i class="pi pi-history text-[#000080] text-xl mt-1 flex-shrink-0"></i>
+                <div>
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Zuletzt aktualisiert</p>
+                  <p class="text-sm text-gray-800 font-medium">{{ formatDate(booking()!.updatedAt) }}</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
 
       </div>
 
-      <div class="timeline-section">
-        <p-card header="Buchungsverlauf" styleClass="timeline-card">
-          @if (timelineEvents().length > 0) {
-            <p-timeline [value]="timelineEvents()" align="left">
-              <ng-template pTemplate="content" let-event>
-                <div class="timeline-content">
-                  <div class="timeline-header">
-                    <i [class]="event.icon + ' timeline-icon'" [style.color]="event.color"></i>
-                    <h4 class="timeline-title">{{ event.status }}</h4>
+      <!-- Right column: Timeline -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#000080] px-4 py-3">Buchungsverlauf</div>
+          <div class="p-4">
+            @if (timelineEvents().length > 0) {
+              <p-timeline [value]="timelineEvents()" align="left">
+                <ng-template pTemplate="content" let-event>
+                  <div class="py-2">
+                    <div class="flex items-center gap-3 mb-2">
+                      <i [class]="event.icon + ' text-xl'" [style.color]="event.color"></i>
+                      <h4 class="text-sm font-semibold text-gray-800 m-0">{{ event.status }}</h4>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-1">{{ event.description }}</p>
+                    <p class="text-xs text-gray-400 flex items-center gap-2"><i class="pi pi-clock"></i> {{ formatDate(event.date) }}</p>
                   </div>
-                  <p class="timeline-description">{{ event.description }}</p>
-                  <p class="timeline-date">
-                    <i class="pi pi-clock"></i>
-                    {{ formatDate(event.date) }}
-                  </p>
-                </div>
-              </ng-template>
-              <ng-template pTemplate="marker" let-event>
-                <div class="timeline-marker" [style.background-color]="event.color">
-                  <i [class]="event.icon" style="color: white; font-size: 0.875rem;"></i>
-                </div>
-              </ng-template>
-            </p-timeline>
-          } @else {
-            <div class="empty-timeline">
-              <i class="pi pi-info-circle text-gray-400 text-3xl mb-2"></i>
-              <p class="text-gray-500">Keine Ereignisse verfügbar</p>
-            </div>
-          }
-        </p-card>
+                </ng-template>
+                <ng-template pTemplate="marker" let-event>
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-md" [style.background-color]="event.color">
+                    <i [class]="event.icon" style="color: white; font-size: 0.875rem;"></i>
+                  </div>
+                </ng-template>
+              </p-timeline>
+            } @else {
+              <div class="text-center py-8">
+                <i class="pi pi-info-circle text-gray-400 text-3xl mb-2"></i>
+                <p class="text-gray-500">Keine Ereignisse verfügbar</p>
+              </div>
+            }
+          </div>
+        </div>
       </div>
 
     </div>
   }
 
   @if (!isLoading() && !booking()) {
-    <div class="error-state">
+    <div class="text-center flex flex-col items-center justify-center py-8">
       <i class="pi pi-exclamation-triangle text-red-500 text-5xl mb-4"></i>
       <h2 class="text-xl font-bold text-gray-800 mb-2">Buchung nicht gefunden</h2>
       <p class="text-gray-600 mb-4">Die angeforderte Buchung konnte nicht geladen werden.</p>
-      <button pButton label="Zurück zur Übersicht" (click)="goBack()"></button>
+      <button pButton label="Zurück zur Übersicht" class="p-button" (click)="goBack()"></button>
     </div>
   }
 
 </div>
-

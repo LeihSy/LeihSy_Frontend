@@ -1,8 +1,8 @@
-<div class="rounded-lg overflow-hidden bg-white">
+<div class="rounded-lg overflow-hidden bg-white border border-gray-200">
 
   <button
     type="button"
-    class="product-header flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors w-full text-left"
+    class="flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 transition-colors w-full text-left"
     (click)="onToggleExpansion()">
 
     <div class="flex items-center gap-3 flex-1">
@@ -11,7 +11,7 @@
          class="text-gray-500"></i>
 
       <div>
-        <h3 class="text-lg font-bold">{{ productData.product.name }}</h3>
+        <h3 class="text-lg font-bold text-gray-800">{{ productData.product.name }}</h3>
         <p class="text-xs text-gray-600">
           <strong>Kategorie:</strong> {{ productData.product.category?.name || 'N/A' }} |
           <strong>Standort:</strong> {{ productData.product.location?.roomNr || 'N/A' }}
@@ -20,19 +20,19 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <span class="badge badge-info">
+      <span class="px-2 py-1 rounded-md text-xs font-medium inline-block bg-blue-100 text-blue-800">
         {{ productData.availableCount }} / {{ productData.totalCount }} verfügbar
       </span>
       <button pButton icon="pi pi-plus"
               type="button"
-              class="p-button-sm p-button-rounded bg-blue-900 border-none"
+              class="p-button-sm p-button-rounded text-white bg-blue-900 border-blue-900 hover:bg-blue-950 hover:border-blue-950 focus:ring-4 focus:ring-blue-300 disabled:opacity-60 disabled:cursor-not-allowed"
               (click)="onAddItem($event)"
               pTooltip="Neue Instanz hinzufügen"></button>
     </div>
   </button>
 
   @if (isExpanded) {
-    <div class="border-t p-4 bg-gray-50">
+    <div class="border-t border-gray-200 p-4 bg-gray-50">
       @if (productData.product.description) {
         <p class="text-sm text-gray-500 mb-3">{{ productData.product.description }}</p>
       }
@@ -50,7 +50,7 @@
           emptyMessage="Keine Instanzen vorhanden">
         </app-table>
       } @else {
-        <div class="text-center text-gray-500 py-4 bg-white rounded border">
+        <div class="text-center text-gray-500 py-4 bg-white rounded border border-gray-200">
           <p class="text-sm">Noch keine Instanzen für dieses Produkt angelegt.</p>
           <p class="text-xs mt-1">Klicken Sie auf das Plus-Symbol, um die erste Instanz zu erstellen.</p>
         </div>

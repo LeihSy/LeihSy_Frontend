@@ -21,25 +21,29 @@
       </button>
 
       <!-- Lender Dashboard - für lender UND admin -->
-      <button *ngIf="userRole() === 'lender' || userRole() === 'admin'"
-              pButton routerLink="/lender" routerLinkActive="bg-white/20"
+      @if (userRole() === 'lender' || userRole() === 'admin') {
+      <button pButton routerLink="/lender" routerLinkActive="bg-white/20"
               class="p-button-text text-white hover:bg-white/10 hover:text-white">
         <i class="pi pi-check-square w-4 h-4 mr-2"></i>
         <span>Anfragen</span>
       </button>
+      }
 
       <!-- Admin Dashboard - nur für admin -->
-      <button *ngIf="userRole() === 'admin'"
-              pButton routerLink="/admin" routerLinkActive="bg-white/20"
+      @if (userRole() === 'admin') {
+      <button pButton routerLink="/admin" routerLinkActive="bg-white/20"
               class="p-button-text text-white hover:bg-white/10 hover:text-white">
         <i class="pi pi-cog w-4 h-4 mr-2"></i>
         <span>Verwaltung</span>
       </button>
+      }
 
       <a routerLink="/cart" class="relative hover:opacity-80 transition-opacity p-2 text-white">
-        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge *ngIf="cartCount > 0" [value]="cartCount"
-           severity="danger"></i>
-        <i *ngIf="cartCount === 0" class="pi pi-shopping-cart text-xl"></i>
+        @if (cartCount > 0) {
+        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge [value]="cartCount" severity="danger"></i>
+        } @else {
+        <i class="pi pi-shopping-cart text-xl"></i>
+        }
       </a>
 
       <div class="flex items-center gap-3">
@@ -61,9 +65,11 @@
     <!-- Mobile Navigation-->
     <div class="flex lg:hidden items-center gap-3">
       <a routerLink="/cart" class="relative hover:opacity-80 transition-opacity p-2 text-white">
-        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge *ngIf="cartCount > 0" [value]="cartCount"
-           severity="danger"></i>
-        <i *ngIf="cartCount === 0" class="pi pi-shopping-cart text-xl"></i>
+        @if (cartCount > 0) {
+        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge [value]="cartCount" severity="danger"></i>
+        } @else {
+        <i class="pi pi-shopping-cart text-xl"></i>
+        }
       </a>
 
       <button pButton (click)="mobileMenuOpen = true"
@@ -97,22 +103,24 @@
       </a>
 
       <!-- Lender Dashboard - für lender UND admin -->
-      <a *ngIf="userRole() === 'lender' || userRole() === 'admin'"
-         pButton routerLink="/lender" routerLinkActive="active"
+      @if (userRole() === 'lender' || userRole() === 'admin') {
+      <a pButton routerLink="/lender" routerLinkActive="active"
          #rlaLender="routerLinkActive" [ngClass]="rlaLender.isActive ? 'p-button' : 'p-button-outlined'"
          (click)="mobileMenuOpen = false" class="w-full justify-start">
         <i class="pi pi-check-square w-4 h-4 mr-2"></i>
         <span>Anfragen</span>
       </a>
+      }
 
       <!-- Admin Dashboard - nur für admin -->
-      <a *ngIf="userRole() === 'admin'"
-         pButton routerLink="/admin" routerLinkActive="active"
+      @if (userRole() === 'admin') {
+      <a pButton routerLink="/admin" routerLinkActive="active"
          #rlaAdmin="routerLinkActive" [ngClass]="rlaAdmin.isActive ? 'p-button' : 'p-button-outlined'"
          (click)="mobileMenuOpen = false" class="w-full justify-start">
         <i class="pi pi-cog w-4 h-4 mr-2"></i>
         <span>Verwaltung</span>
       </a>
+      }
 
       <button pButton (click)="onLogout(); mobileMenuOpen = false"
               class="p-button-outlined p-button-danger w-full justify-start mt-4">

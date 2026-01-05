@@ -7,107 +7,111 @@
   [responsiveLayout]="responsiveLayout"
   [scrollable]="scrollable"
   [scrollHeight]="scrollHeight"
-  styleClass="p-datatable-sm custom-table"
+  class="p-datatable-sm w-full"
   [rowHover]="true"
 >
   <ng-template pTemplate="header">
     <tr>
-      <th *ngFor="let col of columns"
-          [style.width]="col.width"
-          [ngClass]="col.class"
-          [pSortableColumn]="col.sortable ? col.field : undefined"
-          scope="col">
-        {{ col.header }}
-        <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
-      </th>
-      <th *ngIf="showActions" class="actions-col" scope="col">Aktionen</th>
+      @for (col of columns; track col.field) {
+        <th [style.width]="col.width"
+            [ngClass]="col.class"
+            [pSortableColumn]="col.sortable ? col.field : undefined"
+            scope="col"
+            class="bg-gray-50 text-gray-900 font-semibold border-b-2 border-gray-200 py-3 px-4 text-sm uppercase tracking-wide">
+          {{ col.header }}
+          @if (col.sortable) {
+            <p-sortIcon [field]="col.field"></p-sortIcon>
+          }
+        </th>
+      }
+      @if (showActions) {
+        <th class="text-center w-[150px] bg-gray-50 text-gray-900 font-semibold border-b-2 border-gray-200 py-3 px-4 text-sm uppercase tracking-wide" scope="col">Aktionen</th>
+      }
     </tr>
   </ng-template>
 
   <ng-template pTemplate="body" let-row>
     <tr
-      [class.clickable-row]="rowClickable"
+      [class.cursor-pointer]="rowClickable"
+      [class.transition-colors]="rowClickable"
+      [class.duration-200]="rowClickable"
+      [class.hover:bg-indigo-100]="rowClickable"
+      [class.focus:outline-2]="rowClickable"
+      [class.focus:outline-navy]="rowClickable"
+      [class.focus:outline-offset-[-2px]]="rowClickable"
+      [class.focus:bg-indigo-100]="rowClickable"
+      class="hover:bg-gray-50"
       [attr.tabindex]="rowClickable ? 0 : null"
       (click)="rowClickable ? onRowSelect(row) : null"
       (keydown.enter)="rowClickable ? onRowSelect(row) : null"
       (keydown.space)="rowClickable ? onRowSelect(row) : null">
-      <td *ngFor="let col of columns; trackBy: trackByIndex" [ngClass]="col.class">
-        <ng-container [ngSwitch]="col.type">
+      @for (col of columns; track col.field) {
+        <td [ngClass]="col.class" class="py-3 px-4 border-b border-gray-100 align-middle text-gray-700 text-sm">
+          @switch (col.type) {
+            @case ('date') {
+              {{ formatValue(getCellValue(row, col), 'date') }}
+            }
+            @case ('datetime') {
+              {{ formatValue(getCellValue(row, col), 'datetime') }}
+            }
+            @case ('status') {
+              <span class="px-2.5 py-1 rounded-md text-xs font-semibold inline-block capitalize tracking-wide" [ngClass]="getStatusClass(getCellValue(row, col))">
+                {{ getCellValue(row, col) || '-' }}
+              </span>
+            }
+            @case ('badge') {
+              <span class="px-2 py-1 rounded-md text-xs font-medium inline-block bg-gray-100 text-gray-700">
+                {{ getCellValue(row, col) || '-' }}
+              </span>
+            }
+            @case ('number') {
+              {{ formatValue(getCellValue(row, col), 'number') }}
+            }
+            @case ('currency') {
+              {{ formatValue(getCellValue(row, col), 'currency') }}
+            }
+            @case ('custom') {
+              @if (col.template) {
+                <ng-container *ngTemplateOutlet="col.template; context: { $implicit: row }"></ng-container>
+              } @else {
+                -
+              }
+            }
+            @default {
+              {{ getCellValue(row, col) ?? '-' }}
+            }
+          }
+        </td>
+      }
 
-          <!-- Datum ohne Zeit -->
-          <ng-container *ngSwitchCase="'date'">
-            {{ formatValue(getCellValue(row, col), 'date') }}
-          </ng-container>
-
-          <!-- Datum mit Zeit -->
-          <ng-container *ngSwitchCase="'datetime'">
-            {{ formatValue(getCellValue(row, col), 'datetime') }}
-          </ng-container>
-
-          <!-- Status mit farbigem Badge -->
-          <ng-container *ngSwitchCase="'status'">
-            <span class="status-badge" [ngClass]="getStatusClass(getCellValue(row, col))">
-              {{ getCellValue(row, col) || '-' }}
-            </span>
-          </ng-container>
-
-          <!-- Badge (allgemein) -->
-          <ng-container *ngSwitchCase="'badge'">
-            <span class="badge">
-              {{ getCellValue(row, col) || '-' }}
-            </span>
-          </ng-container>
-
-          <!-- Nummer -->
-          <ng-container *ngSwitchCase="'number'">
-            {{ formatValue(getCellValue(row, col), 'number') }}
-          </ng-container>
-
-          <!-- Währung -->
-          <ng-container *ngSwitchCase="'currency'">
-            {{ formatValue(getCellValue(row, col), 'currency') }}
-          </ng-container>
-
-          <!-- Custom Template -->
-          <ng-container *ngSwitchCase="'custom'">
-            <ng-container *ngIf="col.template; else fallback">
-              <ng-container *ngTemplateOutlet="col.template; context: { $implicit: row }"></ng-container>
-            </ng-container>
-            <ng-template #fallback>-</ng-template>
-          </ng-container>
-
-          <!-- Standard Text -->
-          <ng-container *ngSwitchDefault>
-            {{ getCellValue(row, col) ?? '-' }}
-          </ng-container>
-        </ng-container>
-      </td>
-
-      <!-- Aktions-Spalte -->
-      <td *ngIf="showActions" class="actions-col">
-        <div class="flex gap-2">
-          <button *ngIf="showEditButton"
-                  pButton
-                  type="button"
-                  [icon]="editButtonIcon"
-                  class="p-button-sm p-button-warning"
-                  (click)="onEdit(row)"
-                  [pTooltip]="editButtonTooltip"></button>
-          <button *ngIf="showDeleteButton"
-                  pButton
-                  type="button"
-                  [icon]="deleteButtonIcon"
-                  class="p-button-sm p-button-danger"
-                  (click)="onRemove(row)"
-                  [pTooltip]="deleteButtonTooltip"></button>
-        </div>
-      </td>
+      @if (showActions) {
+        <td class="text-center w-[150px] py-3 px-4 border-b border-gray-100 align-middle text-gray-700 text-sm">
+          <div class="flex gap-2 justify-center">
+            @if (showEditButton) {
+              <button pButton
+                      type="button"
+                      [icon]="editButtonIcon"
+                      class="p-button-sm text-black bg-amber-400 border-amber-400 hover:bg-amber-500 hover:border-amber-500 focus:shadow-[0_0_0_0.2rem_rgba(251,191,36,0.5)]"
+                      (click)="onEdit(row)"
+                      [pTooltip]="editButtonTooltip"></button>
+            }
+            @if (showDeleteButton) {
+              <button pButton
+                      type="button"
+                      [icon]="deleteButtonIcon"
+                      class="p-button-sm bg-red-600 border-red-600 hover:bg-red-700 hover:border-red-700 focus:shadow-[0_0_0_0.2rem_rgba(220,53,69,0.5)]"
+                      (click)="onRemove(row)"
+                      [pTooltip]="deleteButtonTooltip"></button>
+            }
+          </div>
+        </td>
+      }
     </tr>
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td [attr.colspan]="columns.length + (showActions ? 1 : 0)" class="empty-message">
+      <td [attr.colspan]="columns.length + (showActions ? 1 : 0)" class="text-center py-8 px-4 text-gray-500 italic">
         {{ emptyMessage }}
       </td>
     </tr>

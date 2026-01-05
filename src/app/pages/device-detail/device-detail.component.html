@@ -1,7 +1,5 @@
-<main
-  *ngIf="device; else notFound"
-  class="flex-1 container mx-auto px-4 py-4 sm:py-6 bg-[#f8f8f9]"
->
+@if (device) {
+<main class="flex-1 container mx-auto px-4 py-4 sm:py-6 bg-[#f8f8f9]">
   <button
     (click)="onBack()"
     class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 sm:mb-6"
@@ -38,7 +36,7 @@
           <div class="flex flex-wrap gap-2 mb-4 sm:mb-6">
             <p-tag
               [value]="device?.availability?.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
-              [styleClass]="
+              [class]="
                 (device?.availability?.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
                 ' text-white text-xs sm:text-sm font-normal'
               "
@@ -65,7 +63,8 @@
             <div
               class="bg-gray-100 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm"
             >
-              <div *ngIf="device?.technicalSpecs?.storage" class="flex">
+              @if (device?.technicalSpecs?.storage) {
+              <div class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Speicher:
                 </span>
@@ -73,7 +72,9 @@
                   {{ device?.technicalSpecs?.storage }}
                 </span>
               </div>
-              <div *ngIf="device?.technicalSpecs?.sensor" class="flex">
+              }
+              @if (device?.technicalSpecs?.sensor) {
+              <div class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Sensor:
                 </span>
@@ -81,6 +82,7 @@
                   {{ device?.technicalSpecs?.sensor }}
                 </span>
               </div>
+              }
             </div>
           </div>
 
@@ -90,11 +92,14 @@
               Enthaltenes Zubehör
             </h2>
             <div class="flex flex-wrap gap-2">
+              @if (device?.technicalSpecs?.accessories) {
+              @for (acc of device?.technicalSpecs?.accessories; track acc) {
               <p-tag
-                *ngFor="let acc of device?.technicalSpecs?.accessories"
                 [value]="acc"
-                styleClass="text-slate-800 bg-gray-300 font-normal"
+                class="text-slate-800 bg-gray-300 font-normal"
               ></p-tag>
+              }
+              }
             </div>
           </div>
 
@@ -104,21 +109,14 @@
               Schlagwörter
             </h2>
             <div class="flex flex-wrap gap-2">
+              @if (device?.keywords) {
+              @for (keyword of device?.keywords; track keyword) {
               <p-tag
-                *ngFor="let keyword of device?.keywords"
                 [value]="keyword"
-                styleClass="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
+                class="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
               ></p-tag>
-            </div>
-          </div>
-
-          <!-- Inventar nummer -->
-          <div class="mt-4 sm:mt-6 pt-4 sm:pt-6">
-            <div class="flex items-start gap-2 text-xs sm:text-sm">
-              <span class="shrink-0">📋</span>
-              <p class="text-muted-foreground text-[#253359]">
-                <strong>Nummer:</strong> {{ device?.inventoryNumber }}
-              </p>
+              }
+              }
             </div>
           </div>
         </div>
@@ -162,7 +160,7 @@
             <div class="flex items-center gap-2">
               <p-tag
                 [value]="(device?.availability?.available || 0) + ' Exemplare'"
-                styleClass="bg-[#253359] text-white text-xs sm:text-sm font-normal"
+                class="bg-[#253359] text-white text-xs sm:text-sm font-normal"
               ></p-tag>
               <span class="text-xs sm:text-sm text-muted-foreground text-slate-800">
                 verfügbar
@@ -179,10 +177,11 @@
             </p>
           </div>
 
+          @if (flandernstrasseData) {
           <app-campus-info
-            *ngIf="flandernstrasseData"
             [campusData]="flandernstrasseData"
           ></app-campus-info>
+          }
         </div>
 
         <!-- Date + Button -->
@@ -202,7 +201,7 @@
               [minDate]="minDate"
               [showIcon]="true"
               inputId="pickupDate"
-              styleClass="w-full"
+              class="w-full"
               dateFormat="dd.mm.yy"
             ></p-datepicker>
           </div>
@@ -217,9 +216,7 @@
     </div>
   </div>
 </main>
-
-<!-- Nicht gefunden Template ------------------------------------------------------->
-<ng-template #notFound>
+} @else {
   <div class="flex-1 container mx-auto px-4 py-8 text-center">
     <i class="pi pi-exclamation-triangle text-6xl text-gray-400"></i>
     <h1 class="mt-4 text-2xl font-semibold">Gerät nicht gefunden</h1>
@@ -233,4 +230,4 @@
       class="mt-6"
     ></button>
   </div>
-</ng-template>
+}

@@ -6,7 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/back-button/back-button.component';
-import { ItemFormComponent } from '../../../components/admin/item-form.component';
+import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
 import { AdminItemFormPageService } from './services/admin-item-form-page.service';
 import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';
 import { Item } from '../../../models/item.model';

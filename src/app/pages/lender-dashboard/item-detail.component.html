@@ -4,7 +4,8 @@
 
   <!-- Back Button -->
   <button pButton icon="pi pi-arrow-left" label="Zurück zur Übersicht"
-          class="p-button-text mb-4" (click)="goBack()"></button>
+          class="p-button-text mb-4 text-[#000080] hover:bg-[rgba(0,0,128,0.1)]"
+          (click)="goBack()"></button>
 
   <!-- Loading State -->
   @if (isLoading()) {
@@ -30,7 +31,7 @@
               <p-tag
                 [value]="getStatusLabel(item()!.isAvailable)"
                 [severity]="getStatusSeverity(item()!.isAvailable)"
-                styleClass="text-base">
+                class="text-base font-medium px-3 py-1.5">
               </p-tag>
             </div>
           </div>
@@ -63,7 +64,8 @@
                 <span class="flex-1">
                   <p-tag
                     [value]="getStatusLabel(item()!.isAvailable)"
-                    [severity]="getStatusSeverity(item()!.isAvailable)">
+                    [severity]="getStatusSeverity(item()!.isAvailable)"
+                    class="font-medium px-3 py-1.5">
                   </p-tag>
                 </span>
               </div>
@@ -159,11 +161,9 @@
             </div>
           }
 
-          <!-- Ausleihhistorie (TODO) -->
+          <!-- Ausleihhistorie -->
           <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-[#000080] mb-4">
-              Ausleihzeiträume
-            </h2>
+            <h2 class="text-xl font-semibold text-[#000080] mb-4">Ausleihzeiträume</h2>
 
             @if (loanHistory().length > 0) {
               <app-table

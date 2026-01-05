@@ -30,7 +30,7 @@
       [minDate]="tomorrow"
       [showClear]="true"
       (onClear)="onDateClear()"
-      styleClass="sm:min-w-[280px] w-full sm:w-auto"
+      class="sm:min-w-[280px] w-full sm:w-auto"
       [inputStyleClass]="!dateRange[0] ? 'text-gray-500' : ''"
       [numberOfMonths]="monthsToShow"
     ></p-datePicker>
@@ -49,7 +49,7 @@
       (onChange)="onCategoryChange()"
       [options]="categories"
       placeholder="Alle Kategorien"
-      styleClass="flex-1 w-full"
+      class="flex-1 w-full"
       [showClear]="true"
     ></p-select>
 
@@ -59,7 +59,7 @@
       (onChange)="onCampusChange()"
       [options]="campuses"
       placeholder="Alle Campus"
-      styleClass="flex-1 w-full"
+      class="flex-1 w-full"
       [showClear]="true"
     ></p-select>
 
@@ -69,7 +69,7 @@
       (onChange)="onAvailabilityChange()"
       [options]="availabilityOptions"
       placeholder="Verfügbarkeit"
-      styleClass="flex-1 w-full"
+      class="flex-1 w-full"
       [showClear]="true"
     ></p-select>
   </div>
@@ -82,7 +82,7 @@
     @if (dateRange[0]) {
       <p-badge
         [value]="formattedDateRange"
-        styleClass="bg-blue-50 text-blue-700 border-blue-200"
+        class="bg-blue-50 text-blue-700 border-blue-200"
       ></p-badge>
     }
   </div>

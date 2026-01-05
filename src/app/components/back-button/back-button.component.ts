@@ -15,26 +15,10 @@ import { ButtonModule } from 'primeng/button';
       pButton
       icon="pi pi-arrow-left"
       [label]="label"
-      class="p-button-text mb-4"
+      class="p-button-text mb-4 !text-[#000080] font-medium hover:!bg-[#000080]/[0.04] focus:!ring-2 focus:!ring-[#000080]/20 shadow-none"
       (click)="handleClick()">
     </button>
   `,
-  styles: [`
-    :host {
-      ::ng-deep .p-button-text {
-        color: #000080 !important;
-        font-weight: 500;
-
-        &:hover {
-          background-color: rgba(0, 0, 128, 0.04) !important;
-        }
-
-        &:focus {
-          box-shadow: 0 0 0 0.2rem rgba(0, 0, 128, 0.2) !important;
-        }
-      }
-    }
-  `]
 })
 export class BackButtonComponent {
   @Input() label = 'Zurück zur Übersicht';

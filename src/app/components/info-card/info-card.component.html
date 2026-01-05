@@ -1,14 +1,15 @@
-<p-card [header]="header" styleClass="info-card">
-  <div class="info-grid">
+<p-card [header]="header" class="shadow-sm">
+  <div class="grid gap-4">
     @for (item of items; track item.label) {
-      <div class="info-item">
-        <i [class]="'pi ' + item.icon + ' info-icon'"></i>
+      <div class="flex items-start gap-3">
+        <i [class]="'pi ' + item.icon + ' !text-[#000080] text-xl mt-1'"></i>
+
         <div>
-          <p class="info-label">{{ item.label }}</p>
-          <p class="info-value">{{ item.value }}</p>
+          <p class="text-xs text-gray-500 mb-1">{{ item.label }}</p>
+
+          <p class="text-sm font-semibold text-gray-800">{{ item.value }}</p>
         </div>
       </div>
     }
   </div>
 </p-card>
-

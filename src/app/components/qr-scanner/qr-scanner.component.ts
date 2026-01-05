@@ -22,6 +22,7 @@ declare var BarcodeDetector: {
       header="QR-Code Scanner"
       [visible]="visible()"
       [modal]="true"
+      [draggable]="false"
       [closable]="true"
       (onHide)="close()"
       [style]="{width: '420px'}"

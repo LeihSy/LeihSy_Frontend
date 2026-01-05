@@ -24,12 +24,12 @@ export class UserGroupDetailComponent implements OnInit {
   loading = signal(false);
   error = signal<string | undefined>(undefined);
 
-  members = signal<{ userId: number; userName: string; userEmail: string; owner?: boolean }[]>([]);
+  members = signal<{ userId: number; userName: string; userEmail: string; owner?: boolean; ownerDisplay?: string }[]>([]);
 
   memberColumns: ColumnDef[] = [
+    { field: 'userId', header: 'User ID', width: '100px', type: 'number' },
     { field: 'userName', header: 'Name', sortable: true },
-    { field: 'userEmail', header: 'E-Mail' },
-    { field: 'owner', header: 'Owner', type: 'badge' }
+    { field: 'ownerDisplay', header: 'Eigentümer', type: 'badge' }
   ];
 
   ngOnInit() {
@@ -54,7 +54,8 @@ export class UserGroupDetailComponent implements OnInit {
           userId: m.userId,
           userName: m.userName,
           userEmail: m.userEmail,
-          owner: m.owner
+          owner: m.owner,
+          ownerDisplay: m.owner ? 'Ja' : undefined
         })) || []);
         this.loading.set(false);
       },

@@ -92,7 +92,7 @@
                       type="button"
                       [icon]="editButtonIcon"
                       class="p-button-sm text-black bg-amber-400 border-amber-400 hover:bg-amber-500 hover:border-amber-500 focus:shadow-[0_0_0_0.2rem_rgba(251,191,36,0.5)]"
-                      (click)="onEdit(row)"
+                      (click)="onEdit(row); $event.stopPropagation()"
                       [pTooltip]="editButtonTooltip"></button>
             }
             @if (showDeleteButton) {
@@ -100,7 +100,7 @@
                       type="button"
                       [icon]="deleteButtonIcon"
                       class="p-button-sm bg-red-600 border-red-600 hover:bg-red-700 hover:border-red-700 focus:shadow-[0_0_0_0.2rem_rgba(220,53,69,0.5)]"
-                      (click)="onRemove(row)"
+                      (click)="onRemove(row); $event.stopPropagation()"
                       [pTooltip]="deleteButtonTooltip"></button>
             }
           </div>

@@ -1,0 +1,49 @@
+.admin-insy-import-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Neue Requests hervorheben */
+.bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+/* Responsives Layout */
+@media (max-width: 768px) {
+  .admin-insy-import-container {
+    padding: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom Chip Styles */
+::ng-deep .p-chip {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Table Responsive Scrolling */
+::ng-deep .p-datatable-wrapper {
+  overflow-x: auto;
+}
+
+/* Status Tags */
+::ng-deep .p-tag {
+  font-size: 0.875rem;
+}
+
+/* Button Group Spacing */
+.flex.gap-2 {
+  gap: 0.5rem;
+}
+
+/* Truncate Long Text */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

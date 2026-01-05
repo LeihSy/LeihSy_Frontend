@@ -20,7 +20,8 @@
       <p-select
         inputId="batchProductSelect"
         [options]="products()"
-        [(ngModel)]="selectedProductId"
+        [ngModel]="selectedProductId()"
+        (ngModelChange)="selectedProductId.set($event)"
         optionLabel="name"
         optionValue="id"
         placeholder="Produkt waehlen"
@@ -40,7 +41,8 @@
         type="text"
         pInputText
         id="batchInvPrefix"
-        [(ngModel)]="invNumberPrefix"
+        [ngModel]="invNumberPrefix()"
+        (ngModelChange)="invNumberPrefix.set($event)"
         placeholder="z.B. VR"
         class="w-full"
         name="batchInvPrefix"

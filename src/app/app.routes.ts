@@ -193,6 +193,14 @@ export const routes: Routes = [
     data: { roles: ['admin'] }
   },
   {
+    path: 'admin/insy-import',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-insy-import/admin-insy-import.component')
+        .then(m => m.AdminInsyImportComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./pages/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

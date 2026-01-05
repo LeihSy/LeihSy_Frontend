@@ -13,7 +13,7 @@ import { BookingQrService } from '../../services/booking-qr.service';
     :host ::ng-deep qrcode img { width: 200px; height: 200px; margin: 0 auto; }
   `,
   template: `
-    <p-dialog header="Buchungs-QR-Code" [(visible)]="visible" [modal]="true" [style]="{width: '350px'}">
+    <p-dialog header="Buchungs-QR-Code" [(visible)]="visible" [modal]="true" [draggable]="false" [style]="{width: '350px'}">
       <div class="flex flex-col items-center text-center gap-4">
         @if (qrData) {
           <qrcode [qrdata]="qrData" [elementType]="'img'" [width]="200" [errorCorrectionLevel]="'M'"></qrcode>

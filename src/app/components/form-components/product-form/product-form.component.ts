@@ -18,6 +18,12 @@ import { FormRowComponent } from '../form-row/form-row.component';
 import { FormInputFieldComponent } from '../form-input-field/form-input-field.component';
 import { ValidationMessageComponent } from '../../admin/validation-message/validation-message.component';
 
+type RelatedItemType = 'required' | 'recommended';
+
+interface RelatedItem {
+  productId: number;
+  type: RelatedItemType;
+}
 @Component({
   selector: 'app-product-form',
   standalone: true,
@@ -45,7 +51,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
   @Input() categories: Category[] = [];
   @Input() locations: Location[] = [];
   @Input() isEditMode = false;
-
+  @Input() products: Product[] = [];  //Zusatzgegenstände
   @Output() formSubmit = new EventEmitter<{ formValue: any, imageFile: File | null }>();
   @Output() formCancel = new EventEmitter<void>();
   @Output() locationRoomNrChange = new EventEmitter<string>();
@@ -56,11 +62,23 @@ export class ProductFormComponent implements OnInit, OnChanges {
   locationDisplayValue = signal<string>('');
   isLoadingLocation = signal<boolean>(false);
   locationExists = signal<boolean>(false);
+  selectedRelatedItems = signal<RelatedItem[]>([]);
+  relatedItemsSearch = signal('');
 
   constructor(private readonly fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.initForm();
+    // Mock nur wenn keine Produkte vom Parent kommen
+  if (!this.products || this.products.length === 0) {
+    this.products = [
+      { id: 101, name: 'Stativ', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 102, name: 'Akkupack', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 103, name: 'SD-Karte 128GB', categoryId: this.categories?.[0]?.id ?? 1 } as any,
+      { id: 104, name: 'Ladekabel USB-C', categoryId: this.categories?.[0]?.id ?? 1 } as any
+    ];
+  }
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -70,7 +88,6 @@ export class ProductFormComponent implements OnInit, OnChanges {
   }
 
   private initForm(): void {
-    // In 'private' mode we don't require a location selection because Location will be set to 'privat'
     this.itemForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
@@ -108,24 +125,32 @@ export class ProductFormComponent implements OnInit, OnChanges {
     if (this.product.imageUrl) {
       this.imagePreview.set('http://localhost:8080' + this.product.imageUrl);
     }
+    //Zusatzgegenstände aus Produkt laden (falls vorhanden)
+    const related = (this.product as any)?.relatedItems as RelatedItem[] | undefined;
+    this.selectedRelatedItems.set(Array.isArray(related) ? [...related] : []);
+    this.relatedItemsSearch.set('');
+
   }
 
   submitForm(): void {
     if (!this.itemForm.valid) return;
 
-    // Wenn private mode, geben wir ein Flag weiter, damit die Elternkomponente weiß, dass
-    // kein POST erfolgen soll und stattdessen ein JSON erzeugt werden kann.
     this.formSubmit.emit({
-      formValue: this.itemForm.value,
+      formValue: {
+        ...this.itemForm.value,
+      relatedItems: this.selectedRelatedItems()
+    },
       imageFile: this.selectedFile(),
       privateMode: this.mode === 'private'
-    } as any);
+    }as any);
   }
 
   resetForm(): void {
     this.itemForm.reset();
     this.selectedFile.set(null);
     this.imagePreview.set(null);
+    this.selectedRelatedItems.set([]);
+    this.relatedItemsSearch.set('');
     this.formCancel.emit();
   }
 
@@ -192,5 +217,61 @@ export class ProductFormComponent implements OnInit, OnChanges {
       this.locationExists.set(false);
       this.setLocationId(null);
     }
+  }
+
+availableRelatedProducts(): Product[] {
+  const q = this.relatedItemsSearch().toLowerCase().trim();
+  const currentId: number | null = (this.product as any)?.id ?? null;
+
+  return (this.products ?? []).filter((p: any) => {
+    if (!p) return false;
+    if (currentId != null && p.id === currentId) return false;
+
+    if (!q) return true;
+
+    const name = String(p.name ?? '').toLowerCase();
+    const idStr = String(p.id ?? '');
+    return name.includes(q) || idStr.includes(q);
+  });
+}
+getRelatedItemStatus(productId: number): RelatedItemType | null {
+  const item = this.selectedRelatedItems().find(x => x.productId === productId);
+  return item ? item.type : null;
+}
+toggleRelatedItem(productId: number, type: RelatedItemType): void {
+  const items = this.selectedRelatedItems();
+  const existing = items.find(x => x.productId === productId);
+
+  if (existing) {
+    if (existing.type === type) {
+      // gleicher Typ -> entfernen
+      this.selectedRelatedItems.set(items.filter(x => x.productId !== productId));
+    } else {
+      // Typ wechseln
+      this.selectedRelatedItems.set(
+        items.map(x => (x.productId === productId ? { ...x, type } : x))
+      );
+    }
+    return;
+  }
+   // neu hinzufügen
+   this.selectedRelatedItems.set([...items, { productId, type }]);
+  }
+  removeRelatedItem(productId: number): void {
+    this.selectedRelatedItems.set(
+      this.selectedRelatedItems().filter(x => x.productId !== productId)
+    );
+  }
+  relatedTypeLabel(type: RelatedItemType): string {
+    return type === 'required' ? 'Erforderlich' : 'Empfohlen';
+  }
+
+  findProductById(id: number): Product | undefined {
+    return (this.products ?? []).find((p: any) => p?.id === id);
+  }
+
+  categoryNameById(categoryId: number): string {
+    const c = (this.categories ?? []).find(x => x.id === categoryId);
+    return c?.name ?? `#${categoryId}`;
   }
 }

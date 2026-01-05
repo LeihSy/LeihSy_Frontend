@@ -23,7 +23,8 @@ declare const BarcodeDetector: {
       header="QR-Code Scanner"
       [visible]="visible()"
       [modal]="true"
-      [closable]="false"
+      [draggable]="false"
+      [closable]="true"
       (onHide)="close()"
       [style]="{width: '420px'}"
     >

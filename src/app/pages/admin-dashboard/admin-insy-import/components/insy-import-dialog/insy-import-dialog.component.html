@@ -1,0 +1,210 @@
+<p-dialog
+  header="Import konfigurieren"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  [contentStyle]="{ 'max-height': '70vh', 'overflow-y': 'auto' }"
+  [focusOnShow]="false"
+  [draggable]="false"
+  (onShow)="onShow()"
+>
+  @if (request()) {
+    <div class="py-4 space-y-6">
+      <!-- Item Info -->
+      <div class="bg-gray-50 p-4 rounded-lg space-y-2">
+        <div class="flex justify-between">
+          <span class="font-medium">Name:</span>
+          <span>{{ request()!.name }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Inv-Nr:</span>
+          <span>{{ request()!.invNumber }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-medium">Standort:</span>
+          <span>{{ request()!.location || '-' }}</span>
+        </div>
+      </div>
+
+      <!-- Matching Product Hinweis -->
+      @if (request()!.hasMatchingProduct) {
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <div class="flex items-center gap-2 text-blue-700">
+            <i class="pi pi-info-circle"></i>
+            <span class="font-medium">Passendes Produkt gefunden:</span>
+            <span>{{ request()!.matchingProductName }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Import Type Auswahl -->
+      <fieldset class="space-y-3">
+        <legend class="block text-sm font-medium text-gray-700">Import-Typ</legend>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center">
+            <p-radioButton
+              name="importType"
+              value="EXISTING_PRODUCT"
+              [(ngModel)]="importType"
+              inputId="existingProduct"
+            />
+            <label for="existingProduct" class="ml-2">
+              Zu bestehendem Produkt hinzufuegen
+            </label>
+          </div>
+          <div class="flex items-center">
+            <p-radioButton
+              name="importType"
+              value="NEW_PRODUCT"
+              [(ngModel)]="importType"
+              inputId="newProduct"
+            />
+            <label for="newProduct" class="ml-2">
+              Als neues Produkt anlegen
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Felder fuer Bestehendes Produkt -->
+      @if (importType() === 'EXISTING_PRODUCT') {
+        <div class="space-y-4 border-t pt-4">
+          <div>
+            <label for="existingProductSelect" class="block text-sm font-medium text-gray-700 mb-2">
+              Produkt auswaehlen <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              inputId="existingProductSelect"
+              [options]="products()"
+              [(ngModel)]="selectedProductId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Produkt waehlen"
+              [filter]="true"
+              filterPlaceholder="Suchen..."
+              class="w-full"
+              name="productSelect"
+              appendTo="body"
+            >
+              <ng-template let-product pTemplate="item">
+                <div class="flex justify-between items-center w-full">
+                  <span>{{ product.name }}</span>
+                  @if (product.categoryName) {
+                    <span class="text-sm text-gray-500">{{ product.categoryName }}</span>
+                  }
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+        </div>
+      }
+
+      <!-- Felder fuer Neues Produkt -->
+      @if (importType() === 'NEW_PRODUCT') {
+        <div class="space-y-4 border-t pt-4">
+          <!-- Hinweis mit Link zur Produkterstellung -->
+          <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+            <div class="flex items-start gap-3">
+              <i class="pi pi-info-circle text-amber-600 mt-0.5"></i>
+              <div class="text-sm text-amber-800">
+                <p class="font-medium mb-1">Kategorie oder Standort fehlt?</p>
+                <p class="mb-2">
+                  Falls die benoetigte Kategorie oder der Standort noch nicht existiert,
+                  kannst du das Produkt direkt ueber die Produktverwaltung anlegen.
+                </p>
+                <a
+                  routerLink="/admin/products"
+                  class="inline-flex items-center gap-1 text-amber-700 hover:text-amber-900 font-medium"
+                  (click)="visible.set(false)"
+                >
+                  <i class="pi pi-external-link"></i>
+                  Zur Produktverwaltung
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="categorySelect" class="block text-sm font-medium text-gray-700 mb-2">
+              Kategorie <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              inputId="categorySelect"
+              [options]="categories()"
+              [(ngModel)]="selectedCategoryId"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Kategorie waehlen"
+              class="w-full"
+              name="categorySelect"
+              appendTo="body"
+            />
+          </div>
+
+          <div>
+            <label for="locationSelect" class="block text-sm font-medium text-gray-700 mb-2">
+              Standort <span class="text-red-500">*</span>
+            </label>
+            <p-select
+              inputId="locationSelect"
+              [options]="locations()"
+              [(ngModel)]="selectedLocationId"
+              optionLabel="roomNr"
+              optionValue="id"
+              placeholder="Standort waehlen"
+              class="w-full"
+              name="locationSelect"
+              appendTo="body"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="priceInput" class="block text-sm font-medium text-gray-700 mb-2">
+                Preis/Tag (EUR)
+              </label>
+              <p-inputNumber
+                inputId="priceInput"
+                [(ngModel)]="importPrice"
+                mode="currency"
+                currency="EUR"
+                locale="de-DE"
+                class="w-full"
+                name="priceInput"
+              />
+            </div>
+            <div>
+              <label for="expiryInput" class="block text-sm font-medium text-gray-700 mb-2">
+                Max. Ausleihdauer (Tage)
+              </label>
+              <p-inputNumber
+                inputId="expiryInput"
+                [(ngModel)]="importExpiryDate"
+                [min]="1"
+                [max]="365"
+                class="w-full"
+                name="expiryInput"
+              />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Abbrechen"
+      icon="pi pi-times"
+      (onClick)="onCancel()"
+      [text]="true"
+    />
+    <p-button
+      label="Importieren"
+      icon="pi pi-check"
+      (onClick)="onConfirm()"
+      severity="success"
+      [disabled]="!isValid()"
+    />
+  </ng-template>
+</p-dialog>

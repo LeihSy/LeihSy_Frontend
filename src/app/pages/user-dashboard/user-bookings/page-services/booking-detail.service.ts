@@ -15,10 +15,26 @@ export class BookingDetailService {
   private readonly messageService = inject(MessageService);
   private readonly exportService = inject(UserBookingExportService);
 
+  // Booking state
   booking = signal<Booking | null>(null);
   isLoading = signal(true);
   timelineEvents = signal<TimelineEvent[]>([]);
   showQrDialog = signal(false);
+
+  // Pickup dialog state
+  showPickupDialog = signal(false);
+  selectedPickupDate = signal<string | null>(null);
+  newProposedPickups = signal<string[]>([]);
+
+  // Prüfe ob User die Termine selbst vorgeschlagen hat (darf sie dann nicht bestätigen)
+  canSelectProposedPickups = computed<boolean>(() => {
+    const booking = this.booking();
+    if (!booking) return false;
+
+    // User kann nur Termine auswählen, die vom Verleiher (lenderId) vorgeschlagen wurden
+    // NICHT die, die er selbst vorgeschlagen hat (proposalById === userId)
+    return booking.proposalById !== booking.userId;
+  });
 
   // Computed InfoItems for cards
   rentalPeriodItems = computed<InfoItem[]>(() => {
@@ -55,7 +71,9 @@ export class BookingDetailService {
     const items: InfoItem[] = [];
 
     if (booking.proposedPickups) {
-      items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: booking.proposedPickups });
+      const pickups = this.parseProposedPickups(booking.proposedPickups);
+      const formattedPickups = pickups.map(p => this.formatDate(p)).join(', ');
+      items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: formattedPickups });
     }
     if (booking.confirmedPickup) {
       items.push({ icon: 'pi-check-circle', label: 'Bestätigter Abholtermin', value: this.formatDate(booking.confirmedPickup) });
@@ -72,6 +90,20 @@ export class BookingDetailService {
 
     return items;
   });
+
+  // Helper: Parse proposedPickups (kann JSON-Array oder komma-separiert sein)
+  parseProposedPickups(proposedPickups: string): string[] {
+    if (!proposedPickups) return [];
+
+    try {
+      // Versuche als JSON zu parsen
+      const parsed = JSON.parse(proposedPickups);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      // Falls kein JSON, als komma-separiert behandeln
+      return proposedPickups.split(',').map(p => p.trim()).filter(p => p);
+    }
+  }
 
   loadBookingDetails(id: number): void {
     this.isLoading.set(true);
@@ -101,6 +133,78 @@ export class BookingDetailService {
 
   closeQrDialog(): void {
     this.showQrDialog.set(false);
+  }
+
+  openPickupDialog(): void {
+    this.showPickupDialog.set(true);
+    this.selectedPickupDate.set(null);
+    this.newProposedPickups.set([]);
+  }
+
+  closePickupDialog(): void {
+    this.showPickupDialog.set(false);
+    this.selectedPickupDate.set(null);
+    this.newProposedPickups.set([]);
+  }
+
+  // User wählt einen der vorgeschlagenen Termine
+  selectPickupDate(selectedPickup: string): void {
+    const booking = this.booking();
+    if (!booking) return;
+
+    this.isLoading.set(true);
+    this.bookingService.selectPickup(booking.id, selectedPickup).subscribe({
+      next: (updatedBooking) => {
+        this.booking.set(updatedBooking);
+        this.generateTimeline(updatedBooking);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Erfolg',
+          detail: 'Abholtermin wurde ausgewählt'
+        });
+        this.closePickupDialog();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Fehler beim Auswählen des Termins:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: err.error?.message || 'Termin konnte nicht ausgewählt werden'
+        });
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  // User schlägt neue Termine vor (Gegenvorschlag)
+  proposeNewPickups(newPickups: string[]): void {
+    const booking = this.booking();
+    if (!booking || newPickups.length === 0) return;
+
+    this.isLoading.set(true);
+    this.bookingService.proposePickups(booking.id, newPickups).subscribe({
+      next: (updatedBooking) => {
+        this.booking.set(updatedBooking);
+        this.generateTimeline(updatedBooking);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Erfolg',
+          detail: 'Neue Abholtermine wurden vorgeschlagen'
+        });
+        this.closePickupDialog();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Fehler beim Vorschlagen neuer Termine:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: err.error?.message || 'Termine konnten nicht vorgeschlagen werden'
+        });
+        this.isLoading.set(false);
+      }
+    });
   }
 
   generateTimeline(booking: Booking): void {

@@ -1,0 +1,112 @@
+<p-dialog
+  [header]="canSelectProposed ? 'Abholtermin wählen' : 'Gegenvorschlag machen'"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{width: '600px'}"
+  [draggable]="false"
+  [closable]="false"
+  (onHide)="onCancel()">
+
+  <div class="flex flex-col gap-6">
+    @if (proposedPickups.length > 0 && canSelectProposed) {
+      <div>
+        <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+          <i class="pi pi-calendar text-blue-600"></i>
+          Vorgeschlagene Termine (vom Verleiher)
+        </h3>
+        <div class="flex flex-col gap-2">
+          @for (pickup of proposedPickups; track pickup) {
+            <div class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                 (click)="selectExistingPickup(pickup)">
+              <p-radioButton
+                [value]="pickup"
+                [(ngModel)]="selectedPickup"
+                [inputId]="'pickup-' + $index">
+              </p-radioButton>
+              <label [for]="'pickup-' + $index" class="cursor-pointer flex-1">
+                <div class="font-medium text-gray-900">{{ formatDateTime(pickup) }}</div>
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (proposedPickups.length > 0 && !canSelectProposed) {
+      <div class="p-4 bg-[#253359]/10 border border-[#253359]/30 rounded-lg">
+        <div class="flex items-start gap-3">
+          <i class="pi pi-info-circle text-[#253359] mt-1"></i>
+          <div>
+            <h4 class="font-semibold text-[#253359] mb-1">Warte auf Rückmeldung</h4>
+            <p class="text-sm text-[#253359]/90">
+              Du hast folgende Termine vorgeschlagen. Der Verleiher muss einen Termin bestätigen oder neue Termine vorschlagen.
+            </p>
+            <div class="mt-2 space-y-1">
+              @for (pickup of proposedPickups; track pickup) {
+                <div class="text-sm text-[#253359]/80">
+                  <i class="pi pi-clock mr-2"></i>{{ formatDateTime(pickup) }}
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div>
+      <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+        <i class="pi pi-plus-circle text-green-600"></i>
+        Oder neuen Termin vorschlagen
+      </h3>
+      <p class="text-sm text-gray-600 mb-3">
+        Wählen Sie bis zu 3 alternative Termine aus, die Ihnen besser passen.
+      </p>
+
+      <div class="flex flex-col gap-3">
+        @for (i of [0, 1, 2]; track i) {
+          <div class="flex items-center gap-2">
+            <i class="pi pi-calendar text-gray-400"></i>
+            <p-datepicker
+              [(ngModel)]="newPickupDates[i]"
+              [showTime]="true"
+              [showSeconds]="false"
+              [hourFormat]="'24'"
+              [stepMinute]="15"
+              [stepHour]="1"
+              dateFormat="dd.mm.yy"
+              [placeholder]="'Termin ' + (i + 1) + ' (optional)'"
+              [minDate]="minDate"
+              [showButtonBar]="true"
+              appendTo="body"
+              class="flex-1">
+            </p-datepicker>
+            @if (newPickupDates[i]) {
+              <button
+                class="pi pi-times text-red-500 hover:text-red-700 cursor-pointer"
+                (click)="clearNewPickup(i)">
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <app-secondary-button
+        label="Abbrechen"
+        color="red"
+        (buttonClick)="onCancel()">
+      </app-secondary-button>
+      <app-filled-button
+        label="Bestätigen"
+        icon="pi pi-check"
+        (buttonClick)="onConfirm()"
+        [class.opacity-50]="!canConfirm()"
+        [class.pointer-events-none]="!canConfirm()">
+      </app-filled-button>
+    </div>
+  </ng-template>
+</p-dialog>
+

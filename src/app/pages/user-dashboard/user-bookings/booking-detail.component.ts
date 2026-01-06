@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { BookingQrComponent } from './booking-qr.component';
+import { PickupSelectionDialogComponent } from '../../../components/booking-pickup-selection/pickup-selection-dialog.component';
 import { BookingHeaderComponent } from '../../../components/booking-components/booking-header/booking-header.component';
 import { BookingProgressComponent } from '../../../components/admin/booking-components/booking-progress.component';
 import { BookingMessageComponent } from '../../../components/admin/booking-components/booking-message.component';
@@ -31,6 +32,7 @@ import { BookingDetailService } from './page-services/booking-detail.service';
     TimelineModule,
     ToastModule,
     BookingQrComponent,
+    PickupSelectionDialogComponent,
     BookingHeaderComponent,
     BookingProgressComponent,
     BookingMessageComponent,
@@ -65,6 +67,26 @@ export class BookingDetailComponent implements OnInit {
 
   onQrClosed(): void {
     this.pageService.closeQrDialog();
+  }
+
+  openPickupDialog(): void {
+    this.pageService.openPickupDialog();
+  }
+
+  onPickupDialogVisibleChange(visible: boolean): void {
+    this.pageService.showPickupDialog.set(visible);
+  }
+
+  onPickupSelected(selectedPickup: string): void {
+    this.pageService.selectPickupDate(selectedPickup);
+  }
+
+  onNewPickupsProposed(newPickups: string[]): void {
+    this.pageService.proposeNewPickups(newPickups);
+  }
+
+  onPickupDialogCancelled(): void {
+    this.pageService.closePickupDialog();
   }
 
   goBack(): void {

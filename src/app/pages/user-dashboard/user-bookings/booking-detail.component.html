@@ -47,25 +47,20 @@
         [statusSeverity]="pageService.getStatusSeverity(pageService.booking()!.status)">
       </app-booking-header>
 
-      <!-- Content Grid: 2 columns on large screens -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-        <!-- Left column (info cards) -->
         <div class="space-y-6 mt-4">
 
-          <!-- Ausleihzeitraum Card -->
           <app-info-card
             header="Ausleihzeitraum"
             [items]="pageService.rentalPeriodItems()">
           </app-info-card>
 
-          <!-- Verleiher Card -->
           <app-info-card
             header="Verleiher"
             [items]="pageService.lenderItems()">
           </app-info-card>
 
-          <!-- Gegenstand Card -->
           <app-info-card
             header="Gegenstand"
             [items]="pageService.itemItems()">
@@ -79,9 +74,23 @@
             [items]="pageService.datesItems()">
           </app-info-card>
 
+          <!-- Abholtermin auswählen Button (nur bei PENDING/CONFIRMED) -->
+          @if (pageService.booking()!.status === 'PENDING' || pageService.booking()!.status === 'CONFIRMED') {
+            @if (pageService.booking()!.proposedPickups && !pageService.booking()!.confirmedPickup) {
+              <div class="mt-4">
+                <app-filled-button
+                  label="Abholtermin auswählen"
+                  icon="pi pi-calendar-plus"
+                  (buttonClick)="openPickupDialog()"
+                  class="w-full">
+                </app-filled-button>
+              </div>
+
+            }
+          }
+
         </div>
 
-        <!-- Right column: Booking Progress -->
         <app-booking-progress
           [timelineEvents]="pageService.timelineEvents()"
           [formatDateTime]="pageService.formatDate.bind(pageService)">
@@ -92,13 +101,23 @@
     </div>
   }
 
-  <!-- Booking QR Dialog Component -->
   @if (!pageService.isLoading() && pageService.booking()) {
     <app-booking-qr
       [visible]="pageService.showQrDialog()"
       [bookingId]="pageService.booking()!.id"
       (closed)="onQrClosed()">
     </app-booking-qr>
+
+    <app-pickup-selection-dialog
+      [visible]="pageService.showPickupDialog()"
+      (visibleChange)="onPickupDialogVisibleChange($event)"
+      [proposedPickups]="pageService.parseProposedPickups(pageService.booking()!.proposedPickups || '')"
+      [canSelectProposed]="pageService.canSelectProposedPickups()"
+      [formatDateTime]="pageService.formatDate.bind(pageService)"
+      (pickupSelected)="onPickupSelected($event)"
+      (newPickupsProposed)="onNewPickupsProposed($event)"
+      (cancelled)="onPickupDialogCancelled()">
+    </app-pickup-selection-dialog>
   }
 
   @if (!pageService.isLoading() && !pageService.booking()) {

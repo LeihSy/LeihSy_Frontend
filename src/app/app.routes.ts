@@ -48,6 +48,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'user-dashboard/groups/new',
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-form.component').then(m => m.UserGroupFormComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/groups/:id/edit',
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-edit.component').then(m => m.UserGroupEditComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/groups/:id/join',
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-join.component').then(m => m.UserGroupJoinComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'user-dashboard/groups/:id',
     loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-detail.component').then(m => m.UserGroupDetailComponent),
     canActivate: [authGuard]

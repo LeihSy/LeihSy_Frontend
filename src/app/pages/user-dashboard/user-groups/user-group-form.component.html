@@ -1,0 +1,13 @@
+<div class="max-w-2xl mx-auto p-6 mt-10">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-group-form-card
+    header="Neue Gruppe erstellen"
+    saveLabel="Gruppe speichern"
+    [model]="currentModel"
+    [errorMessage]="error() || ''"
+    (save)="save()"
+    (cancel)="cancel()">
+  </app-group-form-card>
+</div>
+

@@ -1,17 +1,19 @@
-import { Component, OnInit, signal, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, signal, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
-import { BackButtonComponent } from '../../../components/back-button/back-button.component';
-import { ItemFormComponent } from '../../../components/admin/forms/item-form/item-form.component';
-import { AdminItemFormPageService } from './services/admin-item-form-page.service';
-import { AdminItemFormLogicService } from './services/admin-item-form-logic.service';
-import { Item } from '../../../models/item.model';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
+import { ItemFormComponent } from '../../../components/form-components/item-form/item-form.component';
+import { AdminItemFormPageService } from './page-services/admin-item-form-page.service';
+import { AdminItemFormLogicService } from './page-services/admin-item-form-logic.service';
+import { AuthService } from '../../../services/auth.service';
 import { Product } from '../../../models/product.model';
-import { User } from '../../../models/user.model';
 
 @Component({
   selector: 'app-admin-item-form-page',
@@ -19,45 +21,31 @@ import { User } from '../../../models/user.model';
   imports: [
     CommonModule,
     ToastModule,
+    DialogModule,
+    ButtonModule,
+    TooltipModule,
     BackButtonComponent,
     ItemFormComponent
   ],
   providers: [MessageService, AdminItemFormPageService, AdminItemFormLogicService],
-  template: `
-    <div class="p-8 max-w-7xl mx-auto">
-      <p-toast position="bottom-right"></p-toast>
-
-      <app-back-button (backClick)="goBack()"></app-back-button>
-
-      <app-item-form
-        [item]="item()"
-        [products]="allProducts()"
-        [selectedProduct]="selectedProduct()"
-        [isEditMode]="isEditMode()"
-        [generatedInventoryNumbers]="generatedInventoryNumbers()"
-        (formSubmit)="handleFormSubmit($event)"
-        (formCancel)="goBack()"
-        (inventoryPrefixChange)="handleInventoryPrefixChange($event)"
-        (ownerIdChange)="handleOwnerIdChange($event)"
-        (ownerNameChange)="handleOwnerNameChange($event)"
-        (lenderIdChange)="handleLenderIdChange($event)"
-        (lenderNameChange)="handleLenderNameChange($event)">
-      </app-item-form>
-    </div>
-  `
+  templateUrl: './admin-item-form-page.component.html'
 })
-export class AdminItemFormPageComponent implements OnInit {
+export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
   @ViewChild(ItemFormComponent) itemFormComponent!: ItemFormComponent;
 
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private pageService = inject(AdminItemFormPageService);
-  private logicService = inject(AdminItemFormLogicService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly pageService = inject(AdminItemFormPageService);
+  private readonly logicService = inject(AdminItemFormLogicService);
+  private readonly authService = inject(AuthService);
 
-  // Use service signals directly
+  // Use page-page-page-page-services signals directly
   item = this.pageService.item;
   allProducts = this.pageService.products;
   allItemsIncludingDeleted = this.pageService.allItems;
+  showJsonDialog = this.pageService.showJsonDialog;
+  jsonString = this.pageService.jsonString;
+  copySuccess = this.pageService.copySuccess;
 
   // Local component signals
   selectedProduct = signal<Product | null>(null);
@@ -75,6 +63,14 @@ export class AdminItemFormPageComponent implements OnInit {
       this.itemId = Number.parseInt(id, 10);
       this.isEditMode.set(true);
       this.loadItem();
+    } else {
+      // Prüfe auf importierte Daten und speichere sie im Service
+      const navigation = this.router.getCurrentNavigation();
+      const importedData = navigation?.extras?.state?.['importedData'];
+
+      if (importedData) {
+        this.pageService.pendingImportData.set(importedData);
+      }
     }
 
     if (productIdParam) {
@@ -84,6 +80,26 @@ export class AdminItemFormPageComponent implements OnInit {
 
     this.loadProducts();
     this.loadAllItemsIncludingDeleted();
+
+    // Im Private-Modus: Generiere Inventarnummern mit PRV-Präfix
+    if (this.isPrivateMode() && !this.isEditMode()) {
+      setTimeout(() => {
+        this.handleInventoryPrefixChange('PRV');
+      }, 500);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Lade importierte Daten nach dem View initialisiert wurde
+    if (this.pageService.pendingImportData()) {
+      setTimeout(() => {
+        this.pageService.loadImportedData(this.itemFormComponent);
+      }, 200);
+    }
+  }
+
+  isPrivateMode(): boolean {
+    return this.pageService.isPrivateMode();
   }
 
   loadItem(): void {
@@ -99,7 +115,7 @@ export class AdminItemFormPageComponent implements OnInit {
         this.selectedProduct.set(product);
       },
       error: () => {
-        // Error handling is done in service
+        // Error handling is done in page-page-page-page-services
       }
     });
   }
@@ -113,23 +129,21 @@ export class AdminItemFormPageComponent implements OnInit {
   }
 
   handleFormSubmit(formValue: any): void {
-    if (this.isEditMode() && this.itemId) {
-      const payload = {
-        invNumber: formValue.invNumber,
-        owner: formValue.ownerName,
-        lenderId: formValue.lenderId,
-        productId: formValue.productId,
-        available: formValue.available
-      };
+    if (formValue && (formValue.privateMode || this.isPrivateMode())) {
+      const currentUser = this.authService.currentUser();
+      const userRoles = this.authService.getRoles();
 
-      this.pageService.updateItem(this.itemId, payload).subscribe({
-        next: () => {
-          // Success handling is done in service
-        },
-        error: () => {
-          // Error handling is done in service
-        }
-      });
+      this.pageService.handlePrivateModeSubmit(
+        formValue,
+        currentUser,
+        userRoles,
+        this.generatedInventoryNumbers()
+      );
+      return;
+    }
+
+    if (this.isEditMode() && this.itemId) {
+      this.pageService.handleUpdateItem(this.itemId, formValue).subscribe();
     } else {
       this.pageService.createItems(formValue);
     }
@@ -138,9 +152,12 @@ export class AdminItemFormPageComponent implements OnInit {
   handleInventoryPrefixChange(prefix: string): void {
     if (this.isEditMode()) return;
 
+    // Im Private-Modus immer PRV verwenden
+    const finalPrefix = this.isPrivateMode() ? 'PRV' : prefix;
+
     const quantity = 1;
-    if (prefix) {
-      const numbers = this.logicService.generateInventoryNumbers(prefix, quantity, this.allItemsIncludingDeleted());
+    if (finalPrefix) {
+      const numbers = this.logicService.generateInventoryNumbers(finalPrefix, quantity, this.allItemsIncludingDeleted());
       this.generatedInventoryNumbers.set(numbers);
     } else {
       this.generatedInventoryNumbers.set([]);
@@ -169,6 +186,15 @@ export class AdminItemFormPageComponent implements OnInit {
     if (this.itemFormComponent) {
       this.logicService.handleLenderNameChange(lenderName, this.itemFormComponent);
     }
+  }
+
+  copyToClipboard(): void {
+    const text = this.jsonString();
+    this.pageService.copyToClipboardWithFeedback(text);
+  }
+
+  closeJsonDialog(): void {
+    this.pageService.closeJsonDialog();
   }
 
   goBack(): void {

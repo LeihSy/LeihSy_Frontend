@@ -6,7 +6,7 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { ButtonModule } from 'primeng/button';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
 import { BadgeModule } from 'primeng/badge';
 
 export interface CatalogFilters {
@@ -28,7 +28,7 @@ export interface CatalogFilters {
     DatePickerModule,
     IconFieldModule,
     InputIconModule,
-    ButtonModule,
+    FilledButtonComponent,
     BadgeModule
   ],
   templateUrl: './catalog-search-filters.component.html',

@@ -13,10 +13,11 @@ import { MessageService } from 'primeng/api';
 
 import { Item } from '../../../models/item.model';
 import { ColumnDef } from '../../../components/table/table.component';
-import { LenderItemsService } from './service/admin-product-item-overview.service';
+import { LenderItemsService } from './page-services/admin-product-item-overview.service';
 import { LenderStatsCardsComponent, StatCard } from '../../../components/lender/lender-stats-cards.component';
 import { LenderProductItemListComponent } from '../../../components/lender/lender-product-item-list.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-lender-items',
@@ -33,7 +34,8 @@ import { SearchBarComponent } from '../../../components/search-bar/search-bar.co
     ToastModule,
     LenderStatsCardsComponent,
     LenderProductItemListComponent,
-    SearchBarComponent
+    SearchBarComponent,
+    PageHeaderComponent
   ],
   templateUrl: './admin-all-items.component.html',
   styleUrls: ['./admin-all-items.component.scss'],
@@ -49,7 +51,7 @@ export class AdminAllItemsComponent implements OnInit {
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use service signals
+  // Use page-page-page-page-services signals
   currentUser = this.lenderService.currentUser;
   isLoading = this.lenderService.isLoading;
   productsWithItems = this.lenderService.productsWithItems;

@@ -1,39 +1,10 @@
 <div class="max-w-2xl mx-auto p-6 mt-10">
-  <p-card header="Neue Studentengruppe erstellen">
-    <div class="flex flex-col gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="name" class="font-bold">Name</label>
-        <input pInputText id="name" [(ngModel)]="currentModel.name" placeholder="z.B. Lerngruppe Informatik" />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="desc" class="font-bold">Beschreibung</label>
-        <textarea pInputTextarea id="desc" [(ngModel)]="currentModel.description" rows="5" [autoResize]="true"></textarea>
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <label for="budget" class="font-bold">Budget (€)</label>
-        <p-inputNumber
-          id="budget"
-          [(ngModel)]="currentModel.budget"
-          mode="currency"
-          currency="EUR"
-          locale="de-DE"
-          [min]="0"
-          [minFractionDigits]="2"
-          [maxFractionDigits]="2"
-          placeholder="z.B. 1000.00">
-        </p-inputNumber>
-        <small class="text-gray-500">Optional: Legen Sie ein Budget für diese Gruppe fest</small>
-      </div>
-
-      <div class="flex justify-end gap-2 mt-4">
-        <p-button label="Abbrechen" severity="secondary" [text]="true" (onClick)="cancel()" />
-        <p-button label="Gruppe speichern" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
-      </div>
-      @if (error()) {
-        <small class="text-red-500">{{ error() }}</small>
-      }
-    </div>
-  </p-card>
+  <app-group-form-card
+    header="Neue Studentengruppe erstellen"
+    saveLabel="Gruppe speichern"
+    [model]="currentModel"
+    [errorMessage]="error() || ''"
+    (save)="save()"
+    (cancel)="cancel()">
+  </app-group-form-card>
 </div>

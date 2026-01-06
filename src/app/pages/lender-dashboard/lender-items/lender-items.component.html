@@ -1,0 +1,54 @@
+<div class="p-8 max-w-7xl mx-auto">
+
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-page-header
+    title="Meine Gegenstände"
+    subtitle="Übersicht über alle Ihnen zugewiesenen Gegenstände">
+  </app-page-header>
+
+  @if (currentUser()) {
+    <p class="text-sm text-gray-500 mt-2 mb-4">
+      <i class="pi pi-user mr-1"></i>
+      Angemeldet als: <strong>{{ currentUser()!.name }}</strong> (Verleiher ID: {{ currentUser()!.id }})
+    </p>
+  }
+
+  <app-lender-stats-cards [stats]="statsCards()"></app-lender-stats-cards>
+
+  <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+    <app-search-bar
+      [placeholder]="'Suche nach Produkt, Kategorie, Inventarnummer...'"
+      (valueChange)="onSearchChange($event)">
+    </app-search-bar>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
+      <p class="mt-4 text-gray-600">Lade Gegenstände...</p>
+    </div>
+  }
+
+  @if (!isLoading() && productsWithItems().length === 0) {
+    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
+      <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+      <p class="text-gray-600">Keine Gegenstände gefunden</p>
+    </div>
+  }
+
+  @if (!isLoading() && productsWithItems().length > 0) {
+    <div class="space-y-4">
+      @for (productData of productsWithItems(); track productData.product.id) {
+        <app-lender-product-item-list
+          [productData]="productData"
+          [columns]="itemColumns"
+          [showAdminInfo]="false"
+          (itemClick)="onItemRowClick($event)">
+        </app-lender-product-item-list>
+      }
+    </div>
+  }
+
+</div>
+

@@ -1,63 +1,48 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { GroupService } from '../../../services/group.service';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
+import { TableComponent } from '../../../components/table/table.component';
 import { Group } from '../../../models/group.model';
+import { AdminStudentGroupsPageService } from './page-services/admin-student-groups-page.service';
 
 @Component({
   selector: 'app-admin-student-groups',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TableComponent],
+  imports: [CommonModule, FilledButtonComponent, PageHeaderComponent, TableComponent],
   templateUrl: './admin-student-groups.component.html',
-  styleUrls: ['./admin-student-groups.component.scss']
+  styleUrls: ['./admin-student-groups.component.scss'],
+  providers: [AdminStudentGroupsPageService]
 })
 export class AdminStudentGroupsComponent implements OnInit {
-  private readonly groupService = inject(GroupService);
-  private readonly router = inject(Router);
+  private readonly pageService = inject(AdminStudentGroupsPageService);
 
-  groups = signal<Group[]>([]);
-  loading = signal(false);
+  // Expose service properties via getters
+  get groups() { return this.pageService.groups; }
+  get loading() { return this.pageService.loading; }
+  get columns() { return this.pageService.columns; }
 
-  columns: ColumnDef[] = [
-    { field: 'name', header: 'Name', sortable: true },
-    { field: 'description', header: 'Beschreibung' },
-    { field: 'memberCount', header: 'Mitglieder', type: 'number' },
-    { field: 'createdAt', header: 'Erstellt', type: 'datetime' }
-  ];
-
-  ngOnInit() {
-    this.loadGroups();
+  ngOnInit(): void {
+    this.pageService.loadGroups();
   }
 
-  loadGroups() {
-    this.loading.set(true);
-    this.groupService.getGroups().subscribe({
-      next: (data) => this.groups.set(data),
-      complete: () => this.loading.set(false)
-    });
+  loadGroups(): void {
+    this.pageService.loadGroups();
   }
 
-  goToNew() {
-    void this.router.navigate(['/admin/groups/new']);
+  goToNew(): void {
+    this.pageService.navigateToNew();
   }
 
-  onEdit(row: Group) {
-    // implement edit behavior - navigate to edit page if exists
-    void this.router.navigate(['/admin/groups', row.id, 'edit']);
+  onEdit(row: Group): void {
+    this.pageService.navigateToEdit(row);
   }
 
-  onRemove(row: Group) {
-    if (!confirm(`Gruppe "${row.name}" wirklich löschen?`)) return;
-    this.groupService.deleteGroup(row.id).subscribe({
-      next: () => this.loadGroups(),
-      error: (e) => { console.error(e); alert('Fehler beim Löschen'); }
-    });
+  onRemove(row: Group): void {
+    this.pageService.deleteGroup(row, () => this.loadGroups());
   }
 
-  onRowSelect(row: Group) {
-    // navigate to detail page (not implemented) or show details
-    void this.router.navigate(['/admin/groups', row.id]);
+  onRowSelect(row: Group): void {
+    this.pageService.navigateToDetail(row);
   }
 }

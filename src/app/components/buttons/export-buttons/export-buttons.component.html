@@ -1,0 +1,22 @@
+<div class="flex flex-col md:flex-row gap-8 flex-wrap">
+  <app-filled-button
+    icon="pi pi-file-pdf"
+    label="Als PDF exportieren"
+    (buttonClick)="onExportPdf()">
+  </app-filled-button>
+
+  <app-filled-button
+    icon="pi pi-download"
+    label="Als HTML exportieren"
+    (buttonClick)="onExportHtml()">
+  </app-filled-button>
+
+  <button
+    pButton
+    icon="pi pi-refresh"
+    label="Aktualisieren"
+    class="p-button-outlined w-full md:w-auto"
+    (click)="onRefresh()"
+    pTooltip="Daten neu laden">
+  </button>
+</div>

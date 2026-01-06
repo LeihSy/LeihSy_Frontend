@@ -1,0 +1,61 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+
+  <app-back-button (backClick)="goBack()"></app-back-button>
+
+  <app-item-form
+    [item]="item()"
+    [products]="allProducts()"
+    [selectedProduct]="selectedProduct()"
+    [isEditMode]="isEditMode()"
+    [generatedInventoryNumbers]="generatedInventoryNumbers()"
+    [mode]="isPrivateMode() ? 'private' : 'admin'"
+    (formSubmit)="handleFormSubmit($event)"
+    (formCancel)="goBack()"
+    (inventoryPrefixChange)="handleInventoryPrefixChange($event)"
+    (ownerIdChange)="handleOwnerIdChange($event)"
+    (ownerNameChange)="handleOwnerNameChange($event)"
+    (lenderIdChange)="handleLenderIdChange($event)"
+    (lenderNameChange)="handleLenderNameChange($event)">
+  </app-item-form>
+
+  <!-- JSON Preview Dialog -->
+  <p-dialog
+    header="Gegenstand-Daten (JSON)"
+    [(visible)]="showJsonDialog"
+    [modal]="true"
+    [style]="{width: '700px', maxHeight: '80vh'}"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-gray-600">
+        Kopieren Sie den folgenden JSON-String, um ihn per E-Mail zu versenden:
+      </p>
+
+      <div class="relative">
+        <pre class="bg-gray-50 border border-gray-200 rounded p-4 overflow-auto max-h-96 text-sm">{{ jsonString() }}</pre>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-copy"
+          label="Kopieren"
+          class="absolute top-2 right-2 p-button-sm"
+          (click)="copyToClipboard()"
+          pTooltip="In Zwischenablage kopieren">
+        </button>
+      </div>
+
+      @if (copySuccess()) {
+        <div class="text-green-600 text-sm flex items-center gap-2">
+          <i class="pi pi-check-circle"></i>
+          <span>In Zwischenablage kopiert!</span>
+        </div>
+      }
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Schließen" (click)="closeJsonDialog()"></button>
+    </ng-template>
+  </p-dialog>
+</div>
+

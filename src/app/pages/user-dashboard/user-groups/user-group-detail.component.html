@@ -1,0 +1,47 @@
+<div class="p-6 max-w-6xl mx-auto">
+  <app-back-button (click)="goBack()"></app-back-button>
+
+  @if (pageService.loading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      <p class="mt-2 text-gray-600">Lade Gruppendetails...</p>
+    </div>
+  }
+
+  @if (pageService.error() && !pageService.loading()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+      <i class="pi pi-exclamation-triangle mr-2"></i>
+      {{ pageService.error() }}
+    </div>
+  }
+
+  @if (pageService.group() && !pageService.loading()) {
+    <div class="mb-6">
+      <h2 class="text-3xl font-bold mb-2">{{ pageService.group()!.name }}</h2>
+      <p class="text-gray-600">Details zu Ihrer Gruppe</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <app-group-info-card
+        header="Gruppeninformationen"
+        [items]="pageService.groupInfoItems()">
+      </app-group-info-card>
+
+      <app-group-stats-card
+        header="Statistiken"
+        [stats]="pageService.groupStats()">
+      </app-group-stats-card>
+    </div>
+
+    <app-group-members-card
+      header="Mitglieder"
+      [members]="pageService.members()"
+      [columns]="pageService.memberColumns"
+      [paginator]="true"
+      [rows]="10"
+      [showActions]="false"
+      emptyMessage="Keine Mitglieder in dieser Gruppe">
+    </app-group-members-card>
+  }
+</div>
+

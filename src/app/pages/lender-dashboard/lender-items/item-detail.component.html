@@ -1,0 +1,95 @@
+<div class="p-8 max-w-6xl mx-auto">
+
+  <p-toast position="bottom-right"></p-toast>
+
+  <!-- Back Button -->
+  <app-back-button
+    label="Zurück zur Übersicht"
+    (backClick)="goBack()">
+  </app-back-button>
+
+  <!-- Loading State -->
+  @if (pageService.isLoading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
+      <p class="mt-4 text-gray-600">Lade Item-Details...</p>
+    </div>
+  }
+
+  <!-- Item Details -->
+  @if (!pageService.isLoading() && pageService.item()) {
+    <div class="space-y-6">
+
+      <!-- Header Card -->
+      <app-item-header
+        [invNumber]="pageService.item()!.invNumber"
+        [productName]="pageService.product()?.name || pageService.item()!.productName || 'Unbekanntes Produkt'"
+        [statusLabel]="pageService.getStatusLabel(pageService.item()!.isAvailable)"
+        [statusSeverity]="pageService.getStatusSeverity(pageService.item()!.isAvailable)">
+      </app-item-header>
+
+      <!-- Zwei-Spalten Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Linke Spalte: Item Informationen -->
+        <div class="space-y-6">
+
+          <!-- Basis Informationen -->
+          <app-info-section
+            header="Item Informationen"
+            [items]="pageService.itemInfoItems()">
+            <span tag>
+              <p-tag
+                [value]="pageService.getStatusLabel(pageService.item()!.isAvailable)"
+                [severity]="pageService.getStatusSeverity(pageService.item()!.isAvailable)"
+                class="font-medium px-3 py-1.5">
+              </p-tag>
+            </span>
+          </app-info-section>
+
+          <!-- Produkt Informationen -->
+          @if (pageService.product()) {
+            <app-info-section
+              header="Produktgruppe"
+              [items]="pageService.productGroupItems()">
+            </app-info-section>
+          }
+
+        </div>
+
+        <!-- Rechte Spalte: Verleiher & Ausleihzeiträume -->
+        <div class="space-y-6">
+
+          <!-- Verleiher Informationen -->
+          @if (pageService.product()) {
+            <app-info-section
+              header="Produkt-Info"
+              [items]="pageService.productInfoItems()">
+            </app-info-section>
+          }
+
+          <!-- Ausleihkonditionen -->
+          @if (pageService.product()) {
+            <app-info-section
+              header="Ausleihkonditionen"
+              [items]="pageService.loanConditionsItems()">
+            </app-info-section>
+          }
+
+        </div>
+
+      </div>
+
+      <!-- Ausleihhistorie (Full Width) -->
+      <app-loan-history
+        header="Ausleihzeiträume"
+        [loanHistory]="pageService.loanHistory()"
+        [columns]="loanHistoryColumns"
+        [rows]="10"
+        emptyStateMessage="Noch keine Ausleihvorgänge vorhanden">
+      </app-loan-history>
+
+    </div>
+  }
+
+</div>

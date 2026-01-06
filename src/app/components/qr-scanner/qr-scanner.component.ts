@@ -1,14 +1,15 @@
-import { Component, ElementRef, OnDestroy, viewChild, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, OnDestroy, viewChild, input, output, signal, PLATFORM_ID, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
+import { FilledButtonComponent } from '../buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../buttons/secondary-button/secondary-button.component';
 
 // Interface für die Barcode Detector API
 interface BarcodeDetector {
   detect(source: ImageBitmapSource): Promise<any[]>;
 }
 
-declare var BarcodeDetector: {
+declare const BarcodeDetector: {
   prototype: BarcodeDetector;
   new (options?: { formats: string[] }): BarcodeDetector;
 };
@@ -16,7 +17,7 @@ declare var BarcodeDetector: {
 @Component({
   selector: 'app-qr-scanner',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule],
+  imports: [CommonModule, DialogModule, FilledButtonComponent, SecondaryButtonComponent],
   template: `
     <p-dialog
       header="QR-Code Scanner"
@@ -46,10 +47,17 @@ declare var BarcodeDetector: {
           ></video>
 
           <div class="mt-4 flex gap-3">
-            <button pButton type="button" label="Start" icon="pi pi-video"
-                    (click)="start()" [disabled]="running() || !support()"></button>
-            <button pButton type="button" label="Stop" icon="pi pi-stop"
-                    class="p-button-secondary" (click)="stop()" [disabled]="!running()"></button>
+            <app-filled-button
+              label="Start"
+              icon="pi pi-video"
+              (buttonClick)="start()">
+            </app-filled-button>
+            <app-secondary-button
+              label="Stop"
+              icon="pi pi-stop"
+              color="gray"
+              (buttonClick)="stop()">
+            </app-secondary-button>
           </div>
         </div>
 
@@ -58,7 +66,11 @@ declare var BarcodeDetector: {
         </p>
 
         <div class="w-full flex justify-end border-t pt-4">
-          <button pButton label="Abbrechen" class="p-button-text" (click)="close()"></button>
+          <app-secondary-button
+            label="Abbrechen"
+            color="red"
+            (buttonClick)="close()">
+          </app-secondary-button>
         </div>
       </div>
     </p-dialog>
@@ -79,14 +91,7 @@ export class QrScannerComponent implements OnDestroy {
 
   // Signal States für reaktive UI
   running = signal(false);
-  support = signal(true);
-
-  constructor() {
-    // Check Support direkt beim Start
-    if (typeof window !== 'undefined' && !('BarcodeDetector' in window)) {
-      this.support.set(false);
-    }
-  }
+  support = signal(isPlatformBrowser(inject(PLATFORM_ID)) && 'BarcodeDetector' in globalThis);
 
   async start(): Promise<void> {
     if (this.running() || !this.support()) return;

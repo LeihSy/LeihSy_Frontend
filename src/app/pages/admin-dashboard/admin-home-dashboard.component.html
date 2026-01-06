@@ -1,9 +1,9 @@
 <div class="p-10 max-w-4xl mx-auto">
 
-  <h1 class="text-4xl font-bold mb-4">Admin Dashboard</h1>
-  <p class="text-muted-foreground mb-8">
-    Verwaltung von Produkten, Gegenständen und Buchungen
-  </p>
+  <app-page-header
+    title="Admin Dashboard"
+    subtitle="Verwaltung von Produkten, Gegenständen und Buchungen">
+  </app-page-header>
 
   <div class="grid md:grid-cols-2 gap-6">
 
@@ -68,6 +68,14 @@
       buttonLabel="Zu den Standorten"
       routerLink="/admin/locations"
       icon="map-marker">
+    </app-menu-card>
+
+    <app-menu-card
+      header="Private Gegenstände & Produkte"
+      description="Verwalte private Gegenstände und Produkte aus Benutzeranfragen (JSON-Import)."
+      buttonLabel="Zu den privaten Sachen"
+      routerLink="/admin/private"
+      icon="user">
     </app-menu-card>
 
     <app-menu-card

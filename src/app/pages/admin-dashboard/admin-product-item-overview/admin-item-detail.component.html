@@ -14,7 +14,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Item Information -->
-      <p-card header="Gegenstand Details" class="border border-gray-200">
+      <app-detail-card header="Gegenstand Details">
         <div class="flex justify-between items-start mb-4">
           <div>
             <h2 class="text-2xl font-bold text-[#253359]">{{ item()!.invNumber }}</h2>
@@ -24,34 +24,33 @@
               class="mt-2">
             </p-tag>
           </div>
-          <button pButton
-                  icon="pi pi-pencil"
-                  label="Bearbeiten"
-                  class="p-button-outlined"
-                  (click)="editItem()"></button>
+          <app-filled-button
+            icon="pi pi-pencil"
+            label="Bearbeiten"
+            (buttonClick)="editItem()">
+          </app-filled-button>
         </div>
 
-        <app-info-card
+        <app-info-section
           header="Gegenstand Informationen"
           [items]="getItemInfoItems()">
-        </app-info-card>
-      </p-card>
+          <span tag>
+            <p-tag
+              [value]="item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
+              [severity]="getStatusSeverity(item()!.isAvailable)"
+              class="font-medium px-3 py-1.5">
+            </p-tag>
+          </span>
+        </app-info-section>
+      </app-detail-card>
 
       <!-- Product Information -->
-      <p-card header="Zugehöriges Produkt" class="border border-gray-200">
+      <app-detail-card header="Zugehöriges Produkt">
         @if (product()) {
-          <div class="mb-4">
-            @if (product()!.imageUrl) {
-              <img [src]="product()!.imageUrl"
-                   [alt]="product()!.name"
-                   class="w-full max-w-xs rounded-lg shadow-md mb-4" />
-            }
-          </div>
-
-          <app-info-card
+          <app-info-section
             header="Produkt Informationen"
             [items]="getProductInfoItems()">
-          </app-info-card>
+          </app-info-section>
 
           @if (product()!.description) {
             <div class="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -61,36 +60,27 @@
           }
 
           <div class="mt-4">
-            <button pButton
-                    icon="pi pi-external-link"
-                    label="Zum Produkt"
-                    class="p-button-outlined p-button-secondary w-full"
-                    [routerLink]="['/admin/products', product()!.id, 'edit']">
-            </button>
+            <app-secondary-button
+              icon="pi pi-external-link"
+              label="Zum Produkt"
+              [routerLink]="['/admin/products', product()!.id, 'edit']"
+              class="w-full">
+            </app-secondary-button>
           </div>
         } @else {
           <p class="text-gray-600">Produktinformationen werden geladen...</p>
         }
-      </p-card>
+      </app-detail-card>
 
       <!-- Loan History (Full Width) -->
       <div class="lg:col-span-2">
-        <p-card header="Ausleihverlauf" class="border border-gray-200">
-          @if (loanHistory().length > 0) {
-            <app-table
-              [columns]="loanHistoryColumns"
-              [data]="loanHistory()"
-              [paginator]="true"
-              [rows]="10"
-              emptyMessage="Keine Ausleihvorgänge vorhanden">
-            </app-table>
-          } @else {
-            <div class="text-center p-8 text-gray-500">
-              <i class="pi pi-info-circle text-4xl mb-4 block"></i>
-              <p>Noch keine Ausleihvorgänge für diesen Gegenstand.</p>
-            </div>
-          }
-        </p-card>
+        <app-loan-history
+          header="Ausleihverlauf"
+          [loanHistory]="loanHistory()"
+          [columns]="loanHistoryColumns"
+          [rows]="10"
+          emptyStateMessage="Noch keine Ausleihvorgänge für diesen Gegenstand.">
+        </app-loan-history>
       </div>
 
     </div>

@@ -34,27 +34,42 @@ export const routes: Routes = [
   },
   {
     path: 'user-dashboard/bookings',
-    loadComponent: () => import('./pages/user-dashboard/user-bookings.component').then(m => m.UserBookingsComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-bookings/user-bookings.component').then(m => m.UserBookingsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/private-lend',
+    loadComponent: () => import('./pages/user-dashboard/user-private-lend/private-lend.component').then(m => m.PrivateLendComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/private-lend/product',
+    loadComponent: () => import('./pages/admin-dashboard/admin-products/admin-product-form-page.component').then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'user-dashboard/private-lend/item',
+    loadComponent: () => import('./pages/admin-dashboard/admin-items/admin-item-form-page.component').then(m => m.AdminItemFormPageComponent),
     canActivate: [authGuard]
   },
   {
     path: 'user-dashboard/bookings/:id',
-    loadComponent: () => import('./pages/user-dashboard/booking-detail.component').then(m => m.BookingDetailComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-bookings/booking-detail.component').then(m => m.BookingDetailComponent),
     canActivate: [authGuard]
   },
   {
     path: 'user-dashboard/groups',
-    loadComponent: () => import('./pages/user-dashboard/user-groups.component').then(m => m.UserGroupsComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-groups.component').then(m => m.UserGroupsComponent),
     canActivate: [authGuard]
   },
   {
     path: 'user-dashboard/groups/:id',
-    loadComponent: () => import('./pages/user-dashboard/user-group-detail.component').then(m => m.UserGroupDetailComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-groups/user-group-detail.component').then(m => m.UserGroupDetailComponent),
     canActivate: [authGuard]
   },
   {
     path: 'qr-action/:id',
-    loadComponent: () => import('./pages/user-dashboard/qr-action.component').then(m => m.QrActionComponent),
+    loadComponent: () => import('./pages/user-dashboard/user-bookings/qr-action.component').then(m => m.QrActionComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
@@ -66,13 +81,13 @@ export const routes: Routes = [
   },
   {
     path: 'lender/items',
-    loadComponent: () => import('./pages/lender-dashboard/lender-items.component').then(m => m.LenderItemsComponent),
+    loadComponent: () => import('./pages/lender-dashboard/lender-items/lender-items.component').then(m => m.LenderItemsComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'lender/items/:id',
-    loadComponent: () => import('./pages/lender-dashboard/item-detail.component').then(m => m.ItemDetailComponent),
+    loadComponent: () => import('./pages/lender-dashboard/lender-items/item-detail.component').then(m => m.ItemDetailComponent),
     canActivate: [authGuard],
     data: { roles: ['lender', 'admin'] }
   },
@@ -221,6 +236,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-locations/admin-location-detail.component')
         .then(m => m.AdminLocationDetailComponent),
+    canActivate: [authGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/private',
+    loadComponent: () =>
+      import('./pages/admin-dashboard/admin-private-management/admin-private-management.component')
+        .then(m => m.AdminPrivateManagementComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

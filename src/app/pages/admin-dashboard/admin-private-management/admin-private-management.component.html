@@ -1,0 +1,64 @@
+<div class="p-8 max-w-6xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+
+  <div class="mb-6">
+    <app-back-button
+      label="Zurück zum Dashboard"
+      (backClick)="goBack()">
+    </app-back-button>
+
+    <app-page-header
+      title="Private Gegenstände & Produkte"
+      subtitle="Verwalten Sie private Gegenstände und Produkte, die von Benutzern eingereicht wurden">
+    </app-page-header>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <!-- Produkte verwalten -->
+    <app-management-card
+      header="Produkte erstellen"
+      icon="pi-tag"
+      description="Erstellen Sie ein privates Produkt, indem Sie den JSON-String aus einer Benutzeranfrage einfügen."
+      buttonLabel="Produkt aus JSON erstellen"
+      buttonIcon="pi pi-plus-circle"
+      (buttonClick)="openProductDialog()">
+    </app-management-card>
+
+    <!-- Gegenstände verwalten -->
+    <app-management-card
+      header="Gegenstände erstellen"
+      icon="pi-box"
+      description="Erstellen Sie einen privaten Gegenstand, indem Sie den JSON-String aus einer Benutzeranfrage einfügen."
+      buttonLabel="Gegenstand aus JSON erstellen"
+      buttonIcon="pi pi-plus-circle"
+      (buttonClick)="openItemDialog()">
+    </app-management-card>
+  </div>
+
+  <!-- Produkt JSON Dialog -->
+  <app-json-import-dialog
+    header="Produkt aus JSON erstellen"
+    [visible]="showProductDialog()"
+    inputId="productJson"
+    placeholder='{"type": "product", "timestamp": "...", "payload": {...}}'
+    helperText='Erwartetes Format: JSON mit "payload" Objekt, das die Produktdaten enthält'
+    submitButtonLabel="Produkt erstellen"
+    [jsonInput]="productJsonInput"
+    (cancel)="closeProductDialog()"
+    (submit)="createProductFromJson()">
+  </app-json-import-dialog>
+
+  <!-- Gegenstand JSON Dialog -->
+  <app-json-import-dialog
+    header="Gegenstand aus JSON erstellen"
+    [visible]="showItemDialog()"
+    inputId="itemJson"
+    placeholder='{"type": "item", "timestamp": "...", "payload": {...}}'
+    helperText='Erwartetes Format: JSON mit "payload" Objekt, das die Gegenstandsdaten enthält'
+    submitButtonLabel="Gegenstand erstellen"
+    [jsonInput]="itemJsonInput"
+    (cancel)="closeItemDialog()"
+    (submit)="createItemFromJson()">
+  </app-json-import-dialog>
+</div>
+

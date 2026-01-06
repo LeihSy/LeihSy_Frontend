@@ -1,0 +1,176 @@
+<p-card [header]="isEditMode ? 'Gegenstand bearbeiten' : 'Neuen Gegenstand anlegen'" class="mb-6">
+  <form [formGroup]="itemForm" (ngSubmit)="submitForm()" class="grid gap-4">
+
+    @if (selectedProduct && !isEditMode) {
+      <div class="bg-blue-50 p-3 rounded border border-blue-200">
+        <p class="text-sm">
+          <strong>Produkt:</strong> {{ selectedProduct.name }}
+          <br>
+          <strong>Kategorie:</strong> {{ selectedProduct.category?.name || 'N/A' }}
+        </p>
+      </div>
+    }
+
+    <app-form-row [columns]="2">
+      <app-form-input-field label="Inventarnummer Präfix" [required]="true" [fullWidth]="true">
+        @if (mode === 'private') {
+          <input pInputText [value]="inventoryPrefix()" class="w-full" [readonly]="true" [disabled]="true"
+                 pTooltip="Im Private-Modus ist das Präfix fest auf PRV gesetzt" />
+        } @else {
+          <input pInputText formControlName="invNumber" class="w-full"
+                 placeholder="z.B. VR-PRO"
+                 (input)="onInventoryPrefixChange()"
+                 pTooltip="Basisname für die Inventarnummer (Zahl wird automatisch hinzugefügt)" />
+        }
+        @if (generatedInventoryNumbers.length > 0 && !isEditMode) {
+          <app-validation-message
+            [message]="'Vorschau: ' + generatedInventoryNumbers[0] + (generatedInventoryNumbers.length > 1 ? ' bis ' + generatedInventoryNumbers[generatedInventoryNumbers.length - 1] : '')">
+          </app-validation-message>
+        }
+      </app-form-input-field>
+    </app-form-row>
+
+    <app-form-row [columns]="2">
+      @if (mode === 'admin') {
+        <app-form-input-field label="Besitzer User ID" [fullWidth]="true">
+          <p-inputNumber formControlName="ownerId"
+                         [useGrouping]="false"
+                         class="w-full"
+                         placeholder="z.B. 1"
+                         (onInput)="onOwnerIdChange()">
+          </p-inputNumber>
+          @if (ownerIdDisplayValue() && !itemForm.get('ownerName')?.value) {
+            <app-validation-message
+              [message]="ownerIdDisplayValue()"
+              [isLoading]="isLoadingOwnerId()"
+              [isSuccess]="ownerFound()"
+              [isError]="!ownerFound() && !isLoadingOwnerId()">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+
+        <app-form-input-field label="Besitzer Benutzername" [required]="true" [fullWidth]="true">
+          <input pInputText formControlName="ownerName"
+                 class="w-full"
+                 placeholder="Username"
+                 (input)="onOwnerNameChange()" />
+          @if (ownerNameDisplayValue() && itemForm.get('ownerName')?.value) {
+            <app-validation-message
+              [message]="ownerNameDisplayValue()"
+              [isLoading]="isLoadingOwnerName()"
+              [isSuccess]="ownerFound()"
+              [isError]="!ownerFound() && !isLoadingOwnerName()">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+      } @else {
+        <app-form-input-field label="Besitzer" [fullWidth]="true">
+          <input pInputText formControlName="ownerName"
+                 class="w-full"
+                 [readonly]="true" [disabled]="true"
+                 pTooltip="Automatisch auf Ihren Namen gesetzt" />
+        </app-form-input-field>
+        <div></div>
+      }
+    </app-form-row>
+
+    <app-form-row [columns]="2">
+      @if (mode === 'admin') {
+        <app-form-input-field label="Verleiher User ID" [required]="true" [fullWidth]="true">
+          <p-inputNumber formControlName="lenderId"
+                         [useGrouping]="false"
+                         class="w-full"
+                         placeholder="z.B. 1"
+                         (onInput)="onLenderIdChange()">
+          </p-inputNumber>
+          @if (lenderDisplayValue() && !itemForm.get('lenderName')?.value) {
+            <app-validation-message
+              [message]="lenderDisplayValue()"
+              [isLoading]="isLoadingLender()"
+              [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
+              [isError]="lenderDisplayValue().includes('nicht gefunden')">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+
+        <app-form-input-field label="Verleiher Benutzername" [required]="true" [fullWidth]="true">
+          <input pInputText formControlName="lenderName"
+                 class="w-full"
+                 placeholder="Username"
+                 (input)="onLenderNameChange()" />
+          @if (lenderDisplayValue() && itemForm.get('lenderName')?.value) {
+            <app-validation-message
+              [message]="lenderDisplayValue()"
+              [isLoading]="isLoadingLender()"
+              [isSuccess]="!lenderDisplayValue().includes('nicht gefunden')"
+              [isError]="lenderDisplayValue().includes('nicht gefunden')">
+            </app-validation-message>
+          }
+        </app-form-input-field>
+      } @else {
+        <app-form-input-field label="Verleiher" [fullWidth]="true">
+          <input pInputText formControlName="lenderName"
+                 class="w-full"
+                 [readonly]="true" [disabled]="true"
+                 pTooltip="Automatisch auf Ihren Namen gesetzt" />
+        </app-form-input-field>
+        <div></div>
+      }
+    </app-form-row>
+
+    @if (!isEditMode) {
+      <app-form-row [columns]="2">
+        <app-form-input-field label="Anzahl zu erstellender Instanzen" [fullWidth]="true">
+          <p-inputNumber formControlName="quantity"
+                         [min]="1"
+                         [max]="100"
+                         [showButtons]="true"
+                         class="w-full"
+                         placeholder="1"
+                         (onInput)="onQuantityChange()">
+          </p-inputNumber>
+          <app-validation-message
+            [message]="'Es werden ' + (itemForm.get('quantity')?.value || 1) + ' Instanzen erstellt'">
+          </app-validation-message>
+        </app-form-input-field>
+        <div></div>
+      </app-form-row>
+    }
+
+    <app-form-row [columns]="2">
+      <app-form-input-field label="Produkt" [required]="true" [fullWidth]="true">
+        <p-select
+          [options]="products"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Produkt wählen"
+          formControlName="productId"
+          class="w-full"
+          [disabled]="isEditMode">
+        </p-select>
+      </app-form-input-field>
+
+      <app-radio-button-group
+        label="Verfügbarkeit"
+        [required]="true"
+        name="availability"
+        [options]="availabilityOptions"
+        [value]="availabilityValue"
+        (valueChange)="onAvailableChange($event)">
+      </app-radio-button-group>
+    </app-form-row>
+
+    <div class="flex gap-2">
+      <app-filled-button
+        type="submit"
+        [label]="isEditMode ? 'Aktualisieren' : ('Erstellen (' + (itemForm.get('quantity')?.value || 1) + 'x)')">
+      </app-filled-button>
+      <app-secondary-button
+        label="Abbrechen"
+        color="red"
+        (buttonClick)="resetForm()">
+      </app-secondary-button>
+    </div>
+  </form>
+</p-card>
+

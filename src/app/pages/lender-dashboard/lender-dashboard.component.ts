@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
+import { FilledButtonComponent } from '../../components/buttons/filled-button/filled-button.component';
 import { MenuCardComponent } from '../../components/menu-card/menu-card.component';
 import { QrScannerComponent } from '../../components/qr-scanner/qr-scanner.component';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 @Component({
   selector: 'app-lender-dashboard',
@@ -13,9 +14,10 @@ import { QrScannerComponent } from '../../components/qr-scanner/qr-scanner.compo
     CommonModule,
     RouterModule,
     CardModule,
-    ButtonModule,
+    FilledButtonComponent,
     MenuCardComponent,
-    QrScannerComponent
+    QrScannerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './lender-dashboard.component.html',
   styleUrls: ['./lender-dashboard.component.scss']

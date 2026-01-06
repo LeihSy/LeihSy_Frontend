@@ -2,12 +2,15 @@
 <p-toast position="bottom-right"></p-toast>
 
 <div class="p-6 max-w-4xl mx-auto">
-  <h2 class="text-2xl font-semibold mb-4">Standorte verwalten</h2>
+  <app-page-header
+    title="Standorte verwalten"
+    subtitle="Erstelle und verwalte Räume / Standorte">
+  </app-page-header>
 
   <div class="mb-6">
     <div class="flex gap-2 items-center">
-      <input pInputText type="text" placeholder="Standort" [(ngModel)]="newLocation.roomNr" class="flex-1 p-2 border rounded" />
-      <button pButton label="Erstellen" (click)="create()" class="p-button p-button-primary"></button>
+      <input pInputText type="text" placeholder="Standort" [value]="newLocation().roomNr" (input)="pageService.updateNewLocationRoomNr($any($event.target).value)" class="flex-1 p-2 border rounded" />
+      <app-filled-button label="Erstellen" (buttonClick)="create()"></app-filled-button>
     </div>
   </div>
 

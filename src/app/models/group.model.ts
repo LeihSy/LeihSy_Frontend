@@ -34,7 +34,7 @@ export interface StudentGroupDTO {
   updatedAt?: string; // date-time
 }
 
-// Backwards-compatible aliases used in existing services
+// Backwards-compatible aliases used in existing page-page-page-page-page-services
 export type Group = StudentGroupDTO;
 export type GroupCreateDTO = CreateStudentGroupDTO;
 export type GroupUpdateDTO = UpdateStudentGroupDTO;

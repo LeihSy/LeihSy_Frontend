@@ -3,9 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { ToastModule } from 'primeng/toast';
-import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
@@ -21,9 +19,7 @@ import { Product } from '../../../models/product.model';
   imports: [
     CommonModule,
     ToastModule,
-    DialogModule,
     ButtonModule,
-    TooltipModule,
     BackButtonComponent,
     ItemFormComponent
   ],
@@ -39,13 +35,10 @@ export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
   private readonly logicService = inject(AdminItemFormLogicService);
   private readonly authService = inject(AuthService);
 
-  // Use page-page-page-page-services signals directly
+  // Use page-services signals directly
   item = this.pageService.item;
   allProducts = this.pageService.products;
   allItemsIncludingDeleted = this.pageService.allItems;
-  showJsonDialog = this.pageService.showJsonDialog;
-  jsonString = this.pageService.jsonString;
-  copySuccess = this.pageService.copySuccess;
 
   // Local component signals
   selectedProduct = signal<Product | null>(null);
@@ -157,8 +150,18 @@ export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
 
     const quantity = 1;
     if (finalPrefix) {
-      const numbers = this.logicService.generateInventoryNumbers(finalPrefix, quantity, this.allItemsIncludingDeleted());
-      this.generatedInventoryNumbers.set(numbers);
+      // Warte bis Items geladen sind (prüfe ob Signal Daten hat)
+      const checkAndGenerate = () => {
+        const items = this.allItemsIncludingDeleted();
+        if (items.length > 0 || this.pageService.isLoading() === false) {
+          const numbers = this.logicService.generateInventoryNumbers(finalPrefix, quantity, items);
+          this.generatedInventoryNumbers.set(numbers);
+        } else {
+          // Warte noch etwas länger und versuche es erneut
+          setTimeout(checkAndGenerate, 200);
+        }
+      };
+      checkAndGenerate();
     } else {
       this.generatedInventoryNumbers.set([]);
     }
@@ -188,16 +191,12 @@ export class AdminItemFormPageComponent implements OnInit, AfterViewInit {
     }
   }
 
-  copyToClipboard(): void {
-    const text = this.jsonString();
-    this.pageService.copyToClipboardWithFeedback(text);
-  }
-
-  closeJsonDialog(): void {
-    this.pageService.closeJsonDialog();
-  }
 
   goBack(): void {
-    this.logicService.navigateToItemList();
+    if (this.isPrivateMode()) {
+      this.pageService.navigateToPrivateItemList();
+    } else {
+      this.logicService.navigateToItemList();
+    }
   }
 }

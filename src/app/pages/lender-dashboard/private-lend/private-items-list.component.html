@@ -1,0 +1,65 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <div class="mb-6">
+    <app-back-button (backClick)="goBack()" label="Zurück"></app-back-button>
+  </div>
+
+  <div class="mb-6">
+    <h2 class="text-2xl font-semibold mb-2">Meine privaten Gegenstände</h2>
+    <p class="text-gray-600">Übersicht über alle von dir erstellten privaten Produkte und Gegenstände</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center py-8">
+      <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+      <p class="mt-4 text-gray-500">Lade Daten...</p>
+    </div>
+  } @else if (privateProducts().length === 0 && privateItems().length === 0) {
+    <div class="text-center py-12 bg-gray-50 rounded-lg">
+      <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-lg mb-4">Noch keine privaten Gegenstände vorhanden</p>
+      <button pButton label="Jetzt erstellen" icon="pi pi-plus" (click)="goBack()"></button>
+    </div>
+  } @else {
+    <!-- Produkte Tabelle -->
+    @if (privateProducts().length > 0) {
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Produkte</h3>
+        <app-table
+          [columns]="productColumns()"
+          [data]="privateProducts()"
+          [loading]="isLoading()"
+          [rows]="10"
+          [paginator]="true"
+          [showActions]="true"
+          [showEditButton]="true"
+          [showDeleteButton]="true"
+          (edit)="editProduct($event)"
+          (remove)="deleteProduct($event)">
+        </app-table>
+      </div>
+    }
+
+    <!-- Items Tabelle -->
+    @if (privateItems().length > 0) {
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Gegenstände</h3>
+        <app-table
+          [columns]="itemColumns()"
+          [data]="privateItems()"
+          [loading]="isLoading()"
+          [rows]="10"
+          [paginator]="true"
+          [showActions]="true"
+          [showEditButton]="true"
+          [showDeleteButton]="true"
+          (edit)="editItem($event)"
+          (remove)="deleteItem($event)">
+        </app-table>
+      </div>
+    }
+  }
+</div>
+

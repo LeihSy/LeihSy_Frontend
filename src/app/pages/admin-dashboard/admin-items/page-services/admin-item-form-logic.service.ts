@@ -8,7 +8,6 @@ import { ItemService } from '../../../../services/item.service';
 import { ProductService } from '../../../../services/product.service';
 import { UserService } from '../../../../services/user.service';
 import { Item } from '../../../../models/item.model';
-import { Product } from '../../../../models/product.model';
 import { User } from '../../../../models/user.model';
 
 export interface ItemFormHandler {
@@ -92,23 +91,46 @@ export class AdminItemFormLogicService {
   }
 
   generateInventoryNumbers(prefix: string, quantity: number, existingItems: Item[]): string[] {
-    const existingNumbers = existingItems
-      .map(item => item.invNumber)
-      .filter(invNum => invNum.startsWith(prefix));
+    if (!prefix || quantity < 1) return [];
 
+    console.log(`[generateInventoryNumbers] Prefix: ${prefix}, Anzahl Items: ${existingItems.length}`);
+
+    // Filtere existierende Items mit dem gleichen Präfix
+    const itemsWithPrefix = existingItems.filter(item => item.invNumber?.startsWith(prefix + '-'));
+    console.log(`[generateInventoryNumbers] Items mit Präfix ${prefix}: ${itemsWithPrefix.length}`,
+      itemsWithPrefix.map(i => i.invNumber));
+
+    const existingNumbers = itemsWithPrefix
+      .map(item => {
+        // Extrahiere die Nummer nach dem Präfix (z.B. "PRV-001" -> 1)
+        const parts = item.invNumber.split('-');
+        if (parts.length >= 2) {
+          const numberPart = parts.at(-1); // Letzter Teil nach dem letzten "-"
+          const num = Number.parseInt(numberPart || '0', 10);
+          return Number.isNaN(num) ? 0 : num;
+        }
+        return 0;
+      })
+      .filter(num => num > 0);
+
+    console.log(`[generateInventoryNumbers] Extrahierte Nummern:`, existingNumbers);
+
+    // Finde die höchste existierende Nummer
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    let nextNumber = maxNumber + 1;
+
+    console.log(`[generateInventoryNumbers] Höchste Nummer: ${maxNumber}, Nächste Nummer: ${nextNumber}`);
+
+    // Generiere neue Inventarnummern
     const numbers: string[] = [];
-    let counter = 1;
-
     for (let i = 0; i < quantity; i++) {
-      let newNumber = `${prefix}-${counter.toString().padStart(3, '0')}`;
-      while (existingNumbers.includes(newNumber) || numbers.includes(newNumber)) {
-        counter++;
-        newNumber = `${prefix}-${counter.toString().padStart(3, '0')}`;
-      }
+      const paddedNumber = String(nextNumber).padStart(3, '0');
+      const newNumber = `${prefix}-${paddedNumber}`;
       numbers.push(newNumber);
-      counter++;
+      nextNumber++;
     }
 
+    console.log(`[generateInventoryNumbers] Generierte Nummern:`, numbers);
     return numbers;
   }
 

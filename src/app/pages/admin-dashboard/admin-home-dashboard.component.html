@@ -5,7 +5,7 @@
     subtitle="Verwaltung von Produkten, Gegenständen und Buchungen">
   </app-page-header>
 
-  <div class="grid md:grid-cols-2 gap-6">
+  <div class="grid md:grid-cols-1 gap-2">
 
     <app-menu-card
       header="Alle Gegenstände (Übersicht)"
@@ -46,7 +46,7 @@
       routerLink="/admin/insy-import"
       icon="download">
    </app-menu-card>
-    
+
     <app-menu-card
       header="Verleiher Zuordnung"
       description="Ordne zu, wer der Verleiher ist."
@@ -70,13 +70,6 @@
       icon="map-marker">
     </app-menu-card>
 
-    <app-menu-card
-      header="Private Gegenstände & Produkte"
-      description="Verwalte private Gegenstände und Produkte aus Benutzeranfragen (JSON-Import)."
-      buttonLabel="Zu den privaten Sachen"
-      routerLink="/admin/private"
-      icon="user">
-    </app-menu-card>
 
     <app-menu-card
       header="Gruppen verwalten"

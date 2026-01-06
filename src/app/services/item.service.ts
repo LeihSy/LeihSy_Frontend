@@ -31,6 +31,11 @@ export class ItemService {
     return this.http.get<Item[]>(this.apiUrl);
   }
 
+  // GET /api/items?includeDeleted=true (Get all items including deleted)
+  getAllItemsIncludingDeleted(): Observable<Item[]> {
+    return this.http.get<Item[]>(`${this.apiUrl}?includeDeleted=true`);
+  }
+
   // POST /api/items (Create a new item)
   createItem(item: ItemCreate): Observable<Item> {
     return this.http.post<Item>(this.apiUrl, item);

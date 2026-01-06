@@ -39,11 +39,6 @@ export class AdminItemFormPageService {
   products = signal<Product[]>([]);
   allItems = signal<Item[]>([]);
   isLoading = signal(false);
-
-  // Dialog state
-  showJsonDialog = signal(false);
-  jsonString = signal('');
-  copySuccess = signal(false);
   pendingImportData = signal<any>(null);
 
   // Expose userService for direct use in component
@@ -99,11 +94,12 @@ export class AdminItemFormPageService {
   }
 
   loadAllItems(): void {
-    this.itemService.getAllItems().subscribe({
+    this.itemService.getAllItemsIncludingDeleted().subscribe({
       next: (items) => {
         this.allItems.set(items);
       },
-      error: () => {
+      error: (err) => {
+        console.error('Fehler beim Laden aller Items:', err);
         this.allItems.set([]);
       }
     });
@@ -212,17 +208,35 @@ export class AdminItemFormPageService {
   generateInventoryNumbers(prefix: string, quantity: number, allItems: Item[]): string[] {
     if (!prefix || quantity < 1) return [];
 
-    const existingNumbers = allItems
-      .filter(item => item.invNumber.startsWith(prefix))
-      .map(item => {
-        const match = /(\d+)$/.exec(item.invNumber);
-        return match ? Number.parseInt(match[1], 10) : 0;
-      })
-      .filter(num => !Number.isNaN(num));
+    console.log(`[PageService.generateInventoryNumbers] Prefix: ${prefix}, Anzahl Items: ${allItems.length}`);
 
+    // Filtere existierende Items mit dem gleichen Präfix
+    const itemsWithPrefix = allItems.filter(item => item.invNumber?.startsWith(prefix + '-'));
+    console.log(`[PageService.generateInventoryNumbers] Items mit Präfix ${prefix}: ${itemsWithPrefix.length}`,
+      itemsWithPrefix.map(i => i.invNumber));
+
+    const existingNumbers = itemsWithPrefix
+      .map(item => {
+        // Extrahiere die Nummer nach dem Präfix (z.B. "PRV-001" -> 1)
+        const parts = item.invNumber.split('-');
+        if (parts.length >= 2) {
+          const numberPart = parts.at(-1); // Letzter Teil nach dem letzten "-"
+          const num = Number.parseInt(numberPart || '0', 10);
+          return Number.isNaN(num) ? 0 : num;
+        }
+        return 0;
+      })
+      .filter(num => num > 0);
+
+    console.log(`[PageService.generateInventoryNumbers] Extrahierte Nummern:`, existingNumbers);
+
+    // Finde die höchste existierende Nummer
     const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
     let nextNumber = maxNumber + 1;
 
+    console.log(`[PageService.generateInventoryNumbers] Höchste Nummer: ${maxNumber}, Nächste Nummer: ${nextNumber}`);
+
+    // Generiere neue Inventarnummern
     const inventoryNumbers: string[] = [];
     for (let i = 0; i < quantity; i++) {
       const paddedNumber = String(nextNumber).padStart(3, '0');
@@ -230,6 +244,7 @@ export class AdminItemFormPageService {
       nextNumber++;
     }
 
+    console.log(`[PageService.generateInventoryNumbers] Generierte Nummern:`, inventoryNumbers);
     return inventoryNumbers;
   }
 
@@ -237,48 +252,16 @@ export class AdminItemFormPageService {
     this.router.navigate(['/admin/items']);
   }
 
+  navigateToPrivateItemList(): void {
+    this.router.navigate(['/lender/private-lend/overview']);
+  }
+
   // Private Mode Detection
   isPrivateMode(): boolean {
     const url = (globalThis as any).location?.pathname || '';
-    return url.includes('/user-dashboard/private-lend');
+    return url.includes('/lender/private-lend');
   }
 
-  // JSON Dialog Methods
-  createJsonPayload(formValue: any, currentUser: any, userRoles: string[], generatedInventoryNumbers: string[]): string {
-    const payload = { ...formValue };
-
-    // Verwende die erste generierte Inventarnummer, falls vorhanden
-    if (generatedInventoryNumbers.length > 0) {
-      payload.invNumber = generatedInventoryNumbers[0];
-    } else {
-      payload.invNumber = 'PRV-' + Date.now();
-    }
-
-    // Setze Location ID fest auf 7 (privat)
-    payload.locationId = 7;
-
-    // Füge User-IDs hinzu
-    payload.ownerId = currentUser.id;
-    payload.ownerName = payload.ownerName || currentUser.name;
-    payload.lenderId = currentUser.id;
-    payload.lenderName = payload.lenderName || currentUser.name;
-
-    // Füge User-Rollen hinzu
-    payload.userRoles = userRoles;
-
-    // Erstelle JSON-String
-    const jsonData = {
-      type: 'item',
-      timestamp: new Date().toISOString(),
-      payload: payload
-    };
-
-    return JSON.stringify(jsonData, null, 2);
-  }
-
-  copyToClipboard(text: string): Promise<void> {
-    return navigator.clipboard.writeText(text);
-  }
 
   // Handle Private Mode Submission
   handlePrivateModeSubmit(formValue: any, currentUser: any, userRoles: string[], generatedInventoryNumbers: string[]): boolean {
@@ -298,19 +281,57 @@ export class AdminItemFormPageService {
       return false;
     }
 
-    // Erstelle JSON und zeige Dialog
-    const jsonString = this.createJsonPayload(formValue, currentUser, userRoles, generatedInventoryNumbers);
+    // Im Private-Modus: Erstelle den Gegenstand direkt mit POST
+    const quantity = formValue.quantity || 1;
+    const invNumbers = generatedInventoryNumbers.length > 0
+      ? generatedInventoryNumbers
+      : this.generateInventoryNumbers(formValue.invNumber || 'PRV', quantity, this.allItems());
 
-    this.jsonString.set(jsonString);
-    this.showJsonDialog.set(true);
-    this.copySuccess.set(false);
+    let successCount = 0;
+    let errorCount = 0;
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Gegenstand-Daten als JSON vorbereitet.'
-    });
+    const createNextItem = (index: number) => {
+      if (index >= invNumbers.length) {
+        if (successCount > 0) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Erfolg',
+            detail: `${successCount} privater Gegenstand/Gegenstände wurde(n) erstellt!`
+          });
+          this.navigateToPrivateItemList();
+        }
+        if (errorCount > 0) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warnung',
+            detail: `${errorCount} Gegenstand/Gegenstände konnte(n) nicht erstellt werden.`
+          });
+        }
+        return;
+      }
 
+      const payload: any = {
+        invNumber: invNumbers[index],
+        owner: formValue.ownerName || currentUser.name,
+        lenderId: formValue.lenderId || currentUser.id,
+        productId: formValue.productId,
+        available: formValue.available !== undefined ? formValue.available : true
+      };
+
+      this.itemService.createItem(payload).subscribe({
+        next: () => {
+          successCount++;
+          createNextItem(index + 1);
+        },
+        error: (err) => {
+          console.error('Fehler beim Erstellen:', err);
+          errorCount++;
+          createNextItem(index + 1);
+        }
+      });
+    };
+
+    createNextItem(0);
     return true;
   }
 
@@ -342,33 +363,6 @@ export class AdminItemFormPageService {
     return this.updateItem(itemId, payload);
   }
 
-  // Dialog Management
-  closeJsonDialog(): void {
-    this.showJsonDialog.set(false);
-    this.copySuccess.set(false);
-  }
-
-  // Clipboard with Success Handling
-  copyToClipboardWithFeedback(text: string): Promise<void> {
-    return this.copyToClipboard(text).then(() => {
-      this.copySuccess.set(true);
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Kopiert',
-        detail: 'JSON wurde in die Zwischenablage kopiert!'
-      });
-
-      setTimeout(() => this.copySuccess.set(false), 3000);
-    }).catch(err => {
-      console.error('Fehler beim Kopieren:', err);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Konnte nicht in Zwischenablage kopieren.'
-      });
-      throw err;
-    });
-  }
 
   // Load Imported Data
   loadImportedData(itemFormComponent: any): void {

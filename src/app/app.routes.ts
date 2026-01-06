@@ -38,21 +38,6 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'user-dashboard/private-lend',
-    loadComponent: () => import('./pages/user-dashboard/user-private-lend/private-lend.component').then(m => m.PrivateLendComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'user-dashboard/private-lend/product',
-    loadComponent: () => import('./pages/admin-dashboard/admin-products/admin-product-form-page.component').then(m => m.AdminProductFormPageComponent),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'user-dashboard/private-lend/item',
-    loadComponent: () => import('./pages/admin-dashboard/admin-items/admin-item-form-page.component').then(m => m.AdminItemFormPageComponent),
-    canActivate: [authGuard]
-  },
-  {
     path: 'user-dashboard/bookings/:id',
     loadComponent: () => import('./pages/user-dashboard/user-bookings/booking-detail.component').then(m => m.BookingDetailComponent),
     canActivate: [authGuard]
@@ -98,6 +83,42 @@ export const routes: Routes = [
         .then(m => m.AdminLoanDashboardComponent),
     canActivate: [authGuard],
     data: { roles: ['lender'] },
+  },
+  {
+    path: 'lender/private-lend/overview',
+    loadComponent: () => import('./pages/lender-dashboard/private-lend/private-items-list.component').then(m => m.PrivateItemsListComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/private-lend/product/new',
+    loadComponent: () => import('./pages/admin-dashboard/admin-products/admin-product-form-page.component').then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/private-lend/product/:id',
+    loadComponent: () => import('./pages/admin-dashboard/admin-products/admin-product-form-page.component').then(m => m.AdminProductFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/private-lend/item/new',
+    loadComponent: () => import('./pages/admin-dashboard/admin-items/admin-item-form-page.component').then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/private-lend/item/:id',
+    loadComponent: () => import('./pages/admin-dashboard/admin-items/admin-item-form-page.component').then(m => m.AdminItemFormPageComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
+  },
+  {
+    path: 'lender/private-lend',
+    loadComponent: () => import('./pages/lender-dashboard/private-lend/private-lend.component').then(m => m.PrivateLendComponent),
+    canActivate: [authGuard],
+    data: { roles: ['lender', 'admin'] }
   },
   {
     path: 'lender/requests',
@@ -236,14 +257,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-dashboard/admin-locations/admin-location-detail.component')
         .then(m => m.AdminLocationDetailComponent),
-    canActivate: [authGuard],
-    data: { roles: ['admin'] }
-  },
-  {
-    path: 'admin/private',
-    loadComponent: () =>
-      import('./pages/admin-dashboard/admin-private-management/admin-private-management.component')
-        .then(m => m.AdminPrivateManagementComponent),
     canActivate: [authGuard],
     data: { roles: ['admin'] }
   },

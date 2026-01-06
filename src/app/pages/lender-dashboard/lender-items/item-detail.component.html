@@ -57,10 +57,8 @@
 
         </div>
 
-        <!-- Rechte Spalte: Verleiher & Ausleihzeiträume -->
         <div class="space-y-6">
 
-          <!-- Verleiher Informationen -->
           @if (pageService.product()) {
             <app-info-section
               header="Produkt-Info"
@@ -68,7 +66,6 @@
             </app-info-section>
           }
 
-          <!-- Ausleihkonditionen -->
           @if (pageService.product()) {
             <app-info-section
               header="Ausleihkonditionen"
@@ -80,7 +77,6 @@
 
       </div>
 
-      <!-- Ausleihhistorie (Full Width) -->
       <app-loan-history
         header="Ausleihzeiträume"
         [loanHistory]="pageService.loanHistory()"

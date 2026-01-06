@@ -7,7 +7,7 @@ import { BookingTimelineComponent, TimelineEvent } from '../../booking-component
   standalone: true,
   imports: [CommonModule, BookingTimelineComponent],
   template: `
-    <aside class="lg:col-span-1">
+    <aside class="lg:col-span-1 mt-4">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden sticky top-6">
         <div class="p-4 border-b border-gray-100 bg-gray-50/50">
           <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">

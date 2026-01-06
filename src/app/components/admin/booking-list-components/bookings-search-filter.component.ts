@@ -22,7 +22,7 @@ import { TooltipModule } from 'primeng/tooltip';
     TooltipModule
   ],
   template: `
-    <p-card class="shadow-sm border border-gray-100 overflow-hidden">
+    <p-card class="shadow-sm border border-gray-100 overflow-hidden mb-4">
       <div class="flex flex-col space-y-4">
         <div class="flex items-center gap-3">
           <p-iconfield iconPosition="left" class="flex-1">

@@ -15,7 +15,7 @@ export interface InfoSectionItem {
     CommonModule
   ],
   template: `
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
+    <div class="bg-white border border-gray-200 rounded-lg p-6 mt-4">
       <h2 class="text-xl font-semibold text-[#253359] mb-4">{{ header }}</h2>
 
       <div class="space-y-3">

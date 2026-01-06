@@ -10,7 +10,7 @@ import { CardModule } from 'primeng/card';
     @if (message) {
       <p-card
         header="Nachricht"
-        class="shadow-sm border border-gray-200 overflow-hidden"
+        class="shadow-sm border border-gray-200 overflow-hidden mt-4"
         [pt]="{
           header: { class: 'bg-gradient-to-br from-gray-50 to-gray-100 border-b-2 border-gray-200 font-semibold text-[#253359] p-4' }
         }">

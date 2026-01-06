@@ -7,7 +7,7 @@ import { OverviewStatCardComponent } from '../../stat-components/overview-stat-c
   standalone: true,
   imports: [CommonModule, OverviewStatCardComponent],
   template: `
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-2 mb-4">
       <app-overview-stat-card
         icon="pi pi-chart-bar"
         iconColor="#253359"

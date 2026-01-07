@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { BookingTransactionService} from '../../../services/booking-transaction.service';
+import { BookingTransactionService } from '../../../services/booking-transaction.service';
 
 @Component({
   selector: 'app-booking-qr',
@@ -47,7 +47,17 @@ import { BookingTransactionService} from '../../../services/booking-transaction.
           </div>
 
           <div class="space-y-1">
-            <p class="text-sm font-semibold">Gültig für 15 Minuten</p>
+            <p class="text-sm font-semibold" [ngClass]="{'text-red-600': isExpired(), 'text-gray-600': !isExpired()}">
+              @if (isExpired()) {
+                Code abgelaufen
+              } @else {
+                Gültig für: <span class="font-mono text-lg ml-1">{{ timeLeft() }}</span>
+              }
+            </p>
+
+            @if (isExpired()) {
+              <button pButton label="Neuen Code generieren" class="p-button-sm p-button-outlined p-button-secondary mt-2" (click)="generateToken()"></button>
+            }
           </div>
 
           <p class="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded text-left w-full">
@@ -64,13 +74,14 @@ import { BookingTransactionService} from '../../../services/booking-transaction.
     </p-dialog>
   `
 })
-export class BookingQrComponent implements OnChanges {
+export class BookingQrComponent implements OnChanges, OnDestroy {
   @Input() visible = false;
   @Input() bookingId!: number;
-  @Input() bookingStatus!: string; // Nur für UI-Titel wichtig
+  @Input() bookingStatus!: string;
   @Output() closed = new EventEmitter<void>();
 
   private readonly transactionService = inject(BookingTransactionService);
+  private timerInterval: any = null;
 
   qrData = signal<string | null>(null);
   currentToken = signal<string>('');
@@ -78,14 +89,23 @@ export class BookingQrComponent implements OnChanges {
   error = signal<string | null>(null);
   headerTitle = signal<string>('QR Code');
 
+  // Timer Signals
+  timeLeft = signal<string>('15:00');
+  isExpired = signal(false);
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible && this.bookingId) {
       this.initTransaction();
+    } else if (changes['visible'] && !this.visible) {
+      this.stopTimer(); // Timer stoppen wenn Dialog zugeht
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopTimer();
+  }
+
   private initTransaction(): void {
-    // Titel für UI setzen
     if (this.bookingStatus === 'CONFIRMED') {
       this.headerTitle.set('Abholung bestätigen');
     } else if (this.bookingStatus === 'PICKED_UP') {
@@ -101,12 +121,19 @@ export class BookingQrComponent implements OnChanges {
     this.loading.set(true);
     this.error.set(null);
     this.qrData.set(null);
+    this.stopTimer();
 
     this.transactionService.generateToken(this.bookingId).subscribe({
       next: (response) => {
         this.currentToken.set(response.token);
-        const url = `${window.location.origin}/qr-action/${response.token}`;
+
+        // URL bauen
+        const url = `${globalThis.location.origin}/qr-action/${response.token}`;
         this.qrData.set(url);
+
+        // Timer starten basierend auf expiresAt vom Server
+        this.startTimer(response.expiresAt);
+
         this.loading.set(false);
       },
       error: (err) => {
@@ -117,8 +144,44 @@ export class BookingQrComponent implements OnChanges {
     });
   }
 
+  private startTimer(expiresAtIso: string): void {
+    const expiresAt = new Date(expiresAtIso).getTime();
+    this.isExpired.set(false);
+
+    this.updateTime(expiresAt);
+
+    this.timerInterval = setInterval(() => {
+      this.updateTime(expiresAt);
+    }, 1000);
+  }
+
+  private updateTime(expiresAt: number): void {
+    const now = Date.now();
+    const diff = expiresAt - now;
+
+    if (diff <= 0) {
+      this.timeLeft.set('00:00');
+      this.isExpired.set(true);
+      this.stopTimer();
+    } else {
+      const minutes = Math.floor(diff / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      const minStr = minutes < 10 ? '0' + minutes : minutes;
+      const secStr = seconds < 10 ? '0' + seconds : seconds;
+      this.timeLeft.set(`${minStr}:${secStr}`);
+    }
+  }
+
+  private stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
   close(): void {
     this.visible = false;
+    this.stopTimer();
     this.qrData.set(null);
     this.error.set(null);
     this.closed.emit();

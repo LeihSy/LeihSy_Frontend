@@ -31,10 +31,10 @@ declare const BarcodeDetector: {
     <p-dialog
       header="QR-Code Scanner / Token Eingabe"
       [visible]="visible()"
+      (visibleChange)="onDialogVisibleChange($event)"
       [modal]="true"
       [draggable]="false"
       [closable]="true"
-      (onHide)="close()"
       [style]="{width: '420px'}"
     >
       <div class="flex flex-col items-center gap-4">
@@ -128,6 +128,12 @@ export class QrScannerComponent implements OnDestroy {
   support = signal(isPlatformBrowser(inject(PLATFORM_ID)) && 'BarcodeDetector' in globalThis);
   manualToken = signal('');
 
+  onDialogVisibleChange(isVisible: boolean) {
+    if (!isVisible) {
+      this.close();
+    }
+  }
+
   async start(): Promise<void> {
     if (this.running() || !this.support()) return;
 
@@ -177,7 +183,6 @@ export class QrScannerComponent implements OnDestroy {
       }
     }
 
-    // Nächster Loop
     this.loopHandle = setTimeout(() => this.scanLoop(), 250);
   }
 

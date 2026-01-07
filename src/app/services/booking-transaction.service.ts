@@ -23,18 +23,14 @@ export class BookingTransactionService {
   private readonly apiUrl = '/api';
 
   /**
-   * Generiert einen Token (Nur für Verleiher).
-   * Wird im Lender-Dashboard verwendet.
+   * Generiert einen Token (Student).
    */
-  generateToken(bookingId: number, type: TransactionType): Observable<TransactionResponse> {
-    return this.http.post<TransactionResponse>(`${this.apiUrl}/bookings/${bookingId}/transactions`, {
-      transactionType: type
-    });
+  generateToken(bookingId: number): Observable<TransactionResponse> {
+    return this.http.post<TransactionResponse>(`${this.apiUrl}/bookings/${bookingId}/transactions`, {});
   }
 
   /**
    * Löst einen Token ein (Für Student/Abholer).
-   * Wird auf der Public QR-Page verwendet.
    * Nutzt PATCH /api/transactions/{token} (Update-Semantik)
    */
   executeTransaction(token: string): Observable<Booking> {

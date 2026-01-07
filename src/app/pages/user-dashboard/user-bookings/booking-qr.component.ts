@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { BookingTransactionService, TransactionType } from '../../../services/booking-transaction.service';
+import { BookingTransactionService} from '../../../services/booking-transaction.service';
 
 @Component({
   selector: 'app-booking-qr',
@@ -25,7 +25,7 @@ import { BookingTransactionService, TransactionType } from '../../../services/bo
         @if (loading()) {
           <div class="py-12">
             <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4"></i>
-            <p>Generiere sicheren Token...</p>
+            <p>Generiere QR-Code...</p>
           </div>
         }
 
@@ -33,9 +33,7 @@ import { BookingTransactionService, TransactionType } from '../../../services/bo
           <div class="text-red-600 p-4 bg-red-50 rounded-lg w-full">
             <i class="pi pi-exclamation-triangle block text-2xl mb-2"></i>
             {{ error() }}
-            <button pButton label="Erneut versuchen"
-                    class="p-button-sm p-button-danger mt-4"
-                    (click)="generateToken()"></button>
+            <button pButton label="Erneut versuchen" class="p-button-sm p-button-danger mt-4" (click)="generateToken()"></button>
           </div>
         }
 
@@ -50,14 +48,12 @@ import { BookingTransactionService, TransactionType } from '../../../services/bo
 
           <div class="space-y-1">
             <p class="text-sm font-semibold">Gültig für 15 Minuten</p>
-            <p class="text-xs text-gray-500">Einmalige Nutzung.</p>
           </div>
 
           <p class="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded text-left w-full">
             <i class="pi pi-info-circle mr-1"></i>
-            Der Entleiher muss diesen Code scannen, um die
-            <strong>{{ transactionType() === 'PICKUP' ? 'Abholung' : 'Rückgabe' }}</strong>
-            zu bestätigen.
+            Zeigen Sie diesen Code dem Verleiher, um die
+            <strong>{{ headerTitle() }}</strong> zu bestätigen.
           </p>
         }
 
@@ -71,38 +67,30 @@ import { BookingTransactionService, TransactionType } from '../../../services/bo
 export class BookingQrComponent implements OnChanges {
   @Input() visible = false;
   @Input() bookingId!: number;
-  // Wir nutzen einen Setter oder Input Transformation, aber simple Input reicht hier
-  @Input() bookingStatus!: string;
+  @Input() bookingStatus!: string; // Nur für UI-Titel wichtig
   @Output() closed = new EventEmitter<void>();
 
   private readonly transactionService = inject(BookingTransactionService);
 
-  // State Signals
   qrData = signal<string | null>(null);
   currentToken = signal<string>('');
   loading = signal(false);
   error = signal<string | null>(null);
-  transactionType = signal<TransactionType>('PICKUP');
   headerTitle = signal<string>('QR Code');
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Wenn der Dialog geöffnet wird, Prozess starten
     if (changes['visible'] && this.visible && this.bookingId) {
       this.initTransaction();
     }
   }
 
   private initTransaction(): void {
-    // Logik: Welcher Transaktionstyp ist es?
+    // Titel für UI setzen
     if (this.bookingStatus === 'CONFIRMED') {
-      this.transactionType.set('PICKUP');
-      this.headerTitle.set('Ausgabe bestätigen');
+      this.headerTitle.set('Abholung bestätigen');
     } else if (this.bookingStatus === 'PICKED_UP') {
-      this.transactionType.set('RETURN');
       this.headerTitle.set('Rückgabe bestätigen');
     } else {
-      // Fallback
-      this.transactionType.set('PICKUP');
       this.headerTitle.set('QR Code');
     }
 
@@ -114,17 +102,16 @@ export class BookingQrComponent implements OnChanges {
     this.error.set(null);
     this.qrData.set(null);
 
-    this.transactionService.generateToken(this.bookingId, this.transactionType()).subscribe({
+    this.transactionService.generateToken(this.bookingId).subscribe({
       next: (response) => {
         this.currentToken.set(response.token);
-        // URL bauen: Origin + Route + Token
-        const url = `${globalThis.location.origin}/qr-action/${response.token}`;
+        const url = `${window.location.origin}/qr-action/${response.token}`;
         this.qrData.set(url);
         this.loading.set(false);
       },
       error: (err) => {
         console.error(err);
-        this.error.set('Fehler beim Generieren: ' + (err.error?.message || 'Unbekannt'));
+        this.error.set('Fehler: ' + (err.error?.message || 'Konnte Code nicht generieren'));
         this.loading.set(false);
       }
     });
@@ -132,7 +119,6 @@ export class BookingQrComponent implements OnChanges {
 
   close(): void {
     this.visible = false;
-    // Reset State
     this.qrData.set(null);
     this.error.set(null);
     this.closed.emit();

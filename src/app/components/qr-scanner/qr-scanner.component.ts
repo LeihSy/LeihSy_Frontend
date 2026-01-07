@@ -1,6 +1,8 @@
 import { Component, ElementRef, OnDestroy, viewChild, input, output, signal, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { FilledButtonComponent } from '../buttons/filled-button/filled-button.component';
 import { SecondaryButtonComponent } from '../buttons/secondary-button/secondary-button.component';
 
@@ -17,10 +19,17 @@ declare const BarcodeDetector: {
 @Component({
   selector: 'app-qr-scanner',
   standalone: true,
-  imports: [CommonModule, DialogModule, FilledButtonComponent, SecondaryButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    InputTextModule,
+    DialogModule,
+    FilledButtonComponent,
+    SecondaryButtonComponent
+  ],
   template: `
     <p-dialog
-      header="QR-Code Scanner"
+      header="QR-Code Scanner / Token Eingabe"
       [visible]="visible()"
       [modal]="true"
       [draggable]="false"
@@ -29,43 +38,71 @@ declare const BarcodeDetector: {
       [style]="{width: '420px'}"
     >
       <div class="flex flex-col items-center gap-4">
+
         @if (!support()) {
-          <div class="p-3 bg-red-50 text-red-600 text-sm rounded-md border border-red-200">
+          <div class="p-3 bg-red-50 text-red-600 text-sm rounded-md border border-red-200 w-full text-center">
             <i class="pi pi-exclamation-triangle mr-1"></i>
-            Dieser Browser unterstützt die BarcodeDetector API nicht.
+            Kamera-Scan nicht verfügbar (Browser inkompatibel). Bitte Token manuell eingeben.
           </div>
         }
 
-        <div class="w-full flex flex-col items-center">
+        <div class="w-full flex flex-col items-center relative">
           <video
             #videoEl
             autoplay
             muted
             playsinline
-            class="rounded-md border shadow-inner"
-            style="width:320px; height:240px; object-fit:cover; background:#000"
+            class="rounded-md border shadow-inner bg-black w-full h-64 object-cover"
           ></video>
 
-          <div class="mt-4 flex gap-3">
-            <app-filled-button
-              label="Start"
-              icon="pi pi-video"
-              (buttonClick)="start()">
-            </app-filled-button>
-            <app-secondary-button
-              label="Stop"
-              icon="pi pi-stop"
-              color="gray"
-              (buttonClick)="stop()">
-            </app-secondary-button>
-          </div>
+          @if (support()) {
+            <div class="mt-4 flex gap-3">
+              @if (!running()) {
+                <app-filled-button
+                  label="Kamera Start"
+                  icon="pi pi-video"
+                  (buttonClick)="start()">
+                </app-filled-button>
+              }
+
+              @if (running()) {
+                <app-secondary-button
+                  label="Stop"
+                  icon="pi pi-stop"
+                  color="gray"
+                  (buttonClick)="stop()">
+                </app-secondary-button>
+              }
+            </div>
+          }
         </div>
 
-        <p class="text-xs text-gray-500 text-center italic">
-          Nutzen Sie einen modernen Browser (Chrome/Edge/Android), um die Scan-Funktion zu nutzen.
-        </p>
+        <div class="flex items-center w-full gap-2 text-gray-400 text-sm my-2">
+          <div class="h-px bg-gray-200 flex-1"></div>
+          <span>ODER MANUELL</span>
+          <div class="h-px bg-gray-200 flex-1"></div>
+        </div>
 
-        <div class="w-full flex justify-end border-t pt-4">
+        <div class="w-full flex flex-col gap-2">
+          <label class="text-sm font-semibold text-gray-700">Token Code eingeben</label>
+          <div class="flex gap-2">
+            <input
+              pInputText
+              [(ngModel)]="manualToken"
+              placeholder="z.B. A7F4C8D9"
+              class="flex-1 uppercase font-mono"
+              (keyup.enter)="submitManualToken()"
+            />
+            <app-filled-button
+              label="OK"
+              icon="pi pi-check"
+              (buttonClick)="submitManualToken()">
+            </app-filled-button>
+          </div>
+          <small class="text-gray-500 text-xs">Geben Sie den 8-stelligen Code ein, der unter dem QR-Code steht.</small>
+        </div>
+
+        <div class="w-full flex justify-end border-t pt-4 mt-2">
           <app-secondary-button
             label="Abbrechen"
             color="red"
@@ -77,44 +114,44 @@ declare const BarcodeDetector: {
   `
 })
 export class QrScannerComponent implements OnDestroy {
-  // Signal-basierte Inputs/Outputs (v20 Standard)
   visible = input<boolean>(false);
   visibleChange = output<boolean>();
   scanned = output<string>();
 
-  // Zugriff auf das Video-Element via Signal
   videoEl = viewChild<ElementRef<HTMLVideoElement>>('videoEl');
 
   private stream: MediaStream | null = null;
   private detector: BarcodeDetector | null = null;
   private loopHandle: any = null;
 
-  // Signal States für reaktive UI
   running = signal(false);
   support = signal(isPlatformBrowser(inject(PLATFORM_ID)) && 'BarcodeDetector' in globalThis);
+  manualToken = signal('');
 
   async start(): Promise<void> {
     if (this.running() || !this.support()) return;
 
     try {
-      this.detector = new BarcodeDetector({ formats: ['qr_code'] });
+      if ('BarcodeDetector' in globalThis) {
+        this.detector = new BarcodeDetector({ formats: ['qr_code'] });
+      }
 
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: 640, height: 480 }
+        video: { facingMode: 'environment' }
       });
 
       const video = this.videoEl()?.nativeElement;
       if (video) {
         video.srcObject = this.stream;
-        // Warten bis Video geladen ist
-        video.onloadedmetadata = () => video.play();
+        video.onloadedmetadata = () => {
+          video.play().catch(e => console.error('Video Play Error:', e));
+        };
       }
 
       this.running.set(true);
       this.scanLoop();
     } catch (err) {
       console.error('Kamera-Fehler:', err);
-      this.support.set(false);
     }
   }
 
@@ -123,39 +160,50 @@ export class QrScannerComponent implements OnDestroy {
 
     try {
       const video = this.videoEl()?.nativeElement;
-      if (video && video.readyState >= 2) { // HAVE_CURRENT_DATA
+      if (video && video.readyState >= 2) {
         const barcodes = await this.detector?.detect(video);
 
         if (barcodes && barcodes.length > 0) {
           const value = barcodes[0].rawValue;
           if (value) {
-            this.scanned.emit(value);
-            this.close(); // Stop & Close nach Erfolg
+            this.emitResult(value);
             return;
           }
         }
       }
     } catch (err) {
-      console.debug('Scan-Intervall Fehler (normal während Fokus):', err);
+      if (this.running()) {
+        console.debug('Scan frame skip:', err);
+      }
     }
 
-    // Effizienteres Loop-Handling
+    // Nächster Loop
     this.loopHandle = setTimeout(() => this.scanLoop(), 250);
+  }
+
+  submitManualToken() {
+    const token = this.manualToken().trim();
+    if (token) {
+      this.emitResult(token);
+    }
+  }
+
+  private emitResult(value: string) {
+    this.scanned.emit(value);
+    this.close();
+    this.manualToken.set('');
   }
 
   stop(): void {
     this.running.set(false);
-
     if (this.loopHandle) {
       clearTimeout(this.loopHandle);
       this.loopHandle = null;
     }
-
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
     }
-
     const video = this.videoEl()?.nativeElement;
     if (video) {
       video.pause();
@@ -166,6 +214,7 @@ export class QrScannerComponent implements OnDestroy {
   close(): void {
     this.stop();
     this.visibleChange.emit(false);
+    this.manualToken.set('');
   }
 
   ngOnDestroy(): void {

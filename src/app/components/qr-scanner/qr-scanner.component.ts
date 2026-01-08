@@ -18,63 +18,7 @@ declare const BarcodeDetector: {
   selector: 'app-qr-scanner',
   standalone: true,
   imports: [CommonModule, DialogModule, FilledButtonComponent, SecondaryButtonComponent],
-  template: `
-    <p-dialog
-      header="QR-Code Scanner"
-      [visible]="visible()"
-      [modal]="true"
-      [draggable]="false"
-      [closable]="true"
-      (onHide)="close()"
-      [style]="{width: '420px'}"
-    >
-      <div class="flex flex-col items-center gap-4">
-        @if (!support()) {
-          <div class="p-3 bg-red-50 text-red-600 text-sm rounded-md border border-red-200">
-            <i class="pi pi-exclamation-triangle mr-1"></i>
-            Dieser Browser unterstützt die BarcodeDetector API nicht.
-          </div>
-        }
-
-        <div class="w-full flex flex-col items-center">
-          <video
-            #videoEl
-            autoplay
-            muted
-            playsinline
-            class="rounded-md border shadow-inner"
-            style="width:320px; height:240px; object-fit:cover; background:#000"
-          ></video>
-
-          <div class="mt-4 flex gap-3">
-            <app-filled-button
-              label="Start"
-              icon="pi pi-video"
-              (buttonClick)="start()">
-            </app-filled-button>
-            <app-secondary-button
-              label="Stop"
-              icon="pi pi-stop"
-              color="gray"
-              (buttonClick)="stop()">
-            </app-secondary-button>
-          </div>
-        </div>
-
-        <p class="text-xs text-gray-500 text-center italic">
-          Nutzen Sie einen modernen Browser (Chrome/Edge/Android), um die Scan-Funktion zu nutzen.
-        </p>
-
-        <div class="w-full flex justify-end border-t pt-4">
-          <app-secondary-button
-            label="Abbrechen"
-            color="red"
-            (buttonClick)="close()">
-          </app-secondary-button>
-        </div>
-      </div>
-    </p-dialog>
-  `
+  templateUrl: './qr-scanner.component.html'
 })
 export class QrScannerComponent implements OnDestroy {
   // Signal-basierte Inputs/Outputs (v20 Standard)

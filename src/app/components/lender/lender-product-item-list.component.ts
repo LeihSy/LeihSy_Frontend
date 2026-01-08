@@ -16,7 +16,7 @@ export interface ProductWithItems {
   standalone: true,
   imports: [CommonModule, TableComponent],
   template: `
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mb-4">
       <div class="bg-gray-50 border-b border-gray-200 p-4">
         <div class="flex items-center justify-between">
           <div class="flex-1">

@@ -8,7 +8,7 @@ import { BookingsDatePickerComponent } from './bookings-date-picker.component';
   standalone: true,
   imports: [CommonModule, CardModule, BookingsDatePickerComponent],
   template: `
-    <div class="px-2">
+    <div class="px-2 mb-4">
       <p-card class="shadow-sm border border-gray-100">
         <div class="mb-6">
           <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">

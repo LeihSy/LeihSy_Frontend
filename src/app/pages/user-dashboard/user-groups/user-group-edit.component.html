@@ -1,0 +1,25 @@
+<div class="max-w-2xl mx-auto p-6 mt-10">
+  <p-toast position="bottom-right"></p-toast>
+
+  @if (model()) {
+    <app-group-form-card
+      header="Gruppe bearbeiten"
+      saveLabel="Änderungen speichern"
+      [model]="currentModel"
+      [errorMessage]="error() || ''"
+      (save)="save()"
+      (cancel)="cancel()">
+    </app-group-form-card>
+  } @else if (error()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <i class="pi pi-exclamation-triangle mr-2"></i>
+      {{ error() }}
+    </div>
+  } @else {
+    <div class="text-center py-8">
+      <i class="pi pi-spinner pi-spin text-4xl text-gray-400"></i>
+      <p class="mt-4 text-gray-500">Lade Gruppe...</p>
+    </div>
+  }
+</div>
+

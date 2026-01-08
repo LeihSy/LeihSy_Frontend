@@ -114,16 +114,19 @@ declare const BarcodeDetector: {
   `
 })
 export class QrScannerComponent implements OnDestroy {
+  // Signal-basierte Inputs/Outputs (v20 Standard)
   visible = input<boolean>(false);
   visibleChange = output<boolean>();
   scanned = output<string>();
 
+  // Zugriff auf das Video-Element via Signal
   videoEl = viewChild<ElementRef<HTMLVideoElement>>('videoEl');
 
   private stream: MediaStream | null = null;
   private detector: BarcodeDetector | null = null;
   private loopHandle: any = null;
 
+  // Signal States für reaktive UI
   running = signal(false);
   support = signal(isPlatformBrowser(inject(PLATFORM_ID)) && 'BarcodeDetector' in globalThis);
   manualToken = signal('');
@@ -173,6 +176,7 @@ export class QrScannerComponent implements OnDestroy {
           const value = barcodes[0].rawValue;
           if (value) {
             this.emitResult(value);
+            this.close();
             return;
           }
         }
@@ -183,6 +187,7 @@ export class QrScannerComponent implements OnDestroy {
       }
     }
 
+    // Effizienteres Loop-Handling
     this.loopHandle = setTimeout(() => this.scanLoop(), 250);
   }
 

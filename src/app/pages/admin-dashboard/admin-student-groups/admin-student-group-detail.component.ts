@@ -38,7 +38,7 @@ export class AdminStudentGroupDetailComponent {
   memberColumns: ColumnDef[] = [
     { field: 'userId', header: 'User ID', type: 'number' },
     { field: 'userName', header: 'Name' },
-    { field: 'owner', header: 'Owner', type: 'badge' }
+    { field: 'owner', header: 'Eigentümer', type: 'badge' }
   ];
 
   // Getter für ngModel binding

@@ -19,7 +19,7 @@ export class AdminStudentGroupDetailService {
   group = signal<Group | undefined>(undefined);
   loading = signal(false);
   error = signal<string | undefined>(undefined);
-  members = signal<{ userId: number; userName: string; owner?: boolean }[]>([]);
+  members = signal<{ userId: number; userName: string; owner?: string }[]>([]);
 
   // Dialog state for adding a member
   addMemberDialog = signal(false);
@@ -27,12 +27,10 @@ export class AdminStudentGroupDetailService {
   adding = signal(false);
   addError = signal<string | undefined>(undefined);
 
-  // Benutzer-Vorschau
   userPreview = signal<UserPreview | null>(null);
   loadingPreview = signal(false);
   userIdChange$ = new Subject<number>();
 
-  // Computed signal für Gruppeninformationen
   groupInfoItems = computed<InfoFieldItem[]>(() => {
     const currentGroup = this.group();
     if (!currentGroup) return [];
@@ -107,7 +105,11 @@ export class AdminStudentGroupDetailService {
     this.groupService.getGroupById(id).subscribe({
       next: (g) => {
         this.group.set(g);
-        this.members.set(g.members?.map(m => ({ userId: m.userId, userName: m.userName, owner: m.owner })) || []);
+        this.members.set(g.members?.map(m => ({
+          userId: m.userId,
+          userName: m.userName,
+          owner: m.owner ? 'Ja' : ''
+        })) || []);
       },
       error: (e) => {
         console.error(e);

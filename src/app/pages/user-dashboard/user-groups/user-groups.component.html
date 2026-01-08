@@ -1,4 +1,7 @@
-<div class="p-6 max-w-6xl mx-auto">
+<div class="p-8 max-w-7xl mx-auto">
+  <p-toast position="bottom-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
   <div class="mb-6">
     <button
       class="inline-flex items-center text-primary hover:underline mb-4"
@@ -7,10 +10,25 @@
       Zurück zum Dashboard
     </button>
 
-    <app-page-header
-      title="Meine Gruppen"
-      subtitle="Übersicht über alle Gruppen, in denen Sie Mitglied sind">
-    </app-page-header>
+    <div class="flex justify-between items-start">
+      <app-page-header
+        title="Meine Gruppen"
+        subtitle="Erstelle und verwalte deine eigenen Gruppen">
+      </app-page-header>
+
+      <div class="flex gap-2">
+        <app-filled-button
+          label="QR-Code scannen"
+          icon="pi pi-qrcode"
+          (buttonClick)="openScanner()">
+        </app-filled-button>
+        <app-filled-button
+          label="Neue Gruppe"
+          icon="pi pi-plus"
+          (buttonClick)="goToNew()">
+        </app-filled-button>
+      </div>
+    </div>
   </div>
 
   @if (error()) {
@@ -20,15 +38,24 @@
     </div>
   }
 
-  <app-groups-table-card
-    [groups]="groups()"
-    [columns]="columns"
+  <app-table
+    [columns]="columns()"
+    [data]="groups()"
     [loading]="loading()"
-    [error]="!!error()"
-    [paginator]="true"
     [rows]="10"
+    [paginator]="true"
+    [showActions]="true"
+    [showEditButton]="true"
+    [showDeleteButton]="true"
     [rowClickable]="true"
+    (edit)="onEdit($event)"
+    (remove)="onRemove($event)"
     (rowSelect)="onRowSelect($event)">
-  </app-groups-table-card>
+  </app-table>
+
+  <app-qr-scanner
+    [(visible)]="scannerVisible"
+    (scanned)="onScanned($event)">
+  </app-qr-scanner>
 </div>
 

@@ -7,6 +7,15 @@
     subtitle="Verwalten Sie Ihre Gegenstände und Ausleihvorgänge">
   </app-page-header>
 
+  <div class="mt-8 mb-6">
+    <h2 class="text-2xl font-semibold mb-4">Schnellzugriff</h2>
+    <div class="flex gap-3">
+      <app-filled-button label="QR-Code scannen" icon="pi pi-camera" (buttonClick)="openScanner()"></app-filled-button>
+    </div>
+  </div>
+
+  <app-qr-scanner [(visible)]="scannerVisible" (scanned)="onScanned($event)"></app-qr-scanner>
+
   <div class="grid md:grid-cols-1 gap-2">
 
     <app-menu-card

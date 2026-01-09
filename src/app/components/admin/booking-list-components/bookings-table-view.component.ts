@@ -43,6 +43,8 @@ import { Booking } from '../../../models/booking.model';
             [scrollable]="true"
             [scrollHeight]="'600px'"
             [rowClickable]="true"
+            [defaultSortField]="'createdAt'"
+            [defaultSortOrder]="-1"
             (rowSelect)="onRowSelect($event)"
             emptyMessage="Keine Buchungen vorhanden">
           </app-table>

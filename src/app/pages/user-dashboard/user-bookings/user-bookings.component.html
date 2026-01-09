@@ -42,6 +42,8 @@
         [paginator]="true"
         [scrollable]="false"
         [rowClickable]="true"
+        [defaultSortField]="'createdAt'"
+        [defaultSortOrder]="-1"
         (rowSelect)="viewBookingDetail($event)"
         emptyMessage="Keine Buchungen vorhanden">
       </app-table>

@@ -1,3 +1,5 @@
+<p-toast position="bottom-right"></p-toast>
+
 <div class="p-10 max-w-4xl mx-auto">
 
   <app-page-header
@@ -26,19 +28,19 @@
 
 
     <app-menu-card
-    header="Ausleihe Übersicht"
-    description="Übersicht über aktive Ausleihen und außenstehende Abholungen"
-    buttonLabel="Zur Ausleih-Übersicht"
-    routerLink="/lender/loan"
-    icon="calendar">
+      header="Ausleihe Übersicht"
+      description="Übersicht über aktive Ausleihen und außenstehende Abholungen"
+      buttonLabel="Zur Ausleih-Übersicht"
+      routerLink="/lender/loan"
+      icon="calendar">
     </app-menu-card>
 
     <app-menu-card
-    header="Anfragen"
-    description="Annehmen und ablehnen der Anfragen"
-    buttonLabel="Zu den Anfragen"
-    routerLink="/lender/requests"
-    icon="calendar">
+      header="Anfragen"
+      description="Annehmen und ablehnen der Anfragen"
+      buttonLabel="Zu den Anfragen"
+      routerLink="/lender/requests"
+      icon="calendar">
     </app-menu-card>
 
     <app-menu-card
@@ -51,5 +53,9 @@
 
   </div>
 
-</div>
+  <app-qr-scanner
+    [(visible)]="scannerVisible"
+    (scanned)="onScanned($event)">
+  </app-qr-scanner>
 
+</div>

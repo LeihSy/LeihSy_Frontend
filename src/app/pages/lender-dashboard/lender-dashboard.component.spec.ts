@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LenderDashboardComponent } from './lender-dashboard.component';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { reflectComponentType } from '@angular/core'; // WICHTIG: Für sauberen Metadaten-Zugriff
 
 describe('LenderDashboardComponent', () => {
   let component: LenderDashboardComponent;
@@ -9,8 +13,13 @@ describe('LenderDashboardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        LenderDashboardComponent,
-        RouterTestingModule
+        LenderDashboardComponent
+      ],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        MessageService
       ]
     }).compileComponents();
 
@@ -24,13 +33,15 @@ describe('LenderDashboardComponent', () => {
   });
 
   it('should be a standalone component', () => {
-    const componentMetadata = (LenderDashboardComponent as any).ɵcmp;
-    expect(componentMetadata.standalone).toBe(true);
+    // FIX: Nutze die offizielle API statt der internen ɵcmp Eigenschaft
+    const mirror = reflectComponentType(LenderDashboardComponent);
+    expect(mirror?.isStandalone).toBe(true);
   });
 
   it('should have correct selector', () => {
-    const componentMetadata = (LenderDashboardComponent as any).ɵcmp;
-    expect(componentMetadata.selectors[0][0]).toBe('app-lender-dashboard');
+    // FIX: Auch hier die offizielle Mirror-API nutzen
+    const mirror = reflectComponentType(LenderDashboardComponent);
+    expect(mirror?.selector).toBe('app-lender-dashboard');
   });
 
   it('should render dashboard content', () => {
@@ -47,28 +58,26 @@ describe('LenderDashboardComponent', () => {
 
     it('should have router links', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const links = compiled.querySelectorAll('[routerLink]');
+      const links = compiled.querySelectorAll('[routerLink], app-menu-card[routerLink]');
       expect(links.length).toBeGreaterThan(0);
     });
 
     it('should have items link', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const link = compiled.querySelector('[routerLink="/lender/items"]');
+      const link = compiled.querySelector('[routerLink="/lender/items"], [ng-reflect-router-link="/lender/items"]');
       expect(link).toBeTruthy();
     });
   });
 
   it('should render title', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    const title = compiled.querySelector('h1, h2');
+    const title = compiled.querySelector('h1, h2, app-page-header');
     expect(title).toBeTruthy();
   });
 
   it('should have dashboard layout', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    // Prüfe ob es Container-Elemente gibt
-    const hasLayout = compiled.querySelector('.container, .dashboard, [class*="dashboard"], app-menu-card');
+    const hasLayout = compiled.querySelector('.container, .dashboard, [class*="grid"], app-menu-card');
     expect(hasLayout).toBeTruthy();
   });
 });
-

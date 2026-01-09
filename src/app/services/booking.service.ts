@@ -52,27 +52,45 @@ export class BookingService {
   // ========================================
 
   // Verleiher bestätigt Buchung und schlägt Abholtermine vor
-  confirmBooking(id: number, proposedPickups: string[]): Observable<Booking> {
-    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, {
+  confirmBooking(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
+    const body: any = {
       action: 'confirm',
       proposedPickups
-    });
+    };
+
+    if (message?.trim()) {
+      body.message = message.trim();
+    }
+
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, body);
   }
 
   // Student wählt einen der vorgeschlagenen Abholtermine
-  selectPickup(id: number, selectedPickup: string): Observable<Booking> {
-    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, {
+  selectPickup(id: number, selectedPickup: string, message?: string): Observable<Booking> {
+    const body: any = {
       action: 'select_pickup',
       selectedPickup
-    });
+    };
+
+    if (message?.trim()) {
+      body.message = message.trim();
+    }
+
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, body);
   }
 
   // Gegenvorschlag machen (Ping-Pong)
-  proposePickups(id: number, proposedPickups: string[]): Observable<Booking> {
-    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, {
+  proposePickups(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
+    const body: any = {
       action: 'propose',
       proposedPickups
-    });
+    };
+
+    if (message?.trim()) {
+      body.message = message.trim();
+    }
+
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, body);
   }
 
   // Verleiher dokumentiert Ausgabe

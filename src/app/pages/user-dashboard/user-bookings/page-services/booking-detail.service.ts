@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { Booking, BookingStatus } from '../../../../models/booking.model';
 import { BookingService } from '../../../../services/booking.service';
@@ -13,12 +13,37 @@ export class BookingDetailService {
   private readonly router = inject(Router);
   private readonly bookingService = inject(BookingService);
   private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly exportService = inject(UserBookingExportService);
 
+  // Booking state
   booking = signal<Booking | null>(null);
   isLoading = signal(true);
   timelineEvents = signal<TimelineEvent[]>([]);
   showQrDialog = signal(false);
+
+  // Pickup dialog state
+  showPickupDialog = signal(false);
+  selectedPickupDate = signal<string | null>(null);
+  newProposedPickups = signal<string[]>([]);
+
+  // Prüfe ob User die Termine selbst vorgeschlagen hat (darf sie dann nicht bestätigen)
+  canSelectProposedPickups = computed<boolean>(() => {
+    const booking = this.booking();
+    if (!booking) return false;
+
+    // User kann nur Termine auswählen, die vom Verleiher (lenderId) vorgeschlagen wurden
+    // NICHT die, die er selbst vorgeschlagen hat (proposalById === userId)
+    return booking.proposalById !== booking.userId;
+  });
+
+  // Prüfe ob die Buchung storniert werden kann
+  canCancelBooking = computed<boolean>(() => {
+    const booking = this.booking();
+    if (!booking) return false;
+
+    return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+  });
 
   // Computed InfoItems for cards
   rentalPeriodItems = computed<InfoItem[]>(() => {
@@ -55,7 +80,9 @@ export class BookingDetailService {
     const items: InfoItem[] = [];
 
     if (booking.proposedPickups) {
-      items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: booking.proposedPickups });
+      const pickups = this.parseProposedPickups(booking.proposedPickups);
+      const formattedPickups = pickups.map(p => this.formatDate(p)).join(', ');
+      items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: formattedPickups });
     }
     if (booking.confirmedPickup) {
       items.push({ icon: 'pi-check-circle', label: 'Bestätigter Abholtermin', value: this.formatDate(booking.confirmedPickup) });
@@ -72,6 +99,20 @@ export class BookingDetailService {
 
     return items;
   });
+
+  // Helper: Parse proposedPickups (kann JSON-Array oder komma-separiert sein)
+  parseProposedPickups(proposedPickups: string): string[] {
+    if (!proposedPickups) return [];
+
+    try {
+      // Versuche als JSON zu parsen
+      const parsed = JSON.parse(proposedPickups);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      // Falls kein JSON, als komma-separiert behandeln
+      return proposedPickups.split(',').map(p => p.trim()).filter(p => p);
+    }
+  }
 
   loadBookingDetails(id: number): void {
     this.isLoading.set(true);
@@ -101,6 +142,134 @@ export class BookingDetailService {
 
   closeQrDialog(): void {
     this.showQrDialog.set(false);
+  }
+
+  openPickupDialog(): void {
+    this.showPickupDialog.set(true);
+    this.selectedPickupDate.set(null);
+    this.newProposedPickups.set([]);
+  }
+
+  closePickupDialog(): void {
+    this.showPickupDialog.set(false);
+    this.selectedPickupDate.set(null);
+    this.newProposedPickups.set([]);
+  }
+
+  // User wählt einen der vorgeschlagenen Termine
+  selectPickupDate(selectedPickup: string, newMessage: string = ''): void {
+    const booking = this.booking();
+    if (!booking) return;
+
+    // Erstelle erweiterte Nachricht mit Präfix basierend auf proposalById
+    const extendedMessage = this.buildExtendedMessage(booking, newMessage);
+
+    this.isLoading.set(true);
+    this.bookingService.selectPickup(booking.id, selectedPickup, extendedMessage).subscribe({
+      next: (updatedBooking) => {
+        this.booking.set(updatedBooking);
+        this.generateTimeline(updatedBooking);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Erfolg',
+          detail: 'Abholtermin wurde ausgewählt'
+        });
+        this.closePickupDialog();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Fehler beim Auswählen des Termins:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: err.error?.message || 'Termin konnte nicht ausgewählt werden'
+        });
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  // User schlägt neue Termine vor (Gegenvorschlag)
+  proposeNewPickups(newPickups: string[], newMessage: string = ''): void {
+    const booking = this.booking();
+    if (!booking || newPickups.length === 0) return;
+
+    // Erstelle erweiterte Nachricht mit Präfix basierend auf proposalById
+    const extendedMessage = this.buildExtendedMessage(booking, newMessage);
+
+    this.isLoading.set(true);
+    this.bookingService.proposePickups(booking.id, newPickups, extendedMessage).subscribe({
+      next: (updatedBooking) => {
+        this.booking.set(updatedBooking);
+        this.generateTimeline(updatedBooking);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Erfolg',
+          detail: 'Neue Abholtermine wurden vorgeschlagen'
+        });
+        this.closePickupDialog();
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Fehler beim Vorschlagen neuer Termine:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Fehler',
+          detail: err.error?.message || 'Termine konnten nicht vorgeschlagen werden'
+        });
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  /**
+   * Baut eine erweiterte Nachricht mit Präfixen für alte Nachrichten.
+   * - Alte Nachrichten werden mit einem zusätzlichen Präfix versehen:
+   *   "+" wenn proposalById === userId (User hat vorgeschlagen)
+   *   "-" wenn proposalById === lenderId (Lender hat vorgeschlagen)
+   * - Präfixe addieren sich bei jeder Bearbeitung (z.B. +, ++, +++, usw.)
+   * - Neue Nachricht wird ohne Präfix am Ende hinzugefügt
+   */
+  private buildExtendedMessage(booking: Booking, newMessage: string): string {
+    const oldMessage = booking.message || '';
+    const trimmedNewMessage = newMessage?.trim() || '';
+    const currentUserId = booking.userId;
+    const currentLenderId = booking.lenderId;
+    const lastProposalById = booking.proposalById;
+
+    // Wenn weder alte noch neue Nachricht vorhanden
+    if (!oldMessage && !trimmedNewMessage) {
+      return '';
+    }
+
+    // Wenn keine alte Nachricht vorhanden ist, nur neue Nachricht zurückgeben
+    if (!oldMessage) {
+      return trimmedNewMessage;
+    }
+
+    // Bestimme das neue Präfix basierend auf dem letzten proposalById
+    // Wenn proposalById === userId -> "+"
+    // Wenn proposalById === lenderId -> "-"
+    const newPrefix = lastProposalById === currentUserId ? '+' : '-';
+
+    // Füge zusätzliches Präfix zu jeder Zeile der alten Nachricht hinzu
+    const prefixedOldMessage = oldMessage
+      .split('\n')
+      .map(line => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return '';
+        // Füge das neue Präfix vor die bestehende Zeile (mit oder ohne altem Präfix)
+        return `${newPrefix} ${line}`;
+      })
+      .filter(line => line)
+      .join('\n');
+
+    // Wenn neue Nachricht vorhanden ist, füge sie ohne Präfix hinzu
+    if (trimmedNewMessage) {
+      return `${prefixedOldMessage}\n${trimmedNewMessage}`;
+    }
+
+    return prefixedOldMessage;
   }
 
   generateTimeline(booking: Booking): void {
@@ -152,7 +321,7 @@ export class BookingDetailService {
 
     if (booking.status === 'REJECTED') {
       events.push({
-        status: 'Abgelehnt',
+        status: 'Storniert',
         date: booking.updatedAt,
         icon: 'pi pi-times-circle',
         color: '#ef4444',
@@ -162,7 +331,7 @@ export class BookingDetailService {
 
     if (booking.status === 'CANCELLED') {
       events.push({
-        status: 'Storniert',
+        status: 'Abgelehnt',
         date: booking.updatedAt,
         icon: 'pi pi-ban',
         color: '#6b7280',
@@ -275,6 +444,54 @@ export class BookingDetailService {
         detail: 'PDF konnte nicht erstellt werden.'
       });
     }
+  }
+
+  cancelBooking(): void {
+    const booking = this.booking();
+    if (!booking) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warnung',
+        detail: 'Keine Buchung verfügbar zum Stornieren.'
+      });
+      return;
+    }
+
+    // ConfirmationService mit benutzerdefinierten Buttons
+    this.confirmationService.confirm({
+      message: `Möchten Sie die Buchung #${booking.id} wirklich stornieren? Diese Aktion kann nicht rückgängig gemacht werden.`,
+      header: 'Buchung stornieren',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Stornieren',
+      rejectLabel: 'Abbrechen',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.isLoading.set(true);
+        this.bookingService.deleteBooking(booking.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Erfolg',
+              detail: 'Buchung wurde erfolgreich storniert.'
+            });
+            // Zurück zur Übersicht nach kurzer Verzögerung
+            setTimeout(() => {
+              this.goBack();
+            }, 1500);
+          },
+          error: (err) => {
+            console.error('Fehler beim Stornieren der Buchung:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Fehler',
+              detail: err.error?.message || 'Buchung konnte nicht storniert werden.'
+            });
+            this.isLoading.set(false);
+          }
+        });
+      }
+    });
   }
 }
 

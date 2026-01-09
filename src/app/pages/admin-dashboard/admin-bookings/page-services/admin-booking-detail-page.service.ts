@@ -95,7 +95,7 @@ export class AdminBookingDetailPageService {
 
     if (booking.status === 'REJECTED') {
       events.push({
-        status: 'Abgelehnt',
+        status: 'Storniert',
         date: booking.updatedAt,
         icon: 'pi pi-times-circle',
         color: '#ef4444',
@@ -105,7 +105,7 @@ export class AdminBookingDetailPageService {
 
     if (booking.status === 'CANCELLED') {
       events.push({
-        status: 'Storniert',
+        status: 'Abgelehnt',
         date: booking.updatedAt,
         icon: 'pi pi-ban',
         color: '#6b7280',

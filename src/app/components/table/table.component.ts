@@ -44,6 +44,8 @@ export class TableComponent {
   @Input() showCurrentPageReport = false; // Kein "Zeige x bis y von z"
   @Input() currentPageReportTemplate = '';
   @Input() rowClickable = false; // Macht Zeilen anklickbar
+  @Input() defaultSortField?: string; // Standard-Sortierfeld
+  @Input() defaultSortOrder: number = -1; // -1 = absteigend, 1 = aufsteigend
 
   @Output() edit = new EventEmitter<any>();
   @Output() remove = new EventEmitter<any>();
@@ -73,8 +75,9 @@ export class TableComponent {
 
     const statusMap: Record<string, string> = {
       'deleted': 'bg-red-100 text-red-800 border border-red-300',
-      'storniert': 'bg-red-100 text-red-800 border border-red-300',
+      'storniert': 'bg-gray-200 text-gray-700 border border-gray-400',
       'cancelled': 'bg-red-100 text-red-800 border border-red-300',
+      'abgelehnt': 'bg-red-100 text-red-800 border border-red-300',
       'active': 'bg-green-100 text-green-800 border border-green-300',
       'aktiv': 'bg-green-100 text-green-800 border border-green-300',
       'pending': 'bg-yellow-100 text-yellow-800 border border-yellow-300',

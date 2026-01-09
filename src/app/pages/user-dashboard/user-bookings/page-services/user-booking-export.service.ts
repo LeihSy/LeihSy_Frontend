@@ -238,7 +238,7 @@ export class UserBookingExportService {
 
     if (booking.status === 'REJECTED') {
       events.push({
-        status: 'Abgelehnt',
+        status: 'Storniert',
         date: booking.updatedAt,
         color: '#ef4444',
         description: `Von ${booking.lenderName} abgelehnt`
@@ -247,7 +247,7 @@ export class UserBookingExportService {
 
     if (booking.status === 'CANCELLED') {
       events.push({
-        status: 'Storniert',
+        status: 'Abgelehnt',
         date: booking.updatedAt,
         color: '#6b7280',
         description: 'Buchung storniert'

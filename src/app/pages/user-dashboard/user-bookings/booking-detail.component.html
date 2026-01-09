@@ -1,16 +1,9 @@
 <div class="p-8 max-w-6xl mx-auto">
   <p-toast position="bottom-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
 
   <div class="flex items-center justify-between mb-4">
-    <div>
-      <button
-        pButton
-        icon="pi pi-arrow-left"
-        label="Zurück zur Übersicht"
-        class="p-button-text text-[#253359] hover:bg-[rgba(0,0,128,0.04)]"
-        (click)="goBack()">
-      </button>
-    </div>
+    <app-back-button (backClick)="goBack()"></app-back-button>
 
     <div class="flex gap-2">
       <app-filled-button
@@ -47,31 +40,24 @@
         [statusSeverity]="pageService.getStatusSeverity(pageService.booking()!.status)">
       </app-booking-header>
 
-      <!-- Content Grid: 2 columns on large screens -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-        <!-- Left column (info cards) -->
         <div class="space-y-6 mt-4">
 
-          <!-- Ausleihzeitraum Card -->
           <app-info-card
             header="Ausleihzeitraum"
             [items]="pageService.rentalPeriodItems()">
           </app-info-card>
 
-          <!-- Verleiher Card -->
           <app-info-card
             header="Verleiher"
             [items]="pageService.lenderItems()">
           </app-info-card>
 
-          <!-- Gegenstand Card -->
           <app-info-card
             header="Gegenstand"
             [items]="pageService.itemItems()">
           </app-info-card>
-
-          <app-booking-message [message]="pageService.booking()!.message"></app-booking-message>
 
           <!-- Termine & Daten -->
           <app-info-card
@@ -79,26 +65,67 @@
             [items]="pageService.datesItems()">
           </app-info-card>
 
+          <!-- Abholtermin auswählen Button (nur bei PENDING/CONFIRMED) -->
+          @if (pageService.booking()!.status === 'PENDING' || pageService.booking()!.status === 'CONFIRMED') {
+            @if (pageService.booking()!.proposedPickups && !pageService.booking()!.confirmedPickup) {
+              <div>
+                <app-filled-button
+                  label="Abholtermin auswählen"
+                  icon="pi pi-calendar-plus"
+                  (buttonClick)="openPickupDialog()"
+                  class="w-full">
+                </app-filled-button>
+              </div>
+            }
+          }
+
+          <!-- Buchung stornieren Button (nur bei PENDING/CONFIRMED) -->
+          @if (pageService.canCancelBooking()) {
+            <div>
+              <app-secondary-button
+                label="Buchung stornieren"
+                icon="pi pi-times"
+                color="red"
+                (buttonClick)="cancelBooking()"
+                class="w-full">
+              </app-secondary-button>
+            </div>
+          }
+
         </div>
 
-        <!-- Right column: Booking Progress -->
-        <app-booking-progress
-          [timelineEvents]="pageService.timelineEvents()"
-          [formatDateTime]="pageService.formatDate.bind(pageService)">
-        </app-booking-progress>
+        <div class="space-y-6 mt-4">
+          <app-booking-progress
+            [timelineEvents]="pageService.timelineEvents()"
+            [formatDateTime]="pageService.formatDate.bind(pageService)">
+          </app-booking-progress>
+
+          <app-booking-message [message]="pageService.booking()!.message"></app-booking-message>
+        </div>
+
 
       </div>
 
     </div>
   }
 
-  <!-- Booking QR Dialog Component -->
   @if (!pageService.isLoading() && pageService.booking()) {
     <app-booking-qr
       [visible]="pageService.showQrDialog()"
       [bookingId]="pageService.booking()!.id"
       (closed)="onQrClosed()">
     </app-booking-qr>
+
+    <app-pickup-selection-dialog
+      [visible]="pageService.showPickupDialog()"
+      (visibleChange)="onPickupDialogVisibleChange($event)"
+      [proposedPickups]="pageService.parseProposedPickups(pageService.booking()!.proposedPickups || '')"
+      [canSelectProposed]="pageService.canSelectProposedPickups()"
+      [formatDateTime]="pageService.formatDate.bind(pageService)"
+      (pickupSelected)="onPickupSelected($event)"
+      (newPickupsProposed)="onNewPickupsProposed($event)"
+      (cancelled)="onPickupDialogCancelled()">
+    </app-pickup-selection-dialog>
   }
 
   @if (!pageService.isLoading() && !pageService.booking()) {
@@ -106,7 +133,7 @@
       <i class="pi pi-exclamation-triangle text-red-500 text-5xl mb-4"></i>
       <h2 class="text-xl font-bold text-gray-800 mb-2">Buchung nicht gefunden</h2>
       <p class="text-gray-600 mb-4">Die angeforderte Buchung konnte nicht geladen werden.</p>
-      <button pButton label="Zurück zur Übersicht" class="p-button" (click)="goBack()"></button>
+      <app-back-button (backClick)="goBack()"></app-back-button>
     </div>
   }
 

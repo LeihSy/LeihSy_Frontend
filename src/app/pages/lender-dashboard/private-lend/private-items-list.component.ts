@@ -24,8 +24,6 @@ import { Item } from '../../../models/item.model';
     ConfirmDialogModule,
     BackButtonComponent,
     TableComponent,
-    FilledButtonComponent,
-    SecondaryButtonComponent
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './private-items-list.component.html'

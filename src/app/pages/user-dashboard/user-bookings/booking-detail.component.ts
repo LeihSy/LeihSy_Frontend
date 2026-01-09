@@ -4,12 +4,15 @@ import { ActivatedRoute } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
+import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { TimelineModule } from 'primeng/timeline';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 
 import { BookingQrComponent } from './booking-qr.component';
 import { PickupSelectionDialogComponent } from '../../../components/booking-pickup-selection/pickup-selection-dialog.component';
@@ -26,11 +29,14 @@ import { BookingDetailService } from './page-services/booking-detail.service';
     CommonModule,
     CardModule,
     FilledButtonComponent,
+    SecondaryButtonComponent,
+    BackButtonComponent,
     ButtonModule,
     TagModule,
     DividerModule,
     TimelineModule,
     ToastModule,
+    ConfirmDialogModule,
     BookingQrComponent,
     PickupSelectionDialogComponent,
     BookingHeaderComponent,
@@ -40,7 +46,7 @@ import { BookingDetailService } from './page-services/booking-detail.service';
   ],
   templateUrl: './booking-detail.component.html',
   styleUrls: ['./booking-detail.component.scss'],
-  providers: [MessageService, BookingDetailService]
+  providers: [MessageService, ConfirmationService, BookingDetailService]
 })
 export class BookingDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -77,12 +83,12 @@ export class BookingDetailComponent implements OnInit {
     this.pageService.showPickupDialog.set(visible);
   }
 
-  onPickupSelected(selectedPickup: string): void {
-    this.pageService.selectPickupDate(selectedPickup);
+  onPickupSelected(event: {selectedPickup: string; message: string}): void {
+    this.pageService.selectPickupDate(event.selectedPickup, event.message);
   }
 
-  onNewPickupsProposed(newPickups: string[]): void {
-    this.pageService.proposeNewPickups(newPickups);
+  onNewPickupsProposed(event: {newPickups: string[]; message: string}): void {
+    this.pageService.proposeNewPickups(event.newPickups, event.message);
   }
 
   onPickupDialogCancelled(): void {
@@ -95,6 +101,10 @@ export class BookingDetailComponent implements OnInit {
 
   exportToPdf(): void {
     this.pageService.exportToPdf();
+  }
+
+  cancelBooking(): void {
+    this.pageService.cancelBooking();
   }
 }
 

@@ -5,6 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { TextareaModule } from 'primeng/textarea';
 import { FilledButtonComponent } from '../buttons/filled-button/filled-button.component';
 import { SecondaryButtonComponent } from '../buttons/secondary-button/secondary-button.component';
 
@@ -18,6 +19,7 @@ import { SecondaryButtonComponent } from '../buttons/secondary-button/secondary-
     ButtonModule,
     DatePickerModule,
     RadioButtonModule,
+    TextareaModule,
     FilledButtonComponent,
     SecondaryButtonComponent
   ],
@@ -30,13 +32,14 @@ export class PickupSelectionDialogComponent {
   @Input() formatDateTime!: (date: string) => string;
 
   @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() pickupSelected = new EventEmitter<string>();
-  @Output() newPickupsProposed = new EventEmitter<string[]>();
+  @Output() pickupSelected = new EventEmitter<{selectedPickup: string; message: string}>();
+  @Output() newPickupsProposed = new EventEmitter<{newPickups: string[]; message: string}>();
   @Output() cancelled = new EventEmitter<void>();
 
   selectedPickup: string | null = null;
   newPickupDates: (Date | null)[] = [null, null, null];
   minDate = new Date(); // Heute oder später
+  message = ''; // Nachricht, die der User hinzufügen kann
 
   selectExistingPickup(pickup: string): void {
     this.selectedPickup = pickup;
@@ -56,7 +59,10 @@ export class PickupSelectionDialogComponent {
   onConfirm(): void {
     if (this.selectedPickup) {
       // User hat einen vorgeschlagenen Termin ausgewählt
-      this.pickupSelected.emit(this.selectedPickup);
+      this.pickupSelected.emit({
+        selectedPickup: this.selectedPickup,
+        message: this.message.trim()
+      });
     } else {
       // User schlägt neue Termine vor
       const newPickups = this.newPickupDates
@@ -75,7 +81,10 @@ export class PickupSelectionDialogComponent {
         });
 
       if (newPickups.length > 0) {
-        this.newPickupsProposed.emit(newPickups);
+        this.newPickupsProposed.emit({
+          newPickups,
+          message: this.message.trim()
+        });
       }
     }
 
@@ -90,6 +99,7 @@ export class PickupSelectionDialogComponent {
   resetDialog(): void {
     this.selectedPickup = null;
     this.newPickupDates = [null, null, null];
+    this.message = '';
     this.visibleChange.emit(false);
   }
 }

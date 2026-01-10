@@ -1,15 +1,18 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 import { CardModule } from 'primeng/card';
 import { FilledButtonComponent } from '../../buttons/filled-button/filled-button.component';
 import { SecondaryButtonComponent } from '../../buttons/secondary-button/secondary-button.component';
+import { IconButtonComponent } from '../../buttons/icon-button/icon-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Product } from '../../../models/product.model';
 import { Category } from '../../../models/category.model';
@@ -33,6 +36,7 @@ interface RelatedItem {
     CardModule,
     FilledButtonComponent,
     SecondaryButtonComponent,
+    IconButtonComponent,
     ButtonModule,
     InputTextModule,
     SelectModule,
@@ -40,7 +44,8 @@ interface RelatedItem {
     InputNumberModule,
     FormRowComponent,
     FormInputFieldComponent,
-    ValidationMessageComponent
+    ValidationMessageComponent,
+    TooltipModule
   ],
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss']
@@ -65,7 +70,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
   selectedRelatedItems = signal<RelatedItem[]>([]);
   relatedItemsSearch = signal('');
 
-  constructor(private readonly fb: FormBuilder) {}
+  constructor(private readonly fb: FormBuilder, private readonly router: Router) {}
 
   ngOnInit(): void {
     this.initForm();
@@ -273,5 +278,13 @@ toggleRelatedItem(productId: number, type: RelatedItemType): void {
   categoryNameById(categoryId: number): string {
     const c = (this.categories ?? []).find(x => x.id === categoryId);
     return c?.name ?? `#${categoryId}`;
+  }
+
+  navigateToCreateCategory(): void {
+    this.router.navigate(['/admin/category']);
+  }
+
+  navigateToCreateLocation(): void {
+    this.router.navigate(['/admin/locations']);
   }
 }

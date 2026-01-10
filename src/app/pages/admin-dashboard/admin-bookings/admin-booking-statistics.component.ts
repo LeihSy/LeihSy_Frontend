@@ -44,7 +44,6 @@ import { AdminBookingStatisticsPageService } from './page-services/admin-booking
 export class AdminBookingStatisticsComponent implements OnInit {
     private readonly pageService = inject(AdminBookingStatisticsPageService);
 
-  // Delegiere alle Signals und Computed an den Service
   get isLoading() { return this.pageService.isLoading; }
   get bookings() { return this.pageService.bookings; }
   get dateRangeStart() { return this.pageService.dateRangeStart; }

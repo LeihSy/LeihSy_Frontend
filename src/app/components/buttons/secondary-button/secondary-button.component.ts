@@ -30,7 +30,7 @@ export class SecondaryButtonComponent {
   @Input() icon = '';
   @Input() tooltip = '';
   @Input() routerLink?: string | any[];
-  @Input() color: 'gray' | 'blue' | 'green' | 'red' | 'yellow' | 'purple' = 'gray';
+  @Input() color: 'gray' | 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'custom' = 'gray';
   @Output() buttonClick = new EventEmitter<void>();
 
   get buttonClass(): string {
@@ -47,6 +47,8 @@ export class SecondaryButtonComponent {
         return `${baseClasses} !border-yellow-300 !text-yellow-600 hover:!bg-yellow-50 hover:!border-yellow-400`;
       case 'purple':
         return `${baseClasses} !border-purple-300 !text-purple-600 hover:!bg-purple-50 hover:!border-purple-400`;
+      case 'custom':
+        return `${baseClasses} !border-[#253359] !text-[#253359] hover:!bg-[#253359]/10 hover:!border-[#1f2847]`;
       case 'gray':
       default:
         return `${baseClasses} !border-gray-300 !text-gray-700 hover:!bg-gray-50 hover:!border-gray-400`;

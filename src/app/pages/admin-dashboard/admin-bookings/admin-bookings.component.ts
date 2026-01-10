@@ -1,9 +1,7 @@
 import {Component, inject, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
 import { CardModule } from 'primeng/card';
-import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -14,11 +12,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 import { Booking } from '../../../models/booking.model';
-import { BookingService } from '../../../services/booking.service';
 import { TableComponent, ColumnDef } from '../../../components/table/table.component';
-import { BackButtonComponent } from '../../../components/buttons/back-button/back-button.component';
 import { BookingStatsCardsComponent } from '../../../components/booking-components/booking-stats-cards/booking-stats-cards.component';
-import { PageHeaderComponent } from '../../../components/page-header/page-header.component';
 import { BookingsHeaderComponent } from '../../../components/admin/booking-list-components/bookings-header.component';
 import { BookingsSearchFilterComponent } from '../../../components/admin/booking-list-components/bookings-search-filter.component';
 import { BookingsTableViewComponent } from '../../../components/admin/booking-list-components/bookings-table-view.component';
@@ -31,8 +26,6 @@ import { AdminBookingsPageService } from './page-services/admin-bookings-page.se
     CommonModule,
     FormsModule,
     CardModule,
-    TableComponent,
-    SecondaryButtonComponent,
     ButtonModule,
     InputTextModule,
     IconFieldModule,
@@ -40,13 +33,10 @@ import { AdminBookingsPageService } from './page-services/admin-bookings-page.se
     TagModule,
     ToastModule,
     TooltipModule,
-    BackButtonComponent,
     BookingStatsCardsComponent,
-    PageHeaderComponent,
     BookingsHeaderComponent,
     BookingsSearchFilterComponent,
     BookingsTableViewComponent,
-    RouterLink
   ],
   providers: [MessageService, AdminBookingsPageService],
   templateUrl: './admin-bookings.component.html'
@@ -66,7 +56,6 @@ export class AdminBookingsComponent implements OnInit {
     private readonly pageService = inject(AdminBookingsPageService);
 
 
-  // Delegiere alle Signals und Computed an den Service
   get bookings() { return this.pageService.bookings; }
   get overdueBookings() { return this.pageService.overdueBookings; }
   get searchQuery() { return this.pageService.searchQuery; }

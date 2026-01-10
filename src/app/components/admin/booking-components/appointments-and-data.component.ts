@@ -21,7 +21,7 @@ import { Booking } from '../../../models/booking.model';
             icon="pi pi-calendar"
             iconColor="text-blue-700"
             label="Vorgeschlagene Abholtermine"
-            [value]="booking.proposedPickups">
+            [value]="formatProposedPickups(booking.proposedPickups)">
           </app-info-item>
         }
         @if (booking.confirmedPickup) {
@@ -70,5 +70,45 @@ import { Booking } from '../../../models/booking.model';
 export class AppointmentsAndDataComponent {
   @Input({ required: true }) booking!: Booking;
   @Input({ required: true }) formatDateTime!: (date: Date | string | null) => string;
+
+  formatProposedPickups(proposedPickups: string): string {
+    if (!proposedPickups) return '-';
+
+    let dates: string[] = [];
+
+    // Versuche zuerst, als JSON-Array zu parsen
+    try {
+      const parsed = JSON.parse(proposedPickups);
+      if (Array.isArray(parsed)) {
+        dates = parsed.map(d => String(d).trim()).filter(Boolean);
+      } else {
+        dates = [String(parsed)];
+      }
+    } catch {
+      // Falls JSON.parse fehlschlägt, splitte nach Komma oder Semikolon
+      dates = proposedPickups.split(/[,;]/).map(d => d.trim()).filter(Boolean);
+    }
+
+    // Formatiere jedes Datum
+    const formattedDates = dates.map(dateStr => {
+      try {
+        const date = new Date(dateStr);
+        if (Number.isNaN(date.getTime())) {
+          return dateStr; // Falls kein gültiges Datum, Original zurückgeben
+        }
+        return date.toLocaleString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch {
+        return dateStr;
+      }
+    });
+
+    return formattedDates.join(', ');
+  }
 }
 

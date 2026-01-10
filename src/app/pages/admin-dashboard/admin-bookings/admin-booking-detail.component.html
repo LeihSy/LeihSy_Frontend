@@ -22,18 +22,20 @@
         [statusSeverity]="getStatusSeverity(booking()!.status)"
         [cards]="getCardData()">
 
-        <app-booking-message [message]="booking()!.message"></app-booking-message>
-
         <app-appointments-and-data
           [booking]="booking()!"
           [formatDateTime]="formatDateTime.bind(this)">
         </app-appointments-and-data>
       </app-booking-grid>
 
-      <app-booking-progress
-        [timelineEvents]="timelineEvents()"
-        [formatDateTime]="formatDateTime.bind(this)">
-      </app-booking-progress>
+      <div class="space-y-6">
+        <app-booking-progress
+          [timelineEvents]="timelineEvents()"
+          [formatDateTime]="formatDateTime.bind(this)">
+        </app-booking-progress>
+
+        <app-booking-message [message]="booking()!.message"></app-booking-message>
+      </div>
 
     </div>
   }

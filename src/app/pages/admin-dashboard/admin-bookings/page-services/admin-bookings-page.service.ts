@@ -34,7 +34,7 @@ export class AdminBookingsPageService {
   });
 
   filteredBookings = computed(() => {
-    let bookingsToFilter: Booking[] = [];
+    let bookingsToFilter: Booking[];
 
     switch (this.selectedView()) {
       case 'current':
@@ -83,17 +83,22 @@ export class AdminBookingsPageService {
   loadAllBookings(): void {
     this.isLoading.set(true);
 
-    this.bookingService.getBookings().subscribe({
+    this.bookingService.getAllBookings().subscribe({
       next: (bookings: Booking[]) => {
+        console.log('Buchungen erfolgreich geladen:', bookings.length, 'Buchungen');
         this.bookings.set(bookings);
         this.isLoading.set(false);
       },
       error: (error: any) => {
         console.error('Fehler beim Laden der Buchungen:', error);
+        console.error('Error Status:', error.status);
+        console.error('Error Message:', error.message);
+        console.error('Error Details:', error.error);
+
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
-          detail: 'Die Buchungen konnten nicht geladen werden.'
+          detail: `Die Buchungen konnten nicht geladen werden. ${error.status ? 'Status: ' + error.status : ''}`
         });
         this.isLoading.set(false);
       }

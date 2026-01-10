@@ -176,17 +176,21 @@ export class AdminBookingStatisticsPageService {
   loadData(): void {
     this.isLoading.set(true);
 
-    this.bookingService.getBookings().subscribe({
+    this.bookingService.getAllBookings().subscribe({
       next: (bookings: Booking[]) => {
+        console.log('Statistiken: Buchungen erfolgreich geladen:', bookings.length, 'Buchungen');
         this.bookings.set(bookings);
         this.isLoading.set(false);
       },
       error: (error: any) => {
         console.error('Fehler beim Laden der Daten:', error);
+        console.error('Error Status:', error.status);
+        console.error('Error Details:', error.error);
+
         this.messageService.add({
           severity: 'error',
           summary: 'Fehler',
-          detail: 'Die Statistiken konnten nicht geladen werden.'
+          detail: `Die Statistiken konnten nicht geladen werden. ${error.status ? 'Status: ' + error.status : ''}`
         });
         this.isLoading.set(false);
       }

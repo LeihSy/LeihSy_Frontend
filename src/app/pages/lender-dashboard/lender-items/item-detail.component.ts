@@ -26,7 +26,6 @@ import { ItemDetailService } from './page-services/item-detail.service';
     LoanHistoryComponent
   ],
   templateUrl: './item-detail.component.html',
-  styleUrls: ['./item-detail.component.scss'],
   providers: [MessageService, ItemDetailService]
 })
 export class ItemDetailComponent implements OnInit {

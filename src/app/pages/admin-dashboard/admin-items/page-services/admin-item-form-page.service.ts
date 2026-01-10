@@ -1,12 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 
 import { ItemService } from '../../../../services/item.service';
 import { ProductService } from '../../../../services/product.service';
 import { UserService } from '../../../../services/user.service';
+import { CategoryService } from '../../../../services/category.service';
 import { Item } from '../../../../models/item.model';
 import { Product } from '../../../../models/product.model';
 import { User } from '../../../../models/user.model';
@@ -31,6 +32,7 @@ export class AdminItemFormPageService {
   private itemService = inject(ItemService);
   private productService = inject(ProductService);
   private userService = inject(UserService);
+  private categoryService = inject(CategoryService);
   private messageService = inject(MessageService);
   private router = inject(Router);
 
@@ -68,6 +70,24 @@ export class AdminItemFormPageService {
 
   loadProduct(productId: number): Observable<Product> {
     return this.productService.getProductById(productId).pipe(
+      switchMap(product => {
+        // Wenn das Produkt eine categoryId hat, lade die Category
+        if (product.categoryId) {
+          return this.categoryService.getCategoryById(product.categoryId).pipe(
+            map(category => ({
+              ...product,
+              category: category
+            })),
+            catchError(err => {
+              console.error('Fehler beim Laden der Kategorie:', err);
+              // Gib das Produkt ohne Kategorie zurück
+              return of(product);
+            })
+          );
+        }
+        // Kein categoryId, gib das Produkt direkt zurück
+        return of(product);
+      }),
       catchError((err) => {
         console.error('Fehler beim Laden des Produkts:', err);
         throw err;

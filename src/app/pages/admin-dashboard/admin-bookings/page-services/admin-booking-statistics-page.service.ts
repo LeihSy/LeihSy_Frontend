@@ -11,7 +11,6 @@ export class AdminBookingStatisticsPageService {
   isLoading = signal<boolean>(true);
   bookings = signal<Booking[]>([]);
 
-  // Zeitraum-Filter
   dateRangeStart = signal<Date | null>(null);
   dateRangeEnd = signal<Date | null>(null);
   dateFilterPreset = signal<string>('all');
@@ -26,7 +25,6 @@ export class AdminBookingStatisticsPageService {
     { label: 'Benutzerdefiniert', value: 'custom' }
   ];
 
-  // Gefilterte Buchungen basierend auf Zeitraum
   filteredBookings = computed(() => {
     const start = this.dateRangeStart();
     const end = this.dateRangeEnd();
@@ -271,7 +269,6 @@ export class AdminBookingStatisticsPageService {
         this.dateRangeEnd.set(now);
         break;
       case 'custom':
-        // Benutzer kann manuell Daten wählen
         break;
     }
   }

@@ -48,7 +48,6 @@ export class BookingStatisticsExportService {
     const margin = 15;
     let yPosition = margin;
 
-    // Header
     pdf.setFillColor(0, 0, 128);
     pdf.rect(0, 0, pageWidth, 40, 'F');
     pdf.setTextColor(255, 255, 255);
@@ -67,7 +66,6 @@ export class BookingStatisticsExportService {
     yPosition = 50;
     pdf.setTextColor(0, 0, 0);
 
-    // Übersichtskarten
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Übersicht', margin, yPosition);
@@ -79,7 +77,6 @@ export class BookingStatisticsExportService {
     this.drawStatCard(pdf, margin + 2 * (cardWidth + margin / 2), yPosition, cardWidth, 'Top Produkt', data.topProducts.length > 0 ? data.topProducts[0].count.toString() : '0');
     yPosition += 30;
 
-    // Status-Statistiken
     if (yPosition + 60 > pageHeight - margin) {
       pdf.addPage();
       yPosition = margin;
@@ -90,7 +87,6 @@ export class BookingStatisticsExportService {
     pdf.text('Buchungen nach Status', margin, yPosition);
     yPosition += 10;
 
-    // Status-Tabelle
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Status', margin, yPosition);
@@ -107,7 +103,6 @@ export class BookingStatisticsExportService {
 
       const percentage = data.totalBookings > 0 ? (stat.count / data.totalBookings * 100).toFixed(1) : '0.0';
 
-      // Farbpunkt
       pdf.setFillColor(this.hexToRgb(stat.color).r, this.hexToRgb(stat.color).g, this.hexToRgb(stat.color).b);
       pdf.circle(margin + 2, yPosition - 1.5, 2, 'F');
 
@@ -119,7 +114,6 @@ export class BookingStatisticsExportService {
 
     yPosition += 10;
 
-    // Top 10 Produkte
     if (yPosition + 60 > pageHeight - margin) {
       pdf.addPage();
       yPosition = margin;
@@ -130,7 +124,6 @@ export class BookingStatisticsExportService {
     pdf.text('Top 10 ausgeliehene Produkte', margin, yPosition);
     yPosition += 10;
 
-    // Produkt-Tabelle
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Rang', margin, yPosition);
@@ -157,7 +150,6 @@ export class BookingStatisticsExportService {
       yPosition += 7;
     });
 
-    // Footer
     const footerY = pageHeight - 10;
     pdf.setFontSize(8);
     pdf.setTextColor(128, 128, 128);
@@ -168,9 +160,6 @@ export class BookingStatisticsExportService {
     pdf.save(filename);
   }
 
-  /**
-   * Zeichnet eine Statistik-Karte auf dem PDF
-   */
   private drawStatCard(pdf: jsPDF, x: number, y: number, width: number, label: string, value: string): void {
     pdf.setDrawColor(200, 200, 200);
     pdf.setFillColor(248, 249, 250);
@@ -189,9 +178,6 @@ export class BookingStatisticsExportService {
     pdf.setTextColor(0, 0, 0);
   }
 
-  /**
-   * Konvertiert Hex-Farbe zu RGB
-   */
   private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -201,9 +187,6 @@ export class BookingStatisticsExportService {
     } : { r: 0, g: 0, b: 0 };
   }
 
-  /**
-   * Generiert den vollständigen HTML-Inhalt für den Export
-   */
   private generateHtmlContent(data: StatisticsExportData): string {
     return `<!DOCTYPE html>
 <html lang="de">
@@ -218,7 +201,7 @@ export class BookingStatisticsExportService {
 <body>
     <div class="container">
         <header class="header">
-            <h1>📊 Buchungsstatistiken</h1>
+            <h1>Buchungsstatistiken</h1>
             <p class="subtitle">Auslastung und Analysen Ihrer Buchungen</p>
             ${data.dateRange ? `<p class="date-range">Zeitraum: ${this.formatDate(data.dateRange.start)} - ${this.formatDate(data.dateRange.end)}</p>` : '<p class="date-range">Alle Buchungen</p>'}
             <p class="export-info">Exportiert am: ${this.formatDateTime(data.exportDate)}</p>
@@ -226,7 +209,6 @@ export class BookingStatisticsExportService {
 
         <section class="overview-cards">
             <div class="stat-card">
-                <div class="stat-icon">📈</div>
                 <div class="stat-content">
                     <div class="stat-value">${data.totalBookings}</div>
                     <div class="stat-label">Gesamt Buchungen</div>
@@ -234,7 +216,6 @@ export class BookingStatisticsExportService {
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon">📦</div>
                 <div class="stat-content">
                     <div class="stat-value">${data.topProducts.length}</div>
                     <div class="stat-label">Verschiedene Produkte</div>
@@ -242,7 +223,6 @@ export class BookingStatisticsExportService {
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon">⭐</div>
                 <div class="stat-content">
                     <div class="stat-value">${data.topProducts.length > 0 ? data.topProducts[0].count : 0}</div>
                     <div class="stat-label">Top Produkt Ausleihen</div>
@@ -251,7 +231,7 @@ export class BookingStatisticsExportService {
         </section>
 
         <section class="chart-section">
-            <h2>📊 Buchungen nach Status</h2>
+            <h2>Buchungen nach Status</h2>
 
             <div class="status-chart">
                 ${this.generateStatusBars(data.statusStats, data.totalBookings)}
@@ -272,7 +252,7 @@ export class BookingStatisticsExportService {
         </section>
 
         <section class="chart-section">
-            <h2>⭐ Top 10 ausgeliehene Produkte</h2>
+            <h2>Top 10 ausgeliehene Produkte</h2>
 
             <div class="product-chart">
                 ${this.generateProductBars(data.topProducts)}
@@ -301,9 +281,6 @@ export class BookingStatisticsExportService {
 </html>`;
   }
 
-  /**
-   * Generiert die Balkendiagramm-Darstellung für Status-Statistiken
-   */
   private generateStatusBars(stats: StatusStat[], totalBookings: number): string {
     if (stats.length === 0) {
       return '<p class="empty-message">Keine Status-Daten vorhanden</p>';
@@ -331,9 +308,6 @@ export class BookingStatisticsExportService {
     }).join('');
   }
 
-  /**
-   * Generiert Tabellenzeilen für Status-Statistiken
-   */
   private generateStatusTableRows(stats: StatusStat[], totalBookings: number): string {
     if (stats.length === 0) {
       return '<tr><td colspan="3" class="text-center empty-message">Keine Status-Daten vorhanden</td></tr>';
@@ -355,9 +329,6 @@ export class BookingStatisticsExportService {
     }).join('');
   }
 
-  /**
-   * Generiert die Balkendiagramm-Darstellung für Top-Produkte
-   */
   private generateProductBars(products: ProductRanking[]): string {
     if (products.length === 0) {
       return '<p class="empty-message">Keine Produkt-Daten vorhanden</p>';
@@ -389,9 +360,6 @@ export class BookingStatisticsExportService {
     }).join('');
   }
 
-  /**
-   * Generiert Tabellenzeilen für Top-Produkte
-   */
   private generateProductTableRows(products: ProductRanking[]): string {
     if (products.length === 0) {
       return '<tr><td colspan="3" class="text-center empty-message">Keine Produkt-Daten vorhanden</td></tr>';
@@ -412,9 +380,6 @@ export class BookingStatisticsExportService {
     }).join('');
   }
 
-  /**
-   * CSS-Styles für die exportierte HTML-Datei
-   */
   private getStyles(): string {
     return `
         * {
@@ -712,9 +677,6 @@ export class BookingStatisticsExportService {
     `;
   }
 
-  /**
-   * Formatiert ein Datum für den Dateinamen (YYYY-MM-DD_HH-mm)
-   */
   private formatDateForFilename(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -725,9 +687,6 @@ export class BookingStatisticsExportService {
     return `${year}-${month}-${day}_${hours}-${minutes}`;
   }
 
-  /**
-   * Formatiert ein Datum für die Anzeige (DD.MM.YYYY)
-   */
   private formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -736,9 +695,6 @@ export class BookingStatisticsExportService {
     return `${day}.${month}.${year}`;
   }
 
-  /**
-   * Formatiert ein Datum mit Uhrzeit für die Anzeige (DD.MM.YYYY HH:mm)
-   */
   private formatDateTime(date: Date): string {
     const dateStr = this.formatDate(date);
     const hours = String(date.getHours()).padStart(2, '0');

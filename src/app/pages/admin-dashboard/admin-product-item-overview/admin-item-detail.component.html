@@ -3,59 +3,63 @@
 
   <app-back-button (backClick)="goBack()"></app-back-button>
 
-  @if (isLoading()) {
+  @if (pageService.isLoading()) {
     <div class="flex flex-col items-center justify-center p-16 text-center">
       <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
       <p class="mt-4 text-gray-600">Lade Details...</p>
     </div>
   }
 
-  @if (!isLoading() && item()) {
+  @if (!pageService.isLoading() && pageService.item()) {
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Item Information -->
       <app-detail-card header="Gegenstand Details">
         <div class="flex justify-between items-start mb-4">
           <div>
-            <h2 class="text-2xl font-bold text-[#253359]">{{ item()!.invNumber }}</h2>
+            <h2 class="text-2xl font-bold text-[#253359]">{{ pageService.item()!.invNumber }}</h2>
             <p-tag
-              [value]="item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
-              [severity]="getStatusSeverity(item()!.isAvailable)"
+              [value]="pageService.item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
+              [severity]="getStatusSeverity(pageService.item()!.isAvailable)"
               class="mt-2">
             </p-tag>
           </div>
-          <app-filled-button
-            icon="pi pi-pencil"
-            label="Bearbeiten"
-            (buttonClick)="editItem()">
-          </app-filled-button>
         </div>
 
         <app-info-section
           header="Gegenstand Informationen"
-          [items]="getItemInfoItems()">
+          [items]="pageService.itemInfoItems()">
           <span tag>
             <p-tag
-              [value]="item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
-              [severity]="getStatusSeverity(item()!.isAvailable)"
+              [value]="pageService.item()!.isAvailable ? 'Verfügbar' : 'Ausgeliehen'"
+              [severity]="getStatusSeverity(pageService.item()!.isAvailable)"
               class="font-medium px-3 py-1.5">
             </p-tag>
           </span>
         </app-info-section>
+
+        <div class="mt-4">
+          <app-secondary-button
+            icon="pi pi-external-link"
+            label="Zum Gegenstand"
+            [routerLink]="['/admin/items', pageService.item()!.id, 'edit']"
+            class="w-full">
+          </app-secondary-button>
+        </div>
       </app-detail-card>
 
       <!-- Product Information -->
       <app-detail-card header="Zugehöriges Produkt">
-        @if (product()) {
+        @if (pageService.product()) {
           <app-info-section
             header="Produkt Informationen"
-            [items]="getProductInfoItems()">
+            [items]="pageService.productInfoItems()">
           </app-info-section>
 
-          @if (product()!.description) {
+          @if (pageService.product()!.description) {
             <div class="mt-4 p-4 bg-gray-50 rounded-lg">
               <h4 class="font-semibold mb-2 text-gray-700">Beschreibung</h4>
-              <p class="text-gray-600">{{ product()!.description }}</p>
+              <p class="text-gray-600">{{ pageService.product()!.description }}</p>
             </div>
           }
 
@@ -63,7 +67,7 @@
             <app-secondary-button
               icon="pi pi-external-link"
               label="Zum Produkt"
-              [routerLink]="['/admin/products', product()!.id, 'edit']"
+              [routerLink]="['/admin/products', pageService.product()!.id, 'edit']"
               class="w-full">
             </app-secondary-button>
           </div>
@@ -76,7 +80,7 @@
       <div class="lg:col-span-2">
         <app-loan-history
           header="Ausleihverlauf"
-          [loanHistory]="loanHistory()"
+          [loanHistory]="pageService.loanHistory()"
           [columns]="loanHistoryColumns"
           [rows]="10"
           emptyStateMessage="Noch keine Ausleihvorgänge für diesen Gegenstand.">

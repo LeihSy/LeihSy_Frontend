@@ -37,11 +37,17 @@ export class AdminAllItemsService {
     return productList
       .map(product => {
         const productItems = itemList.filter(item => item.productId === product.id);
+
+        const itemsWithDisplayFields = productItems.map(item => ({
+          ...item,
+          availableLabel: item.isAvailable ? 'Verfügbar' : 'Ausgeliehen'
+        }));
+
         const availableCount = productItems.filter(item => item.isAvailable).length;
 
         return {
           product,
-          items: productItems,
+          items: itemsWithDisplayFields,
           availableCount,
           totalCount: productItems.length
         };
@@ -52,6 +58,8 @@ export class AdminAllItemsService {
         return (
           pwi.product.name.toLowerCase().includes(query) ||
           pwi.product.description.toLowerCase().includes(query) ||
+          (pwi.product.category?.name || '').toLowerCase().includes(query) ||
+          (pwi.product.location?.roomNr || '').toLowerCase().includes(query) ||
           pwi.items.some(item =>
             item.invNumber.toLowerCase().includes(query) ||
             item.owner.toLowerCase().includes(query)
@@ -84,7 +92,7 @@ export class AdminAllItemsService {
 
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getProducts().subscribe({
+    this.productService.getProductsWithItems().subscribe({
       next: (products: Product[]) => {
         this.products.set(products);
         this.isLoading.set(false);

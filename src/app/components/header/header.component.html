@@ -38,13 +38,21 @@
       </button>
       }
 
-      <a routerLink="/cart" class="relative hover:opacity-80 transition-opacity p-2 text-white">
-        @if (cartCount > 0) {
-        <i class="pi pi-shopping-cart text-xl p-overlay-badge" pBadge [value]="cartCount" severity="danger"></i>
-        } @else {
+      <!-- Shopping Kart Button -->
+      <a routerLink="/cart"
+        class="relative p-2 text-white hover:bg-white/10 hover:text-white rounded-md transition"
+        pBadge
+        [value]="cartService.cartCount()"
+        [badgeDisabled]="cartService.cartCount() === 0"
+        severity="danger">
         <i class="pi pi-shopping-cart text-xl"></i>
-        }
       </a>
+      <ng-template #noBadge>
+        <a routerLink="/cart"
+          class="relative p-2 text-white hover:bg-white/10 hover:text-white rounded-md transition">
+          <i class="pi pi-shopping-cart text-xl"></i>
+        </a>
+      </ng-template>
 
       <div class="flex items-center gap-3">
         <!-- User Info -->

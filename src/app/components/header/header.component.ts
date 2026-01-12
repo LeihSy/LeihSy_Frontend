@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { BadgeModule } from 'primeng/badge';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-header',
@@ -25,6 +26,7 @@ export class HeaderComponent {
   @Input() cartCount: number = 0;
 
   authService = inject(AuthService);
+  cartService = inject(CartService);
   mobileMenuOpen = false;
 
   // Expose userRole for template

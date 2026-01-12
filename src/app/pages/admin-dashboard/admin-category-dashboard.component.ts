@@ -1,20 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CategoryService } from '../../services/category.service';
+import { Category } from '../../models/category.model';
 
+// PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  deviceCount: number;
-}
 
 @Component({
   selector: 'app-admin-category-dashboard',
@@ -32,7 +28,7 @@ interface Category {
   templateUrl: './admin-category-dashboard.component.html',
   providers: [MessageService]
 })
-export class AdminCategoryDashboardComponent {
+export class AdminCategoryDashboardComponent implements OnInit {
 
   // Suchfeld
   searchQuery = '';
@@ -42,25 +38,43 @@ export class AdminCategoryDashboardComponent {
   isEditDialogOpen = false;
   isDeleteDialogOpen = false;
 
-  // Ausgewählte Kategorie für Bearbeiten / Löschen
+  // Ausgewählte Kategorie
   selectedCategory: Category | null = null;
 
-  // Formularfelder für Neu/Bearbeiten
+  // Formularfelder
   newCategoryName = '';
   newCategoryIcon = '📦';
 
-  // Mock-Daten
-  categories: Category[] = [
-  ];
+  // Daten aus dem Backend
+  categories: Category[] = [];
 
   // Icon-Auswahl
-  commonIconOptions: string[] = [
-    
-  ];
+  commonIconOptions: string[] = ['📦', '📸', '🎧', '💻', '🎮', '🚁', '🔌'];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private categoryService: CategoryService 
+  ) {}
 
-  // Gefilterte Kategorien für *ngFor
+  // Beim Start Daten laden
+  ngOnInit() {
+    this.loadCategories();
+  }
+
+  // Lade alle Kategorien vom Backend
+  loadCategories() {
+    this.categoryService.getAllCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+      },
+      error: (err) => {
+        console.error('Fehler beim Laden der Kategorien', err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Kategorien konnten nicht geladen werden.' });
+      }
+    });
+  }
+
+  // Gefilterte Kategorien für die Anzeige
   get filteredCategories(): Category[] {
     const query = this.searchQuery.toLowerCase().trim();
     if (!query) return this.categories;
@@ -69,7 +83,7 @@ export class AdminCategoryDashboardComponent {
     );
   }
 
-  // --- Dialog-Öffner --------------------------------------
+  // --- Dialog-Öffner ---
 
   openAddDialog() {
     this.newCategoryName = '';
@@ -81,7 +95,8 @@ export class AdminCategoryDashboardComponent {
   openEditDialog(category: Category) {
     this.selectedCategory = category;
     this.newCategoryName = category.name;
-    this.newCategoryIcon = category.icon;
+    // Fix für TS2322: Fallback, falls icon undefined ist
+    this.newCategoryIcon = category.icon || '📦';
     this.isEditDialogOpen = true;
   }
 
@@ -90,97 +105,96 @@ export class AdminCategoryDashboardComponent {
     this.isDeleteDialogOpen = true;
   }
 
-  // --- Aktionen -------------------------------------------
+  // --- Aktionen (CRUD) ---
 
+  // 1. Erstellen (POST)
   handleAddCategory() {
     if (!this.newCategoryName.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Bitte geben Sie einen Kategorienamen ein'
-      });
+      this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Bitte geben Sie einen Namen ein' });
       return;
     }
 
-    const newCategory: Category = {
-      id: Date.now().toString(),
+    // Fix für TS2322: Keine ID manuell setzen! Das macht das Backend.
+    const newCategoryPayload: any = {
       name: this.newCategoryName.trim(),
-      icon: this.newCategoryIcon || '📦',
-      deviceCount: 0
+      icon: this.newCategoryIcon || '📦'
     };
 
-    this.categories = [...this.categories, newCategory];
+    this.categoryService.createCategory(newCategoryPayload).subscribe({
+      next: (createdCategory) => {
+        // Liste aktualisieren
+        this.categories = [...this.categories, createdCategory];
 
-    this.isAddDialogOpen = false;
-    this.newCategoryName = '';
-    this.newCategoryIcon = '📦';
+        this.isAddDialogOpen = false;
+        this.newCategoryName = '';
+        this.newCategoryIcon = '📦';
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich hinzugefügt'
+        this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Kategorie erstellt' });
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Erstellen fehlgeschlagen' });
+      }
     });
   }
 
+  // 2. Bearbeiten (PUT)
   handleEditCategory() {
-    if (!this.selectedCategory || !this.newCategoryName.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Bitte geben Sie einen Kategorienamen ein'
-      });
-      return;
-    }
+    if (!this.selectedCategory || !this.newCategoryName.trim()) return;
 
-    this.categories = this.categories.map(cat =>
-      cat.id === this.selectedCategory!.id
-        ? {
-            ...cat,
-            name: this.newCategoryName.trim(),
-            icon: this.newCategoryIcon || '📦'
-          }
-        : cat
-    );
-
-    this.isEditDialogOpen = false;
-    this.selectedCategory = null;
-    this.newCategoryName = '';
-    this.newCategoryIcon = '📦';
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich aktualisiert'
+    this.categoryService.updateCategory(this.selectedCategory.id, {
+      name: this.newCategoryName.trim(),
+      icon: this.newCategoryIcon || '📦'
+    }).subscribe({
+      next: (updatedCategory) => {
+        // Fix für TS2367: IDs sind jetzt beide 'number', kein toString() nötig
+        this.categories = this.categories.map(c => 
+          c.id === updatedCategory.id ? updatedCategory : c
+        );
+        
+        this.isEditDialogOpen = false;
+        this.selectedCategory = null;
+        this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Kategorie aktualisiert' });
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Update fehlgeschlagen' });
+      }
     });
   }
 
+  // 3. Löschen (DELETE)
   handleDeleteCategory() {
+    // Fix für TS2532: Erst prüfen, ob selectedCategory existiert
     if (!this.selectedCategory) return;
 
-    if (this.selectedCategory.deviceCount > 0) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Löschen nicht möglich',
-        detail: `Kategorie kann nicht gelöscht werden, sie enthält noch ${this.selectedCategory.deviceCount} Geräte.`
-      });
+    // Optionaler Check: Falls dein Category-Model deviceCount hat
+    if (this.selectedCategory.deviceCount && this.selectedCategory.deviceCount > 0) {
+      this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Kategorie ist nicht leer.' });
       return;
     }
 
-    this.categories = this.categories.filter(
-      cat => cat.id !== this.selectedCategory!.id
-    );
+    const idToDelete = this.selectedCategory.id;
 
-    this.isDeleteDialogOpen = false;
-    this.selectedCategory = null;
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich gelöscht'
+    this.categoryService.deleteCategory(idToDelete).subscribe({
+      next: () => {
+        // Aus lokaler Liste entfernen
+        this.categories = this.categories.filter(cat => cat.id !== idToDelete);
+        
+        this.isDeleteDialogOpen = false;
+        this.selectedCategory = null;
+        this.messageService.add({ severity: 'success', summary: 'Gelöscht', detail: 'Kategorie entfernt' });
+      },
+      error: (err) => {
+        console.error(err);
+        const msg = err.error?.error || 'Löschen fehlgeschlagen';
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: msg });
+      }
     });
   }
 
   isDeleteDisabled(): boolean {
-    return !this.selectedCategory || this.selectedCategory.deviceCount !== 0;
+    // Fix für TS2532: Sicherer Zugriff auf deviceCount
+    return !this.selectedCategory || (this.selectedCategory.deviceCount || 0) > 0;
   }
 }

@@ -14,7 +14,13 @@ export class BookingService {
   // ========================================
   // GET ENDPOINTS
   // ========================================
-
+  // Verleiher lehnt Buchung ab (mit Begründung)
+  rejectBooking(id: number, reason: string): Observable<Booking> {
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, {
+      action: 'reject',
+      message: reason
+    });
+  }
   // GET /api/bookings (Alle Buchungen abrufen mit optionalen Filtern)
   getBookings(status?: 'overdue' | 'pending' | 'confirmed' | 'picked_up' | 'returned' | 'cancelled' | 'expired' | 'rejected'): Observable<Booking[]> {
     let params = new HttpParams();

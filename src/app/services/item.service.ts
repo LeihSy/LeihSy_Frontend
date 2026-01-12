@@ -26,6 +26,11 @@ export class ItemService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  // PUT /api/items/{id}/related (Update related items/accessories)
+  updateRelatedItems(id: number, relatedItems: { deviceId: number; type: 'required' | 'recommended' }[]): Observable<Item> {
+    return this.http.put<Item>(`${this.apiUrl}/${id}/related`, relatedItems);
+  }
+
   // GET /api/items (Get all items)
   getAllItems(): Observable<Item[]> {
     return this.http.get<Item[]>(this.apiUrl);

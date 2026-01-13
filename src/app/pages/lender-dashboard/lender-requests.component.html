@@ -1,371 +1,257 @@
-<p-toast></p-toast>
+<p-toast position="bottom-right"></p-toast>
 
-<div class="p-8 max-w-6xl mx-auto bg-[#f8f8f9] min-h-[70vh]">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <div class="flex items-center gap-3">
+<div class="min-h-[calc(100vh-4rem)] bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-semibold text-[#253359]">
-          Anfrage-Übersicht
-        </h1>
-        <p class="text-sm text-gray-600">
-           Hier können Sie die Anfragen annehmen/ablehnen
+        <h1 class="text-2xl font-bold text-[#2c3e7a]">Anfragen</h1>
+        <p class="text-sm text-gray-500 mt-1">
+          Verwalten Sie eingehende Buchungsanfragen für Ihre Geräte.
         </p>
       </div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-          <i class="pi pi-clock text-orange-600 text-xl"></i>
+      
+      <div class="flex gap-3">
+        <div class="bg-white px-4 py-2 rounded border border-gray-200 shadow-sm flex flex-col items-center">
+          <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">Offen</span>
+          <span class="text-xl font-bold text-orange-600">{{ pendingCount() }}</span>
         </div>
-        <div>
-          <p class="text-2xl font-semibold text-slate-900">{{ pendingCount() }}</p>
-          <p class="text-xs text-gray-600">Offen</p>
         </div>
-      </div>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-          <i class="pi pi-check-circle text-green-600 text-xl"></i>
-        </div>
-        <div>
-          <p class="text-2xl font-semibold text-slate-900">{{ acceptedCount() }}</p>
-          <p class="text-xs text-gray-600">Angenommen</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-          <i class="pi pi-times-circle text-red-600 text-xl"></i>
-        </div>
-        <div>
-          <p class="text-2xl font-semibold text-slate-900">{{ declinedCount() }}</p>
-          <p class="text-xs text-gray-600">Abgelehnt</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-          <i class="pi pi-inbox text-blue-600 text-xl"></i>
-        </div>
-        <div>
-          <p class="text-2xl font-semibold text-slate-900">{{ requests.length }}</p>
-          <p class="text-xs text-gray-600">Gesamt</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filter -->
-  <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <!-- Search -->
-      <div class="relative lg:col-span-2">
+    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6 flex flex-col xl:flex-row gap-4 justify-between">
+      
+      <div class="relative flex-1">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        <input
-          pInputText
-          type="text"
-          class="w-full pl-10"
-          placeholder="Student, Produkt oder Inventarnummer suchen..."
-          [(ngModel)]="searchQuery"
-        />
+        <input 
+            pInputText 
+            type="text" 
+            placeholder="Student, Gerät oder Inv-Nr suchen..." 
+            class="w-full pl-10"
+            [(ngModel)]="searchQuery"
+        >
       </div>
 
-      <!-- Campus -->
-      <p-select
-        [(ngModel)]="campusFilter"
-        [options]="campusOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Alle Campus"
-        styleClass="w-full"
-      ></p-select>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <p-select 
+            [options]="campusOptions" 
+            [(ngModel)]="campusFilter" 
+            optionLabel="label" 
+            optionValue="value"
+            class="w-full sm:w-48"
+        ></p-select>
 
-      <!-- Sort -->
-      <p-select
-        [(ngModel)]="sortBy"
-        [options]="sortOptions"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Sortierung"
-        styleClass="w-full"
-      ></p-select>
-    </div>
-  </div>
-
-  <!-- Tabs (wie bei dir: Buttons statt PrimeNG Tabs) -->
-  <div class="bg-white border border-gray-200 rounded-lg">
-    <div class="border-b border-gray-200 p-3">
-      <div class="grid grid-cols-2 gap-2">
-        <button
-          pButton
-          type="button"
-          (click)="tab='pending'"
-          [ngClass]="tab === 'pending' ? 'bg-[#253359] border-[#253359] text-white' : 'p-button-outlined'"
-          class="w-full justify-center"
-        >
-          Offene Anfragen ({{ filteredPending().length }})
-        </button>
-
-        <button
-          pButton
-          type="button"
-          (click)="tab='done'"
-          [ngClass]="tab === 'done' ? 'bg-[#253359] border-[#253359] text-white' : 'p-button-outlined'"
-          class="w-full justify-center"
-        >
-          Bearbeitet ({{ filteredDone().length }})
-        </button>
+        <p-select 
+            [options]="sortOptions" 
+            [(ngModel)]="sortBy" 
+            optionLabel="label" 
+            optionValue="value"
+            class="w-full sm:w-48"
+        ></p-select>
       </div>
     </div>
 
-    <!-- PENDING -->
+    <div class="flex gap-6 border-b border-gray-200 mb-6">
+      <button 
+        class="pb-3 px-1 text-sm font-medium transition-colors border-b-2"
+        [class.border-[#2c3e7a]]="tab === 'pending'"
+        [class.text-[#2c3e7a]]="tab === 'pending'"
+        [class.border-transparent]="tab !== 'pending'"
+        [class.text-gray-500]="tab !== 'pending'"
+        (click)="tab = 'pending'"
+      >
+        Offene Anfragen ({{ filteredPending().length }})
+      </button>
+
+      <button 
+        class="pb-3 px-1 text-sm font-medium transition-colors border-b-2"
+        [class.border-[#2c3e7a]]="tab === 'done'"
+        [class.text-[#2c3e7a]]="tab === 'done'"
+        [class.border-transparent]="tab !== 'done'"
+        [class.text-gray-500]="tab !== 'done'"
+        (click)="tab = 'done'"
+      >
+        Erledigt / Historie ({{ filteredDone().length }})
+      </button>
+    </div>
+
     @if (tab === 'pending') {
-      <div>
-        <div class="p-4 sm:p-6">
-          <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Offene Anfragen</h2>
-          <p class="text-xs sm:text-sm text-gray-600">Bitte annehmen oder ablehnen</p>
-        </div>
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <p-table [value]="filteredPending()" [tableStyle]="{ 'min-width': '60rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="w-[25%]">Student</th>
+              <th class="w-[25%]">Gerät</th>
+              <th class="w-[15%]">Zeitraum</th>
+              <th class="w-[10%]">Campus</th>
+              <th class="w-[25%] text-right">Aktionen</th>
+            </tr>
+          </ng-template>
 
-        <!-- Desktop Table -->
-        <div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
-          <p-table [value]="filteredPending()" [tableStyle]="{ 'min-width': '60rem' }">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Status</th>
-                <th>Student</th>
-                <th>Produkt</th>
-                <th>Inventar-Nr.</th>
-                <th>Von</th>
-                <th>Bis</th>
-                <th>Campus</th>
-                <th>Aktion</th>
-              </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-req>
-              <tr>
-                <td>
-                  <p-tag [value]="statusTag(req).value" [styleClass]="statusTag(req).cls"></p-tag>
-                </td>
-
-                <td>
-                  <div>
-                    <p class="font-medium text-slate-900">{{ req.studentName }}</p>
-                    <p class="text-sm text-gray-600">{{ req.studentId }}</p>
-                  </div>
-                </td>
-
-                <td class="text-slate-900">{{ req.productName }}</td>
-
-                <td>
-                  <code class="bg-gray-100 px-2 py-1 rounded text-sm">
+          <ng-template pTemplate="body" let-req>
+            <tr class="hover:bg-gray-50">
+              <td>
+                <div class="flex flex-col">
+                  <span class="font-semibold text-gray-900">{{ req.studentName }}</span>
+                  <span class="text-xs text-gray-500">{{ req.studentId }}</span>
+                </div>
+              </td>
+              
+              <td>
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-900">{{ req.productName }}</span>
+                  <span class="text-xs text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded w-fit mt-1">
                     {{ req.inventoryNumber }}
-                  </code>
-                </td>
-
-                <td class="text-slate-900">{{ formatDate(req.fromDate) }}</td>
-                <td class="text-slate-900">{{ formatDate(req.toDate) }}</td>
-
-                <td class="text-slate-900">
-                  <span class="inline-flex items-center gap-2">
-                    <i class="pi pi-map-marker text-gray-500"></i>
-                    <span class="whitespace-nowrap">{{ campusShort(req.campus) }}</span>
                   </span>
-                </td>
+                </div>
+              </td>
 
-                <td> 
-                <div class="flex gap-2">
-                  <button
-                    pButton
-                    type="button"
-                    class="bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
-                    (click)="accept(req)"
-                  >
-                    Annehmen
-                  </button>
+              <td>
+                <div class="text-sm text-gray-700">
+                  <div class="font-medium">{{ formatDate(req.fromDate) }}</div>
+                  <div class="text-gray-400 text-xs">bis</div>
+                  <div class="font-medium">{{ formatDate(req.toDate) }}</div>
+                </div>
+              </td>
 
-                  <button
-                    pButton
-                    type="button"
-                    class="p-button-outlined"
+              <td>
+                <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+                   {{ campusShort(req.campus) }}
+                </span>
+              </td>
+
+              <td class="text-right">
+                <div class="flex justify-end gap-2">
+                  <button 
+                    pButton 
+                    type="button" 
+                    label="Ablehnen" 
+                    class="p-button-outlined p-button-danger p-button-sm"
                     (click)="openDecline(req)"
-                  >
-                    Ablehnen
-                  </button>
+                  ></button>
+                  
+                  <button 
+                    pButton 
+                    type="button" 
+                    label="Annehmen" 
+                    class="p-button-success p-button-sm"
+                    (click)="accept(req)"
+                  ></button>
                 </div>
-                </td> 
-              </tr>
-            </ng-template>
+              </td>
+            </tr>
+          </ng-template>
 
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="8" class="text-center text-gray-500 py-8">
-                  Keine offenen Anfragen gefunden
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-
-        <!---->
-        <div class="lg:hidden space-y-3 p-4">
-          @for (req of filteredPending(); track req.id) {
-            <div class="border rounded-lg p-4 border-gray-200 bg-white">
-              <div class="flex items-start justify-between gap-3 mb-3">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <i class="pi pi-user text-gray-500"></i>
-                    <span class="font-medium text-slate-900">{{ req.studentName }}</span>
-                  </div>
-                  <p class="text-sm text-gray-600">{{ req.studentId }}</p>
-                </div>
-
-                <p-tag [value]="statusTag(req).value" [styleClass]="statusTag(req).cls"></p-tag>
-              </div>
-
-              <div class="bg-white rounded-lg p-3 space-y-2 text-sm mb-3">
-                <div class="flex items-center justify-between gap-3">
-                  <span class="text-gray-600">Produkt:</span>
-                  <span class="font-medium text-slate-900 text-right">{{ req.productName }}</span>
-                </div>
-
-                <div class="flex items-center justify-between gap-3">
-                  <span class="text-gray-600">Inventar-Nr.:</span>
-                  <code class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ req.inventoryNumber }}</code>
-                </div>
-
-                <div class="flex items-center justify-between gap-3">
-                  <span class="text-gray-600">Zeitraum:</span>
-                  <span class="text-slate-900">{{ formatDate(req.fromDate) }} – {{ formatDate(req.toDate) }}</span>
-                </div>
-
-                <div class="flex items-center justify-between gap-3">
-                  <span class="text-gray-600">Campus:</span>
-                  <span class="inline-flex items-center gap-2 text-slate-900">
-                    <i class="pi pi-map-marker text-gray-500"></i>
-                    {{ campusShort(req.campus) }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  pButton
-                  type="button"
-                  class="w-full bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
-                  (click)="accept(req)"
-                >
-                  Annehmen
-                </button>
-
-                <button
-                  pButton
-                  type="button"
-                  class="w-full p-button-outlined"
-                  (click)="openDecline(req)"
-                >
-                  Ablehnen
-                </button>
-              </div>
-            </div>
-          }
-        </div>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-8 text-gray-500">
+                Keine offenen Anfragen gefunden.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
 
-    <!-- DONE -->
     @if (tab === 'done') {
-      <div>
-        <div class="p-4 sm:p-6">
-          <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Bearbeitete Anfragen</h2>
-          <p class="text-xs sm:text-sm text-gray-600">Angenommen oder abgelehnt</p>
-        </div>
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <p-table [value]="filteredDone()" [tableStyle]="{ 'min-width': '60rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th class="w-[25%]">Student</th>
+              <th class="w-[25%]">Gerät</th>
+              <th class="w-[20%]">Zeitraum</th>
+              <th class="w-[15%]">Status</th>
+              <th class="w-[15%] text-right">Info</th>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="body" let-req>
+            <tr class="opacity-75 hover:opacity-100 transition-opacity">
+              <td>
+                <span class="font-medium">{{ req.studentName }}</span>
+              </td>
+              <td>
+                <span class="font-medium">{{ req.productName }}</span>
+                <span class="text-xs text-gray-400 block">{{ req.inventoryNumber }}</span>
+              </td>
+              <td>
+                <span class="text-sm text-gray-600">
+                  {{ formatDate(req.fromDate) }} - {{ formatDate(req.toDate) }}
+                </span>
+              </td>
+              <td>
+                <span [class]="statusTag(req).cls">
+                  {{ statusTag(req).value }}
+                </span>
+              </td>
+              <td class="text-right">
+                 @if (req.declineReason) {
+                   <i class="pi pi-info-circle text-gray-400" [pTooltip]="req.declineReason"></i>
+                 }
+              </td>
+            </tr>
+          </ng-template>
 
-        <div class="p-4 sm:p-6 space-y-3">
-          @if (filteredDone().length === 0) {
-            <div class="text-center text-gray-500 py-8">
-              Keine bearbeiteten Anfragen gefunden
-            </div>
-          } @else {
-            @for (req of filteredDone(); track req.id) {
-              <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="font-medium text-slate-900">{{ req.studentName }} • {{ req.productName }}</p>
-                    <p class="text-sm text-gray-600">
-                      {{ formatDate(req.fromDate) }} – {{ formatDate(req.toDate) }} • {{ campusShort(req.campus) }}
-                    </p>
-
-                    @if (req.status === 'declined' && req.declineReason) {
-                      <div class="mt-2 bg-red-50 border border-red-200 rounded-lg p-3">
-                        <p class="text-sm text-red-800">
-                          <span class="font-semibold">Begründung:</span> {{ req.declineReason }}
-                        </p>
-                      </div>
-                    }
-                  </div>
-
-                  <p-tag [value]="statusTag(req).value" [styleClass]="statusTag(req).cls"></p-tag>
-                </div>
-              </div>
-            }
-          }
-        </div>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-8 text-gray-500">
+                Keine vergangenen Anfragen.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
     }
   </div>
 
-  <!-- Ablehnen Dialog -->
-  <p-dialog
-    [visible]="isDeclineDialogOpen"
-    (visibleChange)="isDeclineDialogOpen = $event"
-    [modal]="true"
-    [closable]="true"
-    [draggable]="false"
+  <p-dialog 
+    header="Anfrage ablehnen" 
+    [(visible)]="isDeclineDialogOpen" 
+    [modal]="true" 
+    [style]="{ width: '400px' }"
+    [draggable]="false" 
     [resizable]="false"
-    [style]="{ width: '600px', maxWidth: '95vw' }"
-    [breakpoints]="{ '960px': '75vw', '640px': '95vw' }"
-    header="Anfrage ablehnen"
   >
-    @if (selectedRequest; as req) {
-      <p class="text-sm text-gray-600 mb-4">
-        {{ req.studentName }} • {{ req.productName }} ({{ req.inventoryNumber }})
-      </p>
-
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-        <p class="text-sm text-blue-800">
-          <strong>Pflichtfeld:</strong> Bitte geben Sie eine Begründung an, wenn Sie ablehnen.
+    @if (selectedRequest) {
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-gray-600">
+          Möchten Sie die Anfrage von <strong>{{ selectedRequest.studentName }}</strong> für 
+          <strong>{{ selectedRequest.productName }}</strong> wirklich ablehnen?
         </p>
+
+        <div class="flex flex-col gap-2">
+            <label for="reason" class="text-sm font-medium text-gray-700">Grund (optional)</label>
+            <textarea 
+                id="reason"
+                rows="3" 
+                class="w-full p-2 border border-gray-300 rounded text-sm"
+                [(ngModel)]="declineReason"
+                placeholder="z.B. Gerät ist in Wartung..."
+            ></textarea>
+        </div>
+
+        @if (declineError) {
+            <small class="text-red-600">{{ declineError }}</small>
+        }
       </div>
 
-      <label class="block text-sm font-medium text-gray-700 mb-1">Begründung *</label>
-      <textarea
-        rows="4"
-        class="w-full bg-white border border-gray-300 rounded-lg p-3"
-        [value]="declineReason"
-        (input)="declineReason = ($any($event.target)).value; declineError = ''"
-        placeholder="z.B. Gerät ist im Zeitraum bereits reserviert..."
-      ></textarea>
-
-      @if (declineError) {
-        <p class="text-sm text-red-600 mt-2">{{ declineError }}</p>
-      }
-
-      <div class="flex justify-end gap-2 mt-6">
-        <button pButton type="button" class="p-button-outlined" (click)="closeDecline()">Abbrechen</button>
-        <button pButton type="button" class="p-button-danger" (click)="confirmDecline()">Ablehnen bestätigen</button>
-      </div>
+      <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            type="button" 
+            label="Abbrechen" 
+            class="p-button-text" 
+            (click)="closeDecline()"
+        ></button>
+        <button 
+            pButton 
+            type="button" 
+            label="Ablehnen bestätigen" 
+            class="p-button-danger" 
+            (click)="confirmDecline()"
+        ></button>
+      </ng-template>
     }
   </p-dialog>
 </div>

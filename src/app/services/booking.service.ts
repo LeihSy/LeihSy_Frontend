@@ -7,7 +7,7 @@ import { Booking, BookingCreate } from '../models/booking.model';
   providedIn: 'root'
 })
 export class BookingService {
-  private readonly apiUrl = '/api/bookings';
+  private readonly apiUrl = 'http://localhost:8080/api/bookings';
 
   constructor(private readonly http: HttpClient) {}
 
@@ -15,11 +15,8 @@ export class BookingService {
   // GET ENDPOINTS
   // ========================================
   // Verleiher lehnt Buchung ab (mit Begründung)
-  rejectBooking(id: number, reason: string): Observable<Booking> {
-    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, {
-      action: 'reject',
-      message: reason
-    });
+  rejectBooking(id: number, reason?: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
   // GET /api/bookings (Alle Buchungen abrufen mit optionalen Filtern)
   getBookings(status?: 'overdue' | 'pending' | 'confirmed' | 'picked_up' | 'returned' | 'cancelled' | 'expired' | 'rejected'): Observable<Booking[]> {
@@ -27,6 +24,11 @@ export class BookingService {
     if (status) {
       params = params.set('status', status);
     }
+    return this.http.get<Booking[]>(this.apiUrl, { params });
+  }
+  // GET /api/bookings?status=pending
+  getPendingBookings(): Observable<Booking[]> {
+    const params = new HttpParams().set('status', 'PENDING');
     return this.http.get<Booking[]>(this.apiUrl, { params });
   }
 
@@ -58,7 +60,7 @@ export class BookingService {
   // ========================================
 
   // Verleiher bestätigt Buchung und schlägt Abholtermine vor
-  confirmBooking(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
+  confirmBooking(id: number, proposedPickups: string[] = [], message?: string): Observable<Booking> {
     const body: any = {
       action: 'confirm',
       proposedPickups

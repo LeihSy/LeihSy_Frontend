@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,45 +11,47 @@ import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-
-type RequestStatus = 'pending' | 'accepted' | 'declined';
+import { BookingService } from '../../services/booking.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface LenderRequest {
-    id: number;
-    studentName: string;
-    studentId: string;
-    productName: string;
-    inventoryNumber: string;
-    campus: string;
-    fromDate: string; 
-    toDate: string;   
-    status: RequestStatus;
-    declineReason?: string;
-  }
+  id: number;
+  studentName: string;
+  studentId: string;
+  productName: string;
+  inventoryNumber: string;
+  campus: string;
+  fromDate: string;
+  toDate: string;
+  status: string; 
+  declineReason?: string;
+}
+
+@Component({
+  selector: 'app-lender-requests',
+  standalone: true,
+  imports: [
+    CommonModule, FormsModule, ToastModule, ButtonModule, DialogModule,
+    TagModule, InputTextModule, SelectModule, TableModule,TooltipModule
+  ],
+  providers: [MessageService],
+  templateUrl: './lender-requests.component.html'
+})
+export class LenderRequestsComponent implements OnInit {
   
-  @Component({
-    selector: 'app-lender-requests',
-    standalone: true,
-    imports: [
-      CommonModule,
-      FormsModule,
-      ToastModule,
-      ButtonModule,
-      DialogModule,
-      TagModule,
-      InputTextModule,
-      SelectModule,
-      TableModule
-    ],
-    providers: [MessageService],
-    templateUrl: './lender-requests.component.html'
-  })
-  export class LenderRequestsComponent {
+  // Services injecten
+  private bookingService = inject(BookingService);
+  private messageService = inject(MessageService);
+
+  // UI State
   searchQuery = '';
   campusFilter = 'all';
   sortBy: 'newest' | 'oldest' | 'student' = 'newest';
   tab: 'pending' | 'done' = 'pending';
 
+  requests: LenderRequest[] = []; 
+
+  // Optionen für Dropdowns
   campusOptions = [
     { label: 'Alle Campus', value: 'all' },
     { label: 'ES', value: 'Esslingen' },
@@ -61,136 +63,162 @@ interface LenderRequest {
     { label: 'Student A-Z', value: 'student' }
   ];
 
-  //Mock
+  // Dialog State
+  isDeclineDialogOpen = false;
+  selectedRequest: LenderRequest | null = null;
+  declineReason = '';
+  declineError = '';
 
-  requests: LenderRequest[] = [];
+  ngOnInit() {
+    this.loadData();
+  }
 
-    isDeclineDialogOpen = false;
-    selectedRequest: LenderRequest | null = null;
-    declineReason = '';
-    declineError = '';
-    constructor(private messageService: MessageService) {}
-    pendingCount(): number {
-        return this.requests.filter(r => r.status === 'pending').length;
-      }
-      acceptedCount(): number {
-        return this.requests.filter(r => r.status === 'accepted').length;
-      }
-      
-      declinedCount(): number {
-        return this.requests.filter(r => r.status === 'declined').length;
-      }
-      
-      filteredPending(): LenderRequest[] {
-        return this.applyAll(this.requests.filter(r => r.status === 'pending'));
-      }
-      
-      filteredDone(): LenderRequest[] {
-        return this.applyAll(this.requests.filter(r => r.status !== 'pending'));
-      }
-    private applyAll(list: LenderRequest[]): LenderRequest[] {
-        const q = this.searchQuery.toLowerCase().trim();
-        const campus = this.campusFilter;
-        let res = [...list];
+  // --- DATEN LADEN ---
+  loadData() {
 
-        if (q) {
-            res = res.filter(r =>
-              r.studentName.toLowerCase().includes(q) ||
-              r.studentId.toLowerCase().includes(q) ||
-              r.productName.toLowerCase().includes(q) ||
-              r.inventoryNumber.toLowerCase().includes(q)
-            );
-          }
-      
-          if (campus !== 'all') {
-            res = res.filter(r => r.campus === campus);
-          }
-        
-        // sort
-        if (this.sortBy === 'student') {
-        res.sort((a, b) => a.studentName.localeCompare(b.studentName));
-            } else if (this.sortBy === 'oldest') {
-        res.sort((a, b) => a.fromDate.localeCompare(b.fromDate));
-            } else {
-        res.sort((a, b) => b.fromDate.localeCompare(a.fromDate));
-      }
-      
-            return res;
+    this.bookingService.getPendingBookings().subscribe({
+      next: (data: any[]) => {
+        this.requests = data.map(b => ({
+          id: b.id,
+          studentName: b.userName || 'Unbekannt',
+          studentId: b.userId?.toString() || '', // Falls ID vorhanden
+          productName: b.productName,
+          inventoryNumber: b.invNumber,
+          campus: 'Esslingen', // Dummy, falls Backend das nicht liefert
+          fromDate: b.startDate,
+          toDate: b.endDate,
+          status: b.status || 'PENDING',
+          declineReason: ''
+        }));
+      },
+      error: (err) => console.error('Fehler beim Laden', err)
+    });
+  }
+
+
+  pendingCount(): number {
+    return this.requests.filter(r => r.status === 'PENDING').length;
+  }
+
+  filteredPending(): LenderRequest[] {
+    return this.applyAll(this.requests.filter(r => r.status === 'PENDING'));
+  }
+
+  filteredDone(): LenderRequest[] {
+    return this.applyAll(this.requests.filter(r => r.status !== 'PENDING'));
+  }
+
+  private applyAll(list: LenderRequest[]): LenderRequest[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    let res = [...list];
+
+    // Suche
+    if (q) {
+      res = res.filter(r =>
+        (r.studentName && r.studentName.toLowerCase().includes(q)) ||
+        (r.productName && r.productName.toLowerCase().includes(q)) ||
+        (r.inventoryNumber && r.inventoryNumber.toLowerCase().includes(q))
+      );
     }
-    //Aktionen 
-    accept(req: LenderRequest): void {
-        if (req.status !== 'pending') return;
-    
-        req.status = 'accepted';
-        req.declineReason = undefined;
-    
+
+    // Filter Campus
+    if (this.campusFilter !== 'all') {
+      res = res.filter(r => this.campusShort(r.campus) === this.campusShort(this.campusFilter));
+    }
+
+    // Sortierung
+    if (this.sortBy === 'student') {
+      res.sort((a, b) => a.studentName.localeCompare(b.studentName));
+    } else if (this.sortBy === 'oldest') {
+      res.sort((a, b) => a.fromDate.localeCompare(b.fromDate));
+    } else {
+      res.sort((a, b) => b.fromDate.localeCompare(a.fromDate));
+    }
+
+    return res;
+  }
+
+  // --- ACTIONS (Backend Calls) ---
+
+  accept(req: LenderRequest): void {
+    if (req.status !== 'PENDING') return;
+
+    this.bookingService.confirmBooking(req.id,[]).subscribe({
+      next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Anfrage angenommen',
+          summary: 'Anfrage genehmigt',
           detail: `${req.studentName} • ${req.productName}`
         });
+        this.loadData(); // Neu laden
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht genehmigt werden.' });
       }
-      openDecline(req: LenderRequest): void {
-        if (req.status !== 'pending') return;
-    
-        this.selectedRequest = req;
-        this.declineReason = '';
-        this.declineError = '';
-        this.isDeclineDialogOpen = true;
-      }
-      closeDecline(): void {
-        this.isDeclineDialogOpen = false;
-        this.selectedRequest = null;
-        this.declineReason = '';
-        this.declineError = '';
-      }
-      confirmDecline(): void {
-        if (!this.selectedRequest) return;
-    
-        const reason = this.declineReason.trim();
-        if (!reason) {
-          this.declineError = 'Bitte geben Sie eine Begründung an (Pflichtfeld).';
-          return;
-        }
-        this.selectedRequest.status = 'declined';
-        this.selectedRequest.declineReason = reason;
-    
+    });
+  }
+
+  // Dialog öffnen
+  openDecline(req: LenderRequest): void {
+    if (req.status !== 'PENDING') return;
+    this.selectedRequest = req;
+    this.declineReason = '';
+    this.declineError = '';
+    this.isDeclineDialogOpen = true;
+  }
+
+  closeDecline(): void {
+    this.isDeclineDialogOpen = false;
+    this.selectedRequest = null;
+  }
+
+  // Ablehnen im Backend
+  confirmDecline(): void {
+    if (!this.selectedRequest) return; 
+
+    this.bookingService.rejectBooking(this.selectedRequest.id).subscribe({
+      next: () => {
         this.messageService.add({
-          severity: 'warn',
+          severity: 'info',
           summary: 'Anfrage abgelehnt',
-          detail: `${this.selectedRequest.studentName} • ${this.selectedRequest.productName}`
+          detail: 'Die Buchung wurde entfernt.'
         });
-    
         this.closeDecline();
+        this.loadData(); // Neu laden
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht ablehnen.' });
       }
-      
-      statusTag(req: LenderRequest): { value: string; cls: string } {
-        if (req.status === 'pending') {
-          return { value: 'Offen', cls: 'bg-orange-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
-        }
-        if (req.status === 'accepted') {
-          return { value: 'Angenommen', cls: 'bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
-        }
-        return { value: 'Abgelehnt', cls: 'bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
-      }
-      formatDate(dateStr: string): string {
-        // erwartet "YYYY-MM-DD"
-        const d = new Date(dateStr);
-        if (Number.isNaN(d.getTime())) return dateStr;
-      
-        return new Intl.DateTimeFormat('de-DE', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        }).format(d);
-      }
-      
-      campusShort(campus: string): string {
-        if (!campus) return '';
-        const c = campus.toLowerCase();
-        if (c.includes('esslingen')) return 'ES';
-        if (c.includes('göppingen') || c.includes('goeppingen')) return 'GO';
-        return campus; // fallback
-      }
-      
+    });
+  }
+
+  // --- HELPER ---
+
+  statusTag(req: LenderRequest): { value: string; cls: string } {
+    // Mapping Backend Status -> Frontend Anzeige
+    if (req.status === 'PENDING') {
+      return { value: 'Offen', cls: 'bg-orange-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
     }
+    if (req.status === 'CONFIRMED' || req.status === 'accepted') { // Beides abfangen
+      return { value: 'Angenommen', cls: 'bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
+    }
+    return { value: 'Abgelehnt', cls: 'bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('de-DE', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    }).format(d);
+  }
+
+  campusShort(campus: string): string {
+    if (!campus) return '';
+    const c = campus.toLowerCase();
+    if (c.includes('esslingen')) return 'ES';
+    if (c.includes('göppingen') || c.includes('goeppingen')) return 'GO';
+    return campus;
+  }
+}

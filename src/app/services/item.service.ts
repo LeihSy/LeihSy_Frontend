@@ -17,7 +17,7 @@ export class ItemService {
   }
 
   // PUT /api/items/{id} (Update an item)
-  updateItem(id: number, item: ItemCreate): Observable<Item> {
+  updateItem(id: number, item: any): Observable<Item> {
     return this.http.put<Item>(`${this.apiUrl}/${id}`, item);
   }
 

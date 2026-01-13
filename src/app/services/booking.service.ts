@@ -14,6 +14,12 @@ export class BookingService {
   // ========================================
   // GET ENDPOINTS
   // ========================================
+
+  //  Holt Buchungen eines Verleihers
+  getBookingsByLenderId(lenderId: number, includeDeleted: boolean = false): Observable<any[]> {
+    let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
+    return this.http.get<any[]>(`${this.apiUrl}/lender/${lenderId}`, { params });
+  }
   // Verleiher lehnt Buchung ab (mit Begründung)
   rejectBooking(id: number, reason?: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
@@ -114,7 +120,9 @@ export class BookingService {
       action: 'return'
     });
   }
-
+  updateStatus(id: number, data: { action: string, message?: string }): Observable<Booking> {
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, data);
+  } 
   // Generische Methode für alle Status-Updates (falls benötigt)
   updateBookingStatus(id: number, action: string, data?: {
     proposedPickups?: string[],

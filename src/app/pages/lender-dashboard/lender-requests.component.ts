@@ -24,6 +24,7 @@ interface LenderRequest {
   fromDate: string;
   toDate: string;
   status: string; 
+  message?: string;
   declineReason?: string;
 }
 
@@ -75,23 +76,22 @@ export class LenderRequestsComponent implements OnInit {
 
   // --- DATEN LADEN ---
   loadData() {
-
-    this.bookingService.getPendingBookings().subscribe({
+    this.bookingService.getBookingsByLenderId(6, true).subscribe({
       next: (data: any[]) => {
         this.requests = data.map(b => ({
           id: b.id,
-          studentName: b.userName || 'Unbekannt',
-          studentId: b.userId?.toString() || '', // Falls ID vorhanden
-          productName: b.productName,
-          inventoryNumber: b.invNumber,
-          campus: 'Esslingen', // Dummy, falls Backend das nicht liefert
+          studentName: b.userName || b.user?.name || 'Unbekannt',
+          studentId: b.user?.uniqueId || b.userId?.toString() || '', 
+          productName: b.productName || b.item?.product?.name,
+          inventoryNumber: b.invNumber || b.item?.invNumber,
+          campus: 'Esslingen', 
           fromDate: b.startDate,
           toDate: b.endDate,
           status: b.status || 'PENDING',
-          declineReason: ''
+          message: b.message
         }));
       },
-      error: (err) => console.error('Fehler beim Laden', err)
+      error: (err: any) => console.error('Fehler beim Laden', err)
     });
   }
 
@@ -152,7 +152,7 @@ export class LenderRequestsComponent implements OnInit {
         });
         this.loadData(); // Neu laden
       },
-      error: () => {
+      error: (err: any) => {
         this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht genehmigt werden.' });
       }
     });
@@ -176,7 +176,10 @@ export class LenderRequestsComponent implements OnInit {
   confirmDecline(): void {
     if (!this.selectedRequest) return; 
 
-    this.bookingService.rejectBooking(this.selectedRequest.id).subscribe({
+    this.bookingService.updateStatus(this.selectedRequest.id, { 
+      action: 'reject', 
+      message: this.declineReason 
+    }).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'info',
@@ -195,7 +198,6 @@ export class LenderRequestsComponent implements OnInit {
   // --- HELPER ---
 
   statusTag(req: LenderRequest): { value: string; cls: string } {
-    // Mapping Backend Status -> Frontend Anzeige
     if (req.status === 'PENDING') {
       return { value: 'Offen', cls: 'bg-orange-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
     }

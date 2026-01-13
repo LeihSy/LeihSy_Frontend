@@ -186,8 +186,10 @@
                 </span>
               </td>
               <td class="text-right">
-                 @if (req.declineReason) {
-                   <i class="pi pi-info-circle text-gray-400" [pTooltip]="req.declineReason"></i>
+                 @if (req.message) {
+                   <i class="pi pi-info-circle text-gray-400" [pTooltip]="req.message" tooltipPosition="left"></i>
+                 } @else {
+                   <span class="text-gray-300">-</span>
                  }
               </td>
             </tr>

@@ -103,7 +103,7 @@ sortBy: SortBy= 'date';
       }
     
       get pendingCount(): number {
-        return this.pendingPickups.length;
+        return this.filteredAndSortedPickups.length;
       }
     
       get dueTodayCount(): number {
@@ -211,7 +211,7 @@ sortBy: SortBy= 'date';
               inventoryNumber: p.invNumber || p.item?.invNumber || '-',
               pickupDate: p.confirmedPickup?.split('T')[0],
               pickupTime: p.confirmedPickup?.split('T')[1]?.substring(0, 5),
-              campus: 'Esslingen',
+              campus: 'Campus Esslingen Stadtmitte',
               confirmedDate: p.createdAt
             }));
           },

@@ -1,10 +1,10 @@
 <p-toast></p-toast>
 
 <div class="p-8 max-w-6xl mx-auto bg-[#f8f8f9] min-h-[70vh]">
+
   <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
     <div class="flex items-center gap-3">
-      
       <div>
         <h1 class="text-xl sm:text-2xl font-semibold text-[#253359]">
           Ausleih-Übersicht
@@ -16,59 +16,61 @@
     </div>
   </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-              <i class="pi pi-check-circle text-green-600 text-xl"></i>
-            </div>
-            <div>
-              <p class="text-2xl font-semibold text-slate-900">{{ activeCount }}</p>
-              <p class="text-xs text-gray-600">Aktive Ausleihen</p>
-            </div>
-          </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
         </div>
-    
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-              <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
-            </div>
-            <div>
-              <p class="text-2xl font-semibold text-slate-900">{{ overdueCount }}</p>
-              <p class="text-xs text-gray-600">Überfällig</p>
-            </div>
-          </div>
-        </div>
-    
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-              <i class="pi pi-clock text-orange-600 text-xl"></i>
-            </div>
-            <div>
-              <p class="text-2xl font-semibold text-slate-900">{{ dueTodayCount }}</p>
-              <p class="text-xs text-gray-600">Heute fällig</p>
-            </div>
-          </div>
-        </div>
-    
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-              <i class="pi pi-box text-blue-600 text-xl"></i>
-            </div>
-            <div>
-              <p class="text-2xl font-semibold text-slate-900">{{ pendingCount }}</p>
-              <p class="text-xs text-gray-600">Ausstehend</p>
-            </div>
-          </div>
+        <div>
+          <p class="text-2xl font-semibold text-slate-900">{{ activeCount }}</p>
+          <p class="text-xs text-gray-600">Aktive Ausleihen</p>
         </div>
       </div>
-        <!-- Filter -->
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center shrink-0">
+          <i class="pi pi-exclamation-triangle text-red-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-semibold text-slate-900">{{ overdueCount }}</p>
+          <p class="text-xs text-gray-600">Überfällig</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+          <i class="pi pi-clock text-orange-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-semibold text-slate-900">{{ dueTodayCount }}</p>
+          <p class="text-xs text-gray-600">Heute fällig</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+          <i class="pi pi-box text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-2xl font-semibold text-slate-900">{{ pendingCount }}</p>
+          <p class="text-xs text-gray-600">Ausstehend</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter -->
   <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
       <!-- Search -->
       <div class="relative lg:col-span-2">
         <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -91,6 +93,7 @@
         styleClass="w-full"
       ></p-select>
 
+      <!-- Sortierung -->
       <p-select
         [(ngModel)]="sortBy"
         [options]="sortOptions"
@@ -101,6 +104,7 @@
       ></p-select>
     </div>
   </div>
+
   <!-- Tabs -->
   <div class="bg-white border border-gray-200 rounded-lg">
     <!-- Tab Header -->
@@ -127,46 +131,47 @@
         </button>
       </div>
     </div>
-      <!-- ACTIVE -->
-      @if (tab === 'active') {
-        <div>
-          <div class="p-4 sm:p-6">
-            <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Aktive Ausleihen</h2>
-            <p class="text-xs sm:text-sm text-gray-600">
-              Übersicht aller aktuell ausgeliehenen Geräte
-            </p>
-          </div>
-          
+
+    <!-- ACTIVE -->
+    @if (tab === 'active') {
+      <div>
+        <div class="p-4 sm:p-6">
+          <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Aktive Ausleihen</h2>
+          <p class="text-xs sm:text-sm text-gray-600">
+            Übersicht aller aktuell ausgeliehenen Geräte
+          </p>
+        </div>
+
         <!-- Desktop Table -->
         <div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
-            <p-table [value]="filteredAndSortedLoans" [tableStyle]="{ 'min-width': '60rem' }">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>Status</th>
-                  <th>Student</th>
-                  <th>Gerät</th>
-                  <th>Inventar-Nr.</th>
-                  <th>Ausgeliehen</th>
-                  <th>Rückgabe fällig</th>
-                  <th>Campus</th>
-                  <th>Aktion</th>
-                </tr>
-              </ng-template>
-  
-              <ng-template pTemplate="body" let-loan>
-                <tr [ngClass]="loan.status === 'overdue' ? 'bg-red-50' : ''">
-                  <td>
-                    @if (loan.status === 'overdue') {
-                      <p-tag
-                        [value]="(loan.daysOverdue || 0) + ' Tag(e) überfällig'"
-                        styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
-                      ></p-tag> 
-                    } @else {
-                      <p-tag
-                        value="Aktiv"
-                        styleClass="bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
-                      ></p-tag>
-                    }
+          <p-table [value]="filteredAndSortedLoans" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Status</th>
+                <th>Student</th>
+                <th>Gerät</th>
+                <th>Inventar-Nr.</th>
+                <th>Ausgeliehen</th>
+                <th>Rückgabe fällig</th>
+                <th>Campus</th>
+                <th>Aktion</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-loan>
+              <tr [ngClass]="loan.status === 'overdue' ? 'bg-red-50' : ''">
+                <td>
+                  @if (loan.status === 'overdue') {
+                    <p-tag
+                      [value]="(loan.daysOverdue || 0) + ' Tag(e) überfällig'"
+                      styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                    ></p-tag>
+                  } @else {
+                    <p-tag
+                      value="Aktiv"
+                      styleClass="bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                    ></p-tag>
+                  }
                 </td>
 
                 <td>
@@ -221,75 +226,199 @@
             </ng-template>
           </p-table>
         </div>
-         <!-- Aktive Ausleihen -->
-         <div class="lg:hidden space-y-3 p-4">
-            @for (loan of filteredAndSortedLoans; track loan.id) {
-              <div
-                class="border rounded-lg p-4"
-                [ngClass]="loan.status === 'overdue' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'"
-              >
-                <div class="flex items-start justify-between gap-3 mb-3">
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-user text-gray-500"></i>
-                      <span class="font-medium text-slate-900">{{ loan.studentName }}</span>
-                    </div>
-                    <p class="text-sm text-gray-600">{{ loan.studentId }}</p>
+
+        <!-- Aktive Ausleihen (Mobile Cards) -->
+        <div class="lg:hidden space-y-3 p-4">
+          @for (loan of filteredAndSortedLoans; track loan.id) {
+            <div
+              class="border rounded-lg p-4"
+              [ngClass]="loan.status === 'overdue' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'"
+            >
+              <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-user text-gray-500"></i>
+                    <span class="font-medium text-slate-900">{{ loan.studentName }}</span>
                   </div>
-  
-                  @if (loan.status === 'overdue') {
-                    <p-tag
-                      [value]="(loan.daysOverdue || 0) + 'd überfällig'"
-                      styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
-                    ></p-tag>
-                  } @else {
-                    <p-tag
-                      value="Aktiv"
-                      styleClass="bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
-                    ></p-tag>
-                  }
+                  <p class="text-sm text-gray-600">{{ loan.studentId }}</p>
                 </div>
-  
-                <div class="bg-white rounded-lg p-3 space-y-2 text-sm mb-3">
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-gray-600">Gerät:</span>
-                    <span class="font-medium text-slate-900 text-right">{{ loan.deviceName }}</span>
-                  </div>
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-gray-600">Inventar-Nr.:</span>
-                    <code class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ loan.inventoryNumber }}</code>
-                  </div>
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-gray-600">Ausgeliehen:</span>
-                    <span class="text-slate-900">{{ formatDate(loan.borrowedDate) }}</span>
-                  </div>
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-gray-600">Rückgabe:</span>
-                    <span [ngClass]="loan.status === 'overdue' ? 'font-semibold text-red-600' : 'text-slate-900'">
-                      {{ formatDate(loan.dueDate) }}
-                    </span>
-                  </div>
-                  <div class="flex items-center justify-between gap-3">
-                    <span class="text-gray-600">Campus:</span>
-                    <span class="inline-flex items-center gap-2 text-slate-900">
-                      <i class="pi pi-map-marker text-gray-500"></i>
-                      {{ campusShort(loan.campus) }}
-                    </span>
-                  </div>
-                </div>
-  
-                <button
-                  pButton
-                  type="button"
-                  class="w-full bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
-                  (click)="processReturn(loan.id)"
-                >
-                  Rückgabe verarbeiten
-                </button>
+
+                @if (loan.status === 'overdue') {
+                  <p-tag
+                    [value]="(loan.daysOverdue || 0) + 'd überfällig'"
+                    styleClass="bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                  ></p-tag>
+                } @else {
+                  <p-tag
+                    value="Aktiv"
+                    styleClass="bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                  ></p-tag>
+                }
               </div>
-            }
-  
-          </div>
+
+              <div class="bg-white rounded-lg p-3 space-y-2 text-sm mb-3">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-gray-600">Gerät:</span>
+                  <span class="font-medium text-slate-900 text-right">{{ loan.deviceName }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-gray-600">Inventar-Nr.:</span>
+                  <code class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ loan.inventoryNumber }}</code>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-gray-600">Ausgeliehen:</span>
+                  <span class="text-slate-900">{{ formatDate(loan.borrowedDate) }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-gray-600">Rückgabe:</span>
+                  <span [ngClass]="loan.status === 'overdue' ? 'font-semibold text-red-600' : 'text-slate-900'">
+                    {{ formatDate(loan.dueDate) }}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-gray-600">Campus:</span>
+                  <span class="inline-flex items-center gap-2 text-slate-900">
+                    <i class="pi pi-map-marker text-gray-500"></i>
+                    {{ campusShort(loan.campus) }}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                pButton
+                type="button"
+                class="w-full bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
+                (click)="processReturn(loan.id)"
+              >
+                Rückgabe verarbeiten
+              </button>
+            </div>
+          }
         </div>
-      }
-  
+      </div>
+    }
+
+    <!-- PENDING -->
+    @if (tab === 'pending') {
+      <div>
+        <div class="p-4 sm:p-6">
+          <h2 class="text-base sm:text-lg font-semibold text-[#253359]">Ausstehende Abholungen</h2>
+          <p class="text-xs sm:text-sm text-gray-600">
+            Geräte, die zur Abholung bereitstehen (Bestätigt)
+          </p>
+        </div>
+
+        <!-- Desktop Table -->
+        <div class="hidden lg:block px-4 sm:px-6 pb-6 overflow-x-auto">
+          <p-table [value]="filteredAndSortedPickups" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Status</th>
+                <th>Student</th>
+                <th>Gerät</th>
+                <th>Inventar-Nr.</th>
+                <th>Abholtermin</th>
+                <th>Campus</th>
+                <th>Aktion</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-pickup>
+              <tr>
+                <td>
+                  <p-tag
+                    value="Bereit"
+                    styleClass="bg-blue-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap"
+                  ></p-tag>
+                </td>
+
+                <td>
+                  <div>
+                    <p class="font-medium text-slate-900">{{ pickup.studentName }}</p>
+                    <p class="text-sm text-gray-600">{{ pickup.studentId }}</p>
+                  </div>
+                </td>
+
+                <td class="text-slate-900">{{ pickup.deviceName }}</td>
+
+                <td>
+                  <code class="bg-gray-100 px-2 py-1 rounded text-sm">
+                    {{ pickup.inventoryNumber }}
+                  </code>
+                </td>
+
+                <td>
+                  <div class="flex flex-col">
+                    <span class="font-medium text-slate-900">{{ pickup.pickupDate }}</span>
+                    <span class="text-xs text-gray-500">{{ pickup.pickupTime }} Uhr</span>
+                  </div>
+                </td>
+
+                <td class="text-slate-900">
+                  <span class="inline-flex items-center gap-2">
+                    <i class="pi pi-map-marker text-gray-500"></i>
+                    <span class="whitespace-nowrap">{{ campusShort(pickup.campus) }}</span>
+                  </span>
+                </td>
+
+                <td>
+                  <button
+                    pButton
+                    type="button"
+                    label="Ausgabe"
+                    class="bg-green-600 border-green-600 hover:bg-green-700"
+                    (click)="processPickup(pickup.id)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7" class="text-center text-gray-500 py-8">
+                  Keine anstehenden Abholungen gefunden
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Ausstehende Abholungen-->
+        <div class="lg:hidden space-y-3 p-4">
+          @for (pickup of filteredAndSortedPickups; track pickup.id) {
+            <div class="border border-gray-200 bg-white rounded-lg p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-user text-gray-500"></i>
+                  <span class="font-medium text-slate-900">{{ pickup.studentName }}</span>
+                </div>
+                <p-tag value="Bereit" styleClass="bg-blue-600 text-white text-xs"></p-tag>
+              </div>
+
+              <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm mb-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Gerät:</span>
+                  <span class="text-slate-900 font-medium text-right">{{ pickup.deviceName }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Termin:</span>
+                  <span class="text-slate-900">{{ pickup.pickupDate }} - {{ pickup.pickupTime }}</span>
+                </div>
+              </div>
+
+              <button
+                pButton
+                type="button"
+                class="w-full bg-green-600 border-green-600"
+                (click)="processPickup(pickup.id)"
+              >
+                Ausgabe bestätigen
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

@@ -49,6 +49,7 @@ export interface Product {
   // IDs für Beziehungen (falls nicht expandiert)
   categoryId?: number;
   locationId?: number;
+  locationRoomNr?: string;
 
   // Availability (Item Counts für Verfügbarkeitsanzeige)
   availableItemCount?: number;  // Anzahl verfügbarer Items

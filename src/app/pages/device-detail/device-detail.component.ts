@@ -10,6 +10,7 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
+import { CartService } from '../../services/cart.service';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
@@ -47,7 +48,7 @@ interface Device {
     accessories?: string[];
   };
   loanConditions: {
-    loanPeriod: string;
+    maxLendingDays: string;
     extensions: string;
     notes: string;
   };
@@ -81,6 +82,7 @@ export class DeviceDetailPageComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private locationService = inject(LocationService);
   private primeng = inject(PrimeNG);
+  private cartService = inject(CartService);
 
   // --- State ---
   public device: Device | undefined;
@@ -90,19 +92,19 @@ export class DeviceDetailPageComponent implements OnInit {
   public flandernstrasseData: Device['campusAvailability'][0] | undefined;
 
   public selectedCampus: string = '';
-  public pickupDate: Date | undefined;
-  public pickupTime: string = '';
 
-  // --- UI Configuration ---
-  public minDate: Date = (() => {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    return date;
-  })();
+  public pickupDate: Date = new Date();
+  public returnDate: Date = new Date();
+  public pickupTime: string = '';
+  public addedToCart = false;
+
+  public earliestPickupDate: Date = new Date();
+  public latestPickupDate: Date = new Date();
+
+  public earliestReturnDate: Date = new Date();
+  public latestReturnDate: Date = new Date;
 
   ngOnInit(): void {
-    // Deutsche Lokalisierung für den DatePicker
-    this.setupGermanLocale();
 
     // Device-ID aus der URL holen
     const deviceId = this.route.snapshot.paramMap.get('id');
@@ -110,6 +112,16 @@ export class DeviceDetailPageComponent implements OnInit {
     if (deviceId) {
       this.loadDevice(Number(deviceId));
     }
+    // Daten auf heute setzen
+    const today = this.setHoursToZero(new Date());
+
+    this.earliestPickupDate = today;  // Abholung frühestens heute
+    this.earliestReturnDate = this.addDays(today, 1); // Rückgabe frühestens morgen
+
+    this.latestPickupDate = this.addDays(today, 180); // Maximal halbes Jahr im Voraus ausleihbar
+    this.latestReturnDate = this.addDays(today, 180);
+     // Deutsche Lokalisierung für den DatePicker
+    this.setupGermanLocale();
   }
 
   // Lade Produkt vom Backend
@@ -215,7 +227,7 @@ export class DeviceDetailPageComponent implements OnInit {
 
       // Ausleihbedingungen
       loanConditions: {
-        loanPeriod: `${product.expiryDate} Tage`,
+        maxLendingDays: `${product.expiryDate} Tage`,
         extensions: 'Maximal 2 Verlängerungen möglich',
         notes: 'Rechtzeitige Rückgabe erforderlich'
       },
@@ -234,6 +246,46 @@ export class DeviceDetailPageComponent implements OnInit {
       return [];
     }
   }
+
+    onAddToCart(): void {
+    if (!this.device || !this.pickupDate || !this.returnDate) return;
+
+    // Füge Item zu lokalem Warenkorb hinzu und überprüfe auf Erfolg
+    if(this.cartService.addItem(
+      this.device.id,
+      this.pickupDate,
+      this.returnDate
+    )) {
+      this.addedToCart = true;
+    } else {
+      this.addedToCart = false;
+    }
+  }
+
+  public onSelectPickupDate(date: Date, device: Device) {
+    if (!date) {
+      return;
+    }
+
+    const pickupDate = this.setHoursToZero(date);
+    this.earliestReturnDate = this.addDays(pickupDate, 1); // Rückgabe muss frühestens einen Tag nach nach Ausleihe sein
+    this.latestReturnDate = this.addDays(pickupDate, parseInt(device.loanConditions.maxLendingDays));  // Rückgabe darf spätestens zum Ende des maximalen Ausleihzeitraums sein
+    this.returnDate = this.latestReturnDate; // In Auswahlfenster Rückgabezeitpunkt automatisch auf spätestmögliches Datum setzen
+  }
+
+  private setHoursToZero(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+
 
   // Navigiert zur vorherigen Seite zurück
   onBack(): void {

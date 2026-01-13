@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { OnInit } from '@angular/core';
+import { BookingService } from '../../services/booking.service';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -59,9 +61,13 @@ interface PendingPickup {
     providers: [MessageService],
     templateUrl: './admin-loan-dashboard.component.html',
   })
-  export class AdminLoanDashboardComponent {
+  export class AdminLoanDashboardComponent implements OnInit {
     private readonly messageService = inject(MessageService);
+    private readonly bookingService = inject(BookingService);
 
+    ngOnInit(){
+      this.loadData();
+    }
 // UI state
 tab: ViewTab = 'active';
 searchQuery = '';
@@ -173,31 +179,85 @@ sortBy: SortBy= 'date';
       campusShort(campus: string): string {
         return campus.replace('Campus Esslingen ', '').replace('Campus ', '');
       }
-      //Actions (Mock)
-  processReturn(id: string) {
-    const loan = this.activeLoans.find(l => l.id === id);
-    if (!loan) return;
-
-    this.activeLoans = this.activeLoans.filter(l => l.id !== id);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Rückgabe verbucht',
-      detail: `${loan.deviceName} (${loan.inventoryNumber})`,
-    });
-  }
-
-  processPickup(id: string) {
-    const pickup = this.pendingPickups.find(p => p.id === id);
-    if (!pickup) return;
-
-    this.pendingPickups = this.pendingPickups.filter(p => p.id !== id);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Ausgabe bestätigt',
-      detail: `${pickup.deviceName} (${pickup.inventoryNumber})`,
-    });
-  }
-
-} 
+      
+      loadData() {
+        this.bookingService.getBookings('picked_up').subscribe({
+          next: (bookings: any[]) => {
+            this.activeLoans = bookings.map(b => ({
+              id: b.id.toString(),
+              studentName: b.userName || b.user?.name || 'Unbekannt',
+              studentId: b.userId?.toString() || b.user?.matrikelNr || '',
+              studentEmail: b.user?.email || '',
+              deviceName: b.productName || b.item?.product?.name || 'Gerät',
+              inventoryNumber: b.invNumber || b.item?.invNumber || '-',
+              borrowedDate: b.distributionDate,
+              dueDate: b.endDate,
+              campus: 'Esslingen', 
+              status: new Date(b.endDate) < new Date() ? 'overdue' : 'active',
+              daysOverdue: this.calculateOverdueDays(b.endDate)
+            }));
+          },
+          error: (err: any) => console.error('Fehler beim Laden der Ausleihen:', err)
+        });
+    
+        this.bookingService.getBookings('confirmed').subscribe({
+          next: (bookings: any[]) => {
+            this.pendingPickups = bookings.map(p => ({
+              id: p.id.toString(),
+              studentName: p.userName || p.user?.name || 'Unbekannt',
+              studentId: p.userId?.toString() || p.user?.matrikelNr || '',
+              studentEmail: p.user?.email || '',
+              deviceName: p.productName || p.item?.product?.name || 'Gerät',
+              inventoryNumber: p.invNumber || p.item?.invNumber || '-',
+              pickupDate: p.confirmedPickup?.split('T')[0],
+              pickupTime: p.confirmedPickup?.split('T')[1]?.substring(0, 5),
+              campus: 'Esslingen',
+              confirmedDate: p.createdAt
+            }));
+          },
+          error: (err: any) => console.error('Fehler beim Laden der Abholungen:', err)
+        });
+      }
+    
+      private calculateOverdueDays(dueDate: string): number {
+        const due = new Date(dueDate);
+        const now = new Date();
+        if (due >= now) return 0;
+        const diff = now.getTime() - due.getTime();
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+      }
+    
+      processReturn(id: string) {
+        this.bookingService.recordReturn(Number(id)).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Rückgabe verbucht',
+              detail: 'Das Gerät ist nun wieder verfügbar.',
+            });
+            this.loadData();
+          },
+          error: (err: any) => {
+            console.error('Fehler bei Rückgabe:', err);
+            this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Rückgabe fehlgeschlagen' });
+          }
+        });
+      }
+    
+      processPickup(id: string) {
+        this.bookingService.recordPickup(Number(id)).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Ausgabe bestätigt',
+              detail: 'Der Status wurde auf Ausgeliehen gesetzt.',
+            });
+            this.loadData();
+          },
+          error: (err: any) => {
+            console.error('Fehler bei Ausgabe:', err);
+            this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Ausgabe fehlgeschlagen' });
+          }
+        });
+      }
+    } 

@@ -85,30 +85,6 @@ sortBy: SortBy= 'date';
   activeLoans: ActiveLoan[] = [];
 
   pendingPickups: PendingPickup[] = [
-    {
-      id: 'PP-001',
-      studentName: 'Tim Hoffmann',
-      studentId: 'ST-901234',
-      studentEmail: 'tim.hoffmann@hs-esslingen.de',
-      deviceName: 'HTC Vive Pro 2',
-      inventoryNumber: 'VR-102',
-      pickupDate: '2024-10-17',
-      pickupTime: '10:00-14:00',
-      campus: 'Campus Esslingen Flandernstraße',
-      confirmedDate: '2024-10-15'
-    },
-    {
-      id: 'PP-002',
-      studentName: 'Nina Hoffmann',
-      studentId: 'ST-012345',
-      studentEmail: 'nina.hoffmann@hs-esslingen.de',
-      deviceName: 'Sony ZV-E10',
-      inventoryNumber: 'K-678',
-      pickupDate: '2024-10-18',
-      pickupTime: '14:00-18:00',
-      campus: 'Campus Esslingen Stadtmitte',
-      confirmedDate: '2024-10-16'
-    }
   ];
 
 //Stats

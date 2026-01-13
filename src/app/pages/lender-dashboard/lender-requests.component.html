@@ -205,53 +205,53 @@
     }
   </div>
 
-  <p-dialog 
-    header="Anfrage ablehnen" 
-    [(visible)]="isDeclineDialogOpen" 
-    [modal]="true" 
-    [style]="{ width: '400px' }"
-    [draggable]="false" 
-    [resizable]="false"
-  >
-    @if (selectedRequest) {
-      <div class="flex flex-col gap-4">
-        <p class="text-sm text-gray-600">
-          Möchten Sie die Anfrage von <strong>{{ selectedRequest.studentName }}</strong> für 
-          <strong>{{ selectedRequest.productName }}</strong> wirklich ablehnen?
-        </p>
+  <p-dialog
+  header="Anfrage ablehnen"
+  [(visible)]="isDeclineDialogOpen"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  @if (selectedRequest) {
+    <div class="flex flex-col gap-4">
+      <p class="text-sm text-gray-600">
+        Möchten Sie die Anfrage von <strong>{{ selectedRequest.studentName }}</strong> für
+        <strong>{{ selectedRequest.productName }}</strong> wirklich ablehnen?
+      </p>
 
-        <div class="flex flex-col gap-2">
-            <label for="reason" class="text-sm font-medium text-gray-700">Grund (optional)</label>
-            <textarea 
-                id="reason"
-                rows="3" 
-                class="w-full p-2 border border-gray-300 rounded text-sm"
-                [(ngModel)]="declineReason"
-                placeholder="z.B. Gerät ist in Wartung..."
-            ></textarea>
-        </div>
-
-        @if (declineError) {
-            <small class="text-red-600">{{ declineError }}</small>
-        }
+      <div class="flex flex-col gap-2">
+        <label for="reason" class="text-sm font-medium text-gray-700">Grund</label>
+        <textarea
+          id="reason"
+          rows="3"
+          class="w-full p-2 border border-gray-300 rounded text-sm"
+          [(ngModel)]="declineReason"
+          placeholder="z.B. Gerät ist in Wartung..."
+        ></textarea>
       </div>
 
-      <ng-template pTemplate="footer">
-        <button 
-            pButton 
-            type="button" 
-            label="Abbrechen" 
-            class="p-button-text" 
-            (click)="closeDecline()"
-        ></button>
-        <button 
-            pButton 
-            type="button" 
-            label="Ablehnen bestätigen" 
-            class="p-button-danger" 
-            (click)="confirmDecline()"
-        ></button>
-      </ng-template>
-    }
-  </p-dialog>
+      @if (declineError) {
+        <small class="text-red-600">{{ declineError }}</small>
+      }
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Abbrechen"
+      class="p-button-text"
+      (click)="closeDecline()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Ablehnen bestätigen"
+      class="p-button-danger"
+      [disabled]="!selectedRequest"
+      (click)="confirmDecline()"
+    ></button>
+  </ng-template>
+</p-dialog>
 </div>

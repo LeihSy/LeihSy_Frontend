@@ -76,7 +76,7 @@ export class LenderRequestsComponent implements OnInit {
 
   // --- DATEN LADEN ---
   loadData() {
-    this.bookingService.getBookingsByLenderId(6, true).subscribe({
+    this.bookingService.getPendingBookings().subscribe({
       next: (data: any[]) => {
         this.requests = data.map(b => ({
           id: b.id,

@@ -26,13 +26,15 @@ import { SecondaryButtonComponent } from '../../buttons/secondary-button/seconda
             icon="pi pi-chart-bar"
             label="Statistiken"
             routerLink="/admin/bookings/statistics"
-            tooltip="Zu den Statistiken">
+            tooltip="Zu den Statistiken"
+            color="custom">
           </app-secondary-button>
           <app-secondary-button
             icon="pi pi-refresh"
             label="Aktualisieren"
             (buttonClick)="onRefresh()"
-            tooltip="Daten neu laden">
+            tooltip="Daten neu laden"
+            color="custom">
           </app-secondary-button>
         </div>
       </div>

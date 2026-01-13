@@ -26,27 +26,23 @@ export class LenderItemsService {
   private messageService = inject(MessageService);
   private router = inject(Router);
 
-  // Signals for state management
   items = signal<Item[]>([]);
   products = signal<Product[]>([]);
   currentUser = signal<User | null>(null);
   isLoading = signal(false);
   searchQuery = signal('');
 
-  // Computed: Filter items by lender and create product groups
   productsWithItems = computed(() => {
     const products = this.products();
     const items = this.items();
     const currentUser = this.currentUser();
     const query = this.searchQuery().toLowerCase().trim();
 
-    // Filter items - nur für den aktuellen Verleiher
     let filteredItems = items;
     if (currentUser) {
       filteredItems = items.filter(item => item.lenderId === currentUser.id);
     }
 
-    // Create product groups with filtered items
     let productGroups = products
       .map(product => {
         const productItems = filteredItems.filter(item => item.productId === product.id);
@@ -64,7 +60,6 @@ export class LenderItemsService {
       })
       .filter(pg => pg.totalCount > 0);
 
-    // Search filter
     if (query) {
       productGroups = productGroups.filter(pg =>
         pg.product.name.toLowerCase().includes(query) ||
@@ -76,7 +71,6 @@ export class LenderItemsService {
     return productGroups;
   });
 
-  // Computed stats
   totalItems = computed(() => {
     return this.productsWithItems().reduce((sum, pg) => sum + pg.totalCount, 0);
   });

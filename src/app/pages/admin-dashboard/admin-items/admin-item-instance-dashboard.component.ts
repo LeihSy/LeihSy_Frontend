@@ -45,21 +45,22 @@ export class AdminItemInstanceComponent implements OnInit {
   private pageService = inject(AdminItemInstanceDashboardService);
 
   itemColumns: ColumnDef[] = [
+    { field: 'id', header: 'Item ID', sortable: true, width: '100px' },
     { field: 'invNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
     { field: 'owner', header: 'Besitzer', sortable: true },
     { field: 'lenderDisplay', header: 'Verleiher', sortable: true },
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use page-page-page-page-services signals
+  // Use page-service signals
   allItems = this.pageService.items;
   allProducts = this.pageService.products;
   isLoading = this.pageService.isLoading;
+  userIdToNameMap = this.pageService.userIdToNameMap;
 
   // Local component signals
   searchQuery = signal('');
   expandedProductIds = signal<Set<number>>(new Set());
-  userIdToNameMap = signal<Map<number, string>>(new Map());
 
   ngOnInit(): void {
     this.loadProducts();

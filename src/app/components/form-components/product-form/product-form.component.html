@@ -19,14 +19,22 @@
               </app-form-input-field>
 
               <app-form-input-field label="Kategorie" [required]="true" [fullWidth]="true">
-                <p-select
-                  [options]="categories"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Kategorie wählen"
-                  formControlName="categoryId"
-                  class="w-full">
-                </p-select>
+                <div class="flex gap-2 w-full">
+                  <p-select
+                    [options]="categories"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Kategorie wählen"
+                    formControlName="categoryId"
+                    class="flex-1">
+                  </p-select>
+                  <app-icon-button
+                    icon="pi pi-plus"
+                    tooltip="Neue Kategorie erstellen"
+                    color="primary"
+                    (buttonClick)="navigateToCreateCategory()">
+                  </app-icon-button>
+                </div>
                 @if (categories.length === 0) {
                   <app-validation-message
                     [message]="'Keine Kategorien verfügbar. Bitte Backend überprüfen oder Kategorien in der Datenbank anlegen.'"
@@ -107,33 +115,29 @@
             <app-form-row [columns]="2">
               <ng-container *ngIf="mode === 'admin'">
                 <app-form-input-field label="Raumnummer" [required]="true" [fullWidth]="true">
-                  <p-select
-                    [options]="locations"
-                    optionLabel="roomNr"
-                    optionValue="id"
-                    placeholder="Location wählen"
-                    formControlName="locationId"
-                    class="w-full"
-                    (onChange)="onLocationSelect($event)">
-                  </p-select>
+                  <div class="flex gap-2 w-full">
+                    <p-select
+                      [options]="locations"
+                      optionLabel="roomNr"
+                      optionValue="id"
+                      placeholder="Location wählen"
+                      formControlName="locationId"
+                      class="flex-1"
+                      (onChange)="onLocationSelect($event)">
+                    </p-select>
+                    <app-icon-button
+                      icon="pi pi-plus"
+                      tooltip="Neue Location erstellen"
+                      color="primary"
+                      (buttonClick)="navigateToCreateLocation()">
+                    </app-icon-button>
+                  </div>
                   @if (locations.length === 0) {
                     <app-validation-message
                       [message]="'Keine Standorte verfügbar. Bitte Standorte im System anlegen.'"
                       [isError]="true">
                     </app-validation-message>
                   }
-                </app-form-input-field>
-
-                <app-form-input-field label="Location ID" [fullWidth]="true">
-                  <p-inputNumber formControlName="locationId"
-                                 [useGrouping]="false"
-                                 class="w-full"
-                                 [disabled]="true"
-                                 placeholder="Wird automatisch gesetzt">
-                  </p-inputNumber>
-                  <app-validation-message
-                    [message]="'Wird automatisch aus der Auswahl ermittelt'">
-                  </app-validation-message>
                 </app-form-input-field>
               </ng-container>
             </app-form-row>
@@ -144,13 +148,12 @@
                 [label]="isEditMode ? 'Aktualisieren' : 'Erstellen'">
               </app-filled-button>
 
-              @if (isEditMode) {
-                <app-secondary-button
-                  label="Abbrechen"
-                  color="red"
-                  (buttonClick)="resetForm()">
-                </app-secondary-button>
-              }
+              <app-secondary-button
+                label="Abbrechen"
+                icon="pi pi-times"
+                color="red"
+                (buttonClick)="resetForm()">
+              </app-secondary-button>
             </div>
 
           </div>
@@ -163,7 +166,7 @@
                 <strong>Zusatzgegenstände:</strong>
                 Wählen Sie Produkte aus, die als „erforderlich“ oder „empfohlen“ angezeigt werden sollen.
               </p>
-            </div> 
+            </div>
             <!-- Suche -->
               <div class="relative">
               <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>

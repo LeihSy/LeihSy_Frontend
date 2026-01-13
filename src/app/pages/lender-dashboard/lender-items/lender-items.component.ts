@@ -38,7 +38,6 @@ import { PageHeaderComponent } from '../../../components/page-header/page-header
     PageHeaderComponent
   ],
   templateUrl: './lender-items.component.html',
-  styleUrls: ['./lender-items.component.scss'],
   providers: [MessageService, LenderItemsService]
 })
 export class LenderItemsComponent implements OnInit {

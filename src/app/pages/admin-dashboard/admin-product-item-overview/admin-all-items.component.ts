@@ -13,7 +13,7 @@ import { MessageService } from 'primeng/api';
 
 import { Item } from '../../../models/item.model';
 import { ColumnDef } from '../../../components/table/table.component';
-import { LenderItemsService } from './page-services/admin-product-item-overview.service';
+import { AdminAllItemsService } from './page-services/admin-all-items.service';
 import { LenderStatsCardsComponent, StatCard } from '../../../components/lender/lender-stats-cards.component';
 import { LenderProductItemListComponent } from '../../../components/lender/lender-product-item-list.component';
 import { SearchBarComponent } from '../../../components/search-bar/search-bar.component';
@@ -38,43 +38,40 @@ import { PageHeaderComponent } from '../../../components/page-header/page-header
     PageHeaderComponent
   ],
   templateUrl: './admin-all-items.component.html',
-  styleUrls: ['./admin-all-items.component.scss'],
-  providers: [MessageService, LenderItemsService]
+  providers: [MessageService, AdminAllItemsService]
 })
 export class AdminAllItemsComponent implements OnInit {
-  private lenderService = inject(LenderItemsService);
+  private pageService = inject(AdminAllItemsService);
 
-  // Spalten-Definition für die Item-Tabelle
   itemColumns: ColumnDef[] = [
     { field: 'invNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
     { field: 'owner', header: 'Besitzer', sortable: true },
     { field: 'availableLabel', header: 'Status', type: 'status', sortable: true, width: '120px' }
   ];
 
-  // Use page-page-page-page-services signals
-  currentUser = this.lenderService.currentUser;
-  isLoading = this.lenderService.isLoading;
-  productsWithItems = this.lenderService.productsWithItems;
+  currentUser = this.pageService.currentUser;
+  isLoading = this.pageService.isLoading;
+  productsWithItems = this.pageService.productsWithItems;
 
   // Computed stats cards
   statsCards = computed<StatCard[]>(() => [
     {
       label: 'Gesamt Gegenstände',
-      value: this.lenderService.totalItems(),
+      value: this.pageService.totalItems(),
       icon: 'pi-box',
       iconColor: 'text-[#000080]',
       valueColor: 'text-[#000080]'
     },
     {
       label: 'Verfügbar',
-      value: this.lenderService.totalAvailable(),
+      value: this.pageService.totalAvailable(),
       icon: 'pi-check-circle',
       iconColor: 'text-green-600',
       valueColor: 'text-green-600'
     },
     {
       label: 'Ausgeliehen',
-      value: this.lenderService.totalBorrowed(),
+      value: this.pageService.totalBorrowed(),
       icon: 'pi-clock',
       iconColor: 'text-red-600',
       valueColor: 'text-red-600'
@@ -82,15 +79,15 @@ export class AdminAllItemsComponent implements OnInit {
   ]);
 
   ngOnInit(): void {
-    this.lenderService.initialize();
+    this.pageService.initialize();
   }
 
   onSearchChange(value: string): void {
-    this.lenderService.updateSearchQuery(value);
+    this.pageService.updateSearchQuery(value);
   }
 
   onItemRowClick(item: Item): void {
-    this.lenderService.navigateToItemDetail(item.id);
+    this.pageService.navigateToItemDetail(item.id);
   }
 }
 

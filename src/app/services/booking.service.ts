@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Booking, BookingCreate } from '../models/booking.model';
 
 @Injectable({
@@ -22,6 +23,38 @@ export class BookingService {
       params = params.set('status', status);
     }
     return this.http.get<Booking[]>(this.apiUrl, { params });
+  }
+
+  // GET /api/bookings (Alle Buchungen inkl. cancelled und rejected abrufen)
+  getAllBookings(): Observable<Booking[]> {
+    // Rufe alle Status parallel ab und kombiniere die Ergebnisse
+    return forkJoin({
+      pending: this.getBookings('pending'),
+      confirmed: this.getBookings('confirmed'),
+      pickedUp: this.getBookings('picked_up'),
+      returned: this.getBookings('returned'),
+      cancelled: this.getBookings('cancelled'),
+      expired: this.getBookings('expired'),
+      rejected: this.getBookings('rejected')
+    }).pipe(
+      map(results => {
+        // Kombiniere alle Arrays zu einem einzigen Array
+        const allBookings = [
+          ...results.pending,
+          ...results.confirmed,
+          ...results.pickedUp,
+          ...results.returned,
+          ...results.cancelled,
+          ...results.expired,
+          ...results.rejected
+        ];
+
+        // Entferne Duplikate basierend auf ID und gib direkt zurück
+        return Array.from(
+          new Map(allBookings.map(booking => [booking.id, booking])).values()
+        );
+      })
+    );
   }
 
   // GET /api/bookings/{id} (Einzelne Buchung abrufen)

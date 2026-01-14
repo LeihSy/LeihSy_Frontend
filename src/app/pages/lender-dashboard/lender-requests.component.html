@@ -38,6 +38,7 @@
             [(ngModel)]="campusFilter" 
             optionLabel="label" 
             optionValue="value"
+            placeholder="Standort filtern"
             class="w-full sm:w-48"
         ></p-select>
 
@@ -162,6 +163,7 @@
               <th class="w-[25%]">Gerät</th>
               <th class="w-[20%]">Zeitraum</th>
               <th class="w-[15%]">Status</th>
+              <th class="w-[10%]">Campus</th>
               <th class="w-[15%] text-right">Info</th>
             </tr>
           </ng-template>
@@ -183,6 +185,11 @@
               <td>
                 <span [class]="statusTag(req).cls">
                   {{ statusTag(req).value }}
+                </span>
+              </td>
+              <td>
+                <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+                   {{ campusShort(req.campus) }}
                 </span>
               </td>
               <td class="text-right">

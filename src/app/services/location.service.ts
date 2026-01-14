@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Location } from '../models/location.model';
+import { LocationDTO } from '../models/location.model';
 
 @Injectable({
   providedIn: 'root'

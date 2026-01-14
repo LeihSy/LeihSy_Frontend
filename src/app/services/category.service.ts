@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Category } from '../models/category.model';
+import { LocationDTO } from '../models/location.model';
 
 @Injectable({
   providedIn: 'root'
@@ -35,4 +36,9 @@ export class CategoryService {
   deleteCategory(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  // GET (location)
+  getLocationsByCategory(categoryId: number): Observable<LocationDTO[]> {
+  return this.http.get<LocationDTO[]>(`${this.apiUrl}/${categoryId}/locations`);
+}
 }

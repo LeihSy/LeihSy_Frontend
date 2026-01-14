@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { OnInit } from '@angular/core';
 import { BookingService } from '../../services/booking.service';
+import { LocationService } from '../../services/location.service'; 
+import { LocationDTO } from '../../models/location.model';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -64,9 +66,14 @@ interface PendingPickup {
   export class AdminLoanDashboardComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly bookingService = inject(BookingService);
+    private readonly locationService = inject(LocationService);
+
+    activeLoans: ActiveLoan[] = [];
+    pendingPickups: PendingPickup[] = [];
 
     ngOnInit(){
       this.loadData();
+      this.loadLocations();
     }
 // UI state
 tab: ViewTab = 'active';
@@ -75,23 +82,16 @@ campusFilter = 'all';
 sortBy: SortBy= 'date';
 
 // Options (p-select)
-  campusOptions = [
-    { label: 'Alle Campus', value: 'all' },
-    { label: 'Flandernstraße', value: 'Campus Esslingen Flandernstraße' },
-    { label: 'Stadtmitte', value: 'Campus Esslingen Stadtmitte' },
-    { label: 'Göppingen', value: 'Campus Göppingen' },
-  ];
+campusOptions: any[] = [
+  { label: 'Alle Standorte', value: 'all' }
+];
 
   sortOptions = [
     { label: 'Nach Datum', value: 'date' },
     { label: 'Nach Student', value: 'student' },
     { label: 'Nach Gerät', value: 'device' },
   ];
-  //Mock-daten
-  activeLoans: ActiveLoan[] = [];
 
-  pendingPickups: PendingPickup[] = [
-  ];
 
 //Stats
     get overdueCount(): number {
@@ -175,8 +175,21 @@ sortBy: SortBy= 'date';
           year: 'numeric'
         });
       }
-    
+      loadLocations() {
+        this.locationService.getAllLocations().subscribe({
+          next: (locations: LocationDTO[]) => {
+       
+            const dbOptions = locations.map(loc => ({
+              label: loc.roomNr, 
+              value: loc.roomNr  
+            }));
+            this.campusOptions = [{ label: 'Alle Standorte', value: 'all' }, ...dbOptions];
+          },
+          error: (err) => console.error('Konnte Locations nicht laden', err)
+        });
+      }
       campusShort(campus: string): string {
+        if (!campus) return '-';
         return campus.replace('Campus Esslingen ', '').replace('Campus ', '');
       }
       
@@ -192,12 +205,14 @@ sortBy: SortBy= 'date';
               inventoryNumber: b.invNumber || b.item?.invNumber || b.itemInvNumber || '-',
               borrowedDate: b.distributionDate,
               dueDate: b.endDate,
-              campus: 'Esslingen', 
+              campus: b.roomNr || 'Unbekannt', 
               status: new Date(b.endDate) < new Date() ? 'overdue' : 'active',
               daysOverdue: this.calculateOverdueDays(b.endDate)
             }));
           },
-          error: (err: any) => console.error('Fehler beim Laden der Ausleihen:', err)
+          error: (err: any) => {console.error('Fehler beim Laden der Ausleihen:', err)
+          this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte Ausleihen nicht laden' });
+      }
         });
     
         this.bookingService.getBookings('confirmed').subscribe({
@@ -211,7 +226,7 @@ sortBy: SortBy= 'date';
               inventoryNumber: p.invNumber || p.item?.invNumber || p.itemInvNumber || '-',
               pickupDate: p.confirmedPickup?.split('T')[0],
               pickupTime: p.confirmedPickup?.split('T')[1]?.substring(0, 5),
-              campus: 'Campus Esslingen Stadtmitte',
+              campus: p.roomNr || 'Unbekannt',
               confirmedDate: p.createdAt
             }));
           },

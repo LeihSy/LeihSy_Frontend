@@ -11,8 +11,12 @@ import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
-import { BookingService } from '../../services/booking.service';
 import { TooltipModule } from 'primeng/tooltip';
+
+// Services & Models
+import { BookingService } from '../../services/booking.service';
+import { LocationService } from '../../services/location.service'; 
+import { Location } from '../../models/location.model'; 
 
 interface LenderRequest {
   id: number;
@@ -33,16 +37,17 @@ interface LenderRequest {
   standalone: true,
   imports: [
     CommonModule, FormsModule, ToastModule, ButtonModule, DialogModule,
-    TagModule, InputTextModule, SelectModule, TableModule,TooltipModule
+    TagModule, InputTextModule, SelectModule, TableModule, TooltipModule
   ],
   providers: [MessageService],
   templateUrl: './lender-requests.component.html'
 })
 export class LenderRequestsComponent implements OnInit {
   
-  // Services injecten
+  
   private bookingService = inject(BookingService);
   private messageService = inject(MessageService);
+  private locationService = inject(LocationService); 
 
   // UI State
   searchQuery = '';
@@ -51,13 +56,11 @@ export class LenderRequestsComponent implements OnInit {
   tab: 'pending' | 'done' = 'pending';
 
   requests: LenderRequest[] = []; 
+  locations: Location[] = []; // Liste der Standorte aus der DB
 
-  // Optionen für Dropdowns
-  campusOptions = [
-    { label: 'Alle Campus', value: 'all' },
-    { label: 'ES', value: 'Esslingen' },
-    { label: 'GO', value: 'Göppingen' }
-  ];
+  
+  campusOptions: any[] = [{ label: 'Alle Campus', value: 'all' }];
+  
   sortOptions = [
     { label: 'Neueste zuerst', value: 'newest' },
     { label: 'Älteste zuerst', value: 'oldest' },
@@ -71,31 +74,52 @@ export class LenderRequestsComponent implements OnInit {
   declineError = '';
 
   ngOnInit() {
+    this.loadLocations(); // Zuerst Standorte für die Filter laden
     this.loadData();
   }
 
+  // --- STANDORTE AUS DB LADEN ---
+  loadLocations() {
+    this.locationService.getAllLocations().subscribe({
+      next: (data: Location[]) => {
+        this.locations = data;
+        this.campusOptions = [
+          { label: 'Alle Campus', value: 'all' },
+          ...data.map(loc => ({ 
+            label: loc.roomNr, 
+            value: loc.roomNr 
+          }))
+        ];
+      },
+      error: (err: any) => console.error('Fehler beim Laden der Standorte', err)
+    });
+  }
+
   // --- DATEN LADEN ---
-  loadData() {
-    this.bookingService.getPendingBookings().subscribe({
-      next: (data: any[]) => {
-        this.requests = data.map(b => ({
+loadData() {
+  this.bookingService.getPendingBookings().subscribe({
+    next: (data: any[]) => {
+      this.requests = data.map(b => {
+  
+        const roomNrFromDb = b.roomNr || b.location?.roomNr || b.item?.location?.roomNr;
+
+        return {
           id: b.id,
           studentName: b.userName || b.user?.name || 'Unbekannt',
           studentId: b.user?.uniqueId || b.userId?.toString() || '', 
           productName: b.productName || b.item?.product?.name,
           inventoryNumber: b.invNumber || b.item?.invNumber,
-          campus: 'Esslingen', 
+          campus: roomNrFromDb || '-', 
           fromDate: b.startDate,
           toDate: b.endDate,
           status: b.status || 'PENDING',
           message: b.message
-        }));
-      },
-      error: (err: any) => console.error('Fehler beim Laden', err)
-    });
-  }
-
-
+        };
+      });
+    },
+    error: (err: any) => console.error('Fehler beim Laden', err)
+  });
+}
   pendingCount(): number {
     return this.requests.filter(r => r.status === 'PENDING').length;
   }
@@ -121,9 +145,8 @@ export class LenderRequestsComponent implements OnInit {
       );
     }
 
-    // Filter Campus
     if (this.campusFilter !== 'all') {
-      res = res.filter(r => this.campusShort(r.campus) === this.campusShort(this.campusFilter));
+      res = res.filter(r => r.campus === this.campusFilter);
     }
 
     // Sortierung
@@ -138,19 +161,19 @@ export class LenderRequestsComponent implements OnInit {
     return res;
   }
 
-  // --- ACTIONS (Backend Calls) ---
+  // --- ACTIONS ---
 
   accept(req: LenderRequest): void {
     if (req.status !== 'PENDING') return;
 
-    this.bookingService.confirmBooking(req.id,[]).subscribe({
+    this.bookingService.confirmBooking(req.id, []).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Anfrage genehmigt',
           detail: `${req.studentName} • ${req.productName}`
         });
-        this.loadData(); // Neu laden
+        this.loadData();
       },
       error: (err: any) => {
         this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht genehmigt werden.' });
@@ -158,7 +181,6 @@ export class LenderRequestsComponent implements OnInit {
     });
   }
 
-  // Dialog öffnen
   openDecline(req: LenderRequest): void {
     if (req.status !== 'PENDING') return;
     this.selectedRequest = req;
@@ -172,7 +194,6 @@ export class LenderRequestsComponent implements OnInit {
     this.selectedRequest = null;
   }
 
-  // Ablehnen im Backend
   confirmDecline(): void {
     if (!this.selectedRequest) return; 
 
@@ -187,7 +208,7 @@ export class LenderRequestsComponent implements OnInit {
           detail: 'Die Buchung wurde entfernt.'
         });
         this.closeDecline();
-        this.loadData(); // Neu laden
+        this.loadData();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht ablehnen.' });
@@ -201,7 +222,7 @@ export class LenderRequestsComponent implements OnInit {
     if (req.status === 'PENDING') {
       return { value: 'Offen', cls: 'bg-orange-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
     }
-    if (req.status === 'CONFIRMED' || req.status === 'accepted') { // Beides abfangen
+    if (req.status === 'CONFIRMED' || req.status === 'accepted') {
       return { value: 'Angenommen', cls: 'bg-green-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
     }
     return { value: 'Abgelehnt', cls: 'bg-red-600 text-white text-xs font-normal px-2 py-1 rounded whitespace-nowrap' };
@@ -218,9 +239,6 @@ export class LenderRequestsComponent implements OnInit {
 
   campusShort(campus: string): string {
     if (!campus) return '';
-    const c = campus.toLowerCase();
-    if (c.includes('esslingen')) return 'ES';
-    if (c.includes('göppingen') || c.includes('goeppingen')) return 'GO';
     return campus;
   }
 }

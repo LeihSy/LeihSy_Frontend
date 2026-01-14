@@ -18,15 +18,15 @@
             <div
               class="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded flex items-center justify-center text-xl sm:text-2xl shrink-0"
             >
-              {{ device?.category | deviceIcon }}
+              {{ device.category | deviceIcon }}
             </div>
 
             <div class="flex-1 min-w-0">
               <h1 class="text-lg font-semibold text-[#253359] mb-1">
-                {{ device?.name }}
+                {{ device.name }}
               </h1>
               <p class="text-sm sm:text-base text-gray-600 text-muted-foreground">
-                {{ device?.category }}
+                {{ device.category }}
               </p>
             </div>
 
@@ -35,9 +35,9 @@
 
           <div class="flex flex-wrap gap-2 mb-4 sm:mb-6">
             <p-tag
-              [value]="device?.availability?.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
+              [value]="device.availability.available! > 0 ? 'Verfügbar' : 'Ausgeliehen'"
               [class]="
-                (device?.availability?.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
+                (device.availability.available! > 0 ? 'bg-[#253359]' : 'bg-red-600') +
                 ' text-white text-xs sm:text-sm font-normal'
               "
             ></p-tag>
@@ -51,7 +51,7 @@
             <p
               class="text-xs sm:text-sm text-muted-foreground text-slate-800 leading-relaxed"
             >
-              {{ device?.description }}
+              {{ device.description }}
             </p>
           </div>
 
@@ -63,23 +63,23 @@
             <div
               class="bg-gray-100 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm"
             >
-              @if (device?.technicalSpecs?.storage) {
+              @if (device.technicalSpecs?.storage) {
               <div class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Speicher:
                 </span>
                 <span class="text-slate-800">
-                  {{ device?.technicalSpecs?.storage }}
+                  {{ device.technicalSpecs?.storage }}
                 </span>
               </div>
               }
-              @if (device?.technicalSpecs?.sensor) {
+              @if (device.technicalSpecs?.sensor) {
               <div class="flex">
                 <span class="w-32 text-muted-foreground text-slate-800">
                   Sensor:
                 </span>
                 <span class="text-slate-800">
-                  {{ device?.technicalSpecs?.sensor }}
+                  {{ device.technicalSpecs?.sensor }}
                 </span>
               </div>
               }
@@ -92,8 +92,8 @@
               Enthaltenes Zubehör
             </h2>
             <div class="flex flex-wrap gap-2">
-              @if (device?.technicalSpecs?.accessories) {
-              @for (acc of device?.technicalSpecs?.accessories; track acc) {
+              @if (device.technicalSpecs?.accessories) {
+              @for (acc of device.technicalSpecs?.accessories; track acc) {
               <p-tag
                 [value]="acc"
                 class="text-slate-800 bg-gray-300 font-normal"
@@ -109,18 +109,25 @@
               Schlagwörter
             </h2>
             <div class="flex flex-wrap gap-2">
-              @if (device?.keywords) {
-              @for (keyword of device?.keywords; track keyword) {
-              <p-tag
-                [value]="keyword"
-                class="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
-              ></p-tag>
-              }
+              @if (device.keywords) {
+                @for (keyword of device.keywords; track keyword) {
+                <p-tag
+                  [value]="keyword"
+                  class="text-xs sm:text-sm bg-white text-slate-800 font-normal border border-slate-300 rounded"
+                ></p-tag>
+                }
               }
             </div>
           </div>
+          <div class="flex items-start gap-2 text-xs sm:text-sm">
+              <span class="shrink-0">📋</span>
+              <p class="text-muted-foreground text-[#253359]">
+                <strong>Nummer:</strong> {{ device.inventoryNumber }}
+                <strong>Nummer:</strong> {{ device.inventoryNumber }}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
       <!-- Ausleihbedingungen Card -->
       <div class="bg-white border border-gray-200 rounded-lg">
@@ -130,15 +137,15 @@
         <div class="space-y-3 text-xs sm:text-sm p-4 sm:p-6 text-slate-800">
           <div>
             <p class="text-muted-foreground text-[#253359]">Ausleihzeit:</p>
-            <p>{{ device?.loanConditions?.loanPeriod }}</p>
+            <p>{{ device.loanConditions.maxLendingDays }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-[#253359]">Verlängerungen:</p>
-            <p>{{ device?.loanConditions?.extensions }}</p>
+            <p>{{ device.loanConditions.extensions }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-[#253359]">Hinweis:</p>
-            <p>{{ device?.loanConditions?.notes }}</p>
+            <p>{{ device.loanConditions.notes }}</p>
           </div>
         </div>
       </div>
@@ -159,7 +166,7 @@
             <p class="text-xs sm:text-sm mb-2 text-slate-800">Gesamt:</p>
             <div class="flex items-center gap-2">
               <p-tag
-                [value]="(device?.availability?.available || 0) + ' Exemplare'"
+                [value]="(device.availability.available || 0) + ' Exemplare'"
                 class="bg-[#253359] text-white text-xs sm:text-sm font-normal"
               ></p-tag>
               <span class="text-xs sm:text-sm text-muted-foreground text-slate-800">
@@ -189,27 +196,45 @@
           class="border-t border-gray-100 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-5 space-y-3"
         >
           <div>
-            <label
-              for="pickupDate"
-              class="text-xs sm:text-sm mb-2 block text-slate-800"
-            >
-              Abholdatum
-            </label>
-
+            <label for="pickupDate" class="text-xs sm:text-sm mb-2 block text-slate-800">Abholdatum</label>
             <p-datepicker
               [(ngModel)]="pickupDate"
-              [minDate]="minDate"
+              [minDate]="earliestPickupDate"
+              [maxDate]="latestPickupDate"
               [showIcon]="true"
               inputId="pickupDate"
               class="w-full"
               dateFormat="dd.mm.yy"
+              (onSelect)="onSelectPickupDate(pickupDate, device)"
             ></p-datepicker>
           </div>
-
-          <app-filled-button
-            label="In den Warenkorb"
-            class="w-full text-xs sm:text-sm">
+          <div>
+            <label for="returnDate" class="text-xs sm:text-sm mb-2 block text-slate-800">Rückgabedatum</label>
+            <p-datepicker
+              [(ngModel)]="returnDate"
+              [minDate]="earliestReturnDate"
+              [maxDate]="latestReturnDate"
+              [showIcon]="true"
+              inputId="returnDate"
+              class="w-full pb-4"
+              dateFormat="dd.mm.yy"
+            ></p-datepicker>
+          </div>
+          @if(addedToCart) {
+            <app-filled-button
+              icon="pi pi-check"
+              label="Zum Warenkorb hinzugefügt"
+              class="w-full text-xs sm:text-sm mt-4">
           </app-filled-button>
+          }
+          @if(!addedToCart) {
+            <app-filled-button
+              icon="pi pi-shopping-cart"
+              label="Zum Warenkorb hinzufügen"
+              class="w-full text-xs sm:text-sm"
+              (click)="onAddToCart()">
+            </app-filled-button>
+          }
         </div>
       </div>
     </div>

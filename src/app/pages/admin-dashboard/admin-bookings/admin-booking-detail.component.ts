@@ -44,7 +44,6 @@ export class AdminBookingDetailComponent implements OnInit {
     private readonly pageService = inject(AdminBookingDetailPageService);
     private readonly messageService = inject(MessageService);
 
-  // Delegiere alle Signals an den Service
   get booking() { return this.pageService.booking; }
   get isLoading() { return this.pageService.isLoading; }
   get timelineEvents() { return this.pageService.timelineEvents; }

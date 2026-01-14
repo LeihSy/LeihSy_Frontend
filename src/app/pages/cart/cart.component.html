@@ -1,0 +1,111 @@
+<!-- Hauptcontainer für die Cart-Ansicht -->
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <!-- Kopfbereich mit Titel -->
+  <div class="mb-8 flex items-center gap-3">
+    <i class="pi pi-shopping-cart text-[#253359] text-3xl"></i>
+    <h1 class="mb-2 text-3xl text-[#253359] font-semibold flex items-center gap-2">Warenkorb</h1>
+    <span class="ml-2 inline-flex items-center justify-center bg-[#253359] text-white rounded-xl px-4 py-1 text-md self-center">
+        {{ cartService.cartCount() }}
+    </span>
+  </div>
+  @if(bookingsCreatedSuccessfully) {
+    <div class="mb-8 bg-white border border-gray-200 rounded-lg">
+      <div class="px-4 pb-4 pt-4 mb-1 flex flex-col items-center justify-center">
+        <i class="pi pi-check text-3xl text-red-600 py-2"></i>
+        <h3 class="text-xl font-semibold text-[#253359]">Ausleihanfrage(n) erfolgreich abgesendet!</h3>
+      </div>
+    </div>
+  }
+  <!-- Informationscontainer-->
+  @for (item of cartService.getItems(); track item.cartItemId) {
+    <div class="mb-8 bg-white border border-gray-200 rounded-lg">
+    <!-- Produktinfos -->
+    <div class="px-4 pt-4 mb-1 flex items-center justify-between">
+      <h3 class="text-3xl font-semibold text-[#253359]">{{ item.name }}</h3>
+      <button
+        pButton
+        class="bg-white !border-none !shadow-none hover:bg-gray-100 rounded-md"
+        (click)="onRemoveItem(item.cartItemId)"
+        title="Produkt entfernen"
+      >
+        <i class="pi pi-trash text-xl text-red-600"></i>
+      </button>
+    </div>
+    <p class="text-md text-gray-800 px-4">Inventarnummer {{ item.productId }}</p>
+    <span class="ml-4 mt-2 border border-gray-200 inline-flex items-center justify-center text-gray-800 rounded-xl px-1.5 py-0.5 text-md self-center">
+        Kategorie
+    </span>
+    <div class="border-t border-gray-200 mt-10 mb-8"></div>
+    <!-- Ausleihinfos -->
+    <div class="mb-8 flex items-start gap-3 px-4">
+      <i class="pi pi-map-marker text-[#253359] text-xl mt-1"></i>
+      <div>
+        <h3 class="text-xl font-semibold text-[#253359]">Abholort:</h3>
+        <p class="text-xl text-gray-800">Campus Esslingen Flandernstraße</p>
+        <p class="text-md text-gray-800">{{ item.location }}</p>
+      </div>
+    </div>
+    <div class="mb-8 flex items-start gap-3 px-4">
+      <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
+      <div>
+        <h3 class="text-xl font-semibold text-[#253359] pb-2">Ausleihzeitraum:</h3>
+        <p-datepicker
+          [ngModel]="[item.rentalPeriod.pickupDate, item.rentalPeriod.returnDate]"
+          (ngModelChange)="onRentalPeriodChange(item.cartItemId, item.productId, $event)"
+          selectionMode="range"
+          [showIcon]="true"
+          [dateFormat]="'dd.mm.yy'"
+          [minDate]="today"
+        ></p-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-blue-50 border border-gray-200 rounded-lg mx-4 mt-2 mb-6 px-4 pt-2 pb-3">
+      <h3 class="text-xl font-semibold text-[#253359]">Ausleihbedingungen:</h3>
+      <p class="text-l text-gray-800">Ausleihfrist: {{ item.maxLendingDays }} Tage</p>
+      <p class="text-l text-gray-800">Verlängerungen: Nach Verfügbarkeit</p>
+    </div>
+  </div>
+  }
+  <!-- Cart Bestätigungs Abschnitt -->
+  @if (cartService.cartCount()) {
+    <div class="bg-white border border-gray-200 rounded-lg mt-8 px-4">
+      <div class="bg-white mt-6 mb-6">
+        <h3 class="text-xl font-semibold text-[#253359]">Gesamtanzahl:</h3>
+        <p class="text-l text-gray-800">{{ cartService.cartCount() }} Produkt(e)</p>
+      </div>
+      <div class="mt-4 flex items-start gap-3">
+        <p-checkbox
+          [(ngModel)]="acceptedTerms"
+          binary="true"
+          inputId="acceptTerms"
+        ></p-checkbox>
+        <label for="acceptTerms" class="text-md text-gray-800 leading-snug cursor-pointer">
+          Ich akzeptiere die Ausleihbedingungen und verpflichte mich, den/die Artikel unbeschädigt, vollständig und rechtzeitig zurückzugeben.
+        </label>
+      </div>
+      <div class="my-8 flex gap-4">
+        <button
+          pButton
+          [label]="'Weiter suchen'"
+          class="border-gray-200 text-md sm:text-sm text-gray-800 flex-1"
+          [ngClass]="{
+            'bg-white hover:bg-gray-100': true
+          }"
+          (click)="onBackToCatalogClick()"
+        ></button>
+        <button
+          pButton
+          [label]="'Ausleihanfrage abschicken'"
+          class="border-gray-200 text-md sm:text-sm text-white flex-1"
+          [ngClass]="{
+            'bg-[#253359] hover:bg-blue-900': true
+          }"
+          (click)="onConfirmLendingClick()"
+          [disabled]="!acceptedTerms"
+        ></button>
+      </div>
+    </div>
+  }
+
+</div> 

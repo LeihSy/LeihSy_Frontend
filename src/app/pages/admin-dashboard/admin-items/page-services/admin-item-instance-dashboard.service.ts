@@ -1,11 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, of, forkJoin } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ItemService } from '../../../../services/item.service';
 import { ProductService } from '../../../../services/product.service';
+import { UserService } from '../../../../services/user.service';
 import { Item } from '../../../../models/item.model';
 import { Product } from '../../../../models/product.model';
 
@@ -13,6 +14,7 @@ import { Product } from '../../../../models/product.model';
 export class AdminItemInstanceDashboardService {
   private itemService = inject(ItemService);
   private productService = inject(ProductService);
+  private userService = inject(UserService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private router = inject(Router);
@@ -21,6 +23,7 @@ export class AdminItemInstanceDashboardService {
   products = signal<Product[]>([]);
   items = signal<Item[]>([]);
   isLoading = signal(false);
+  userIdToNameMap = signal<Map<number, string>>(new Map());
 
   loadProducts(): void {
     this.isLoading.set(true);
@@ -62,10 +65,44 @@ export class AdminItemInstanceDashboardService {
     ).subscribe({
       next: (items) => {
         this.items.set(items);
+        this.loadLenderNames(items);
         this.isLoading.set(false);
       },
       error: () => {
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  private loadLenderNames(items: Item[]): void {
+    // Sammle alle eindeutigen Lender-IDs
+    const lenderIds = [...new Set(items.map(item => item.lenderId).filter(id => id !== undefined))] as number[];
+
+    if (lenderIds.length === 0) {
+      return;
+    }
+
+    // Lade alle Lender-Namen parallel
+    const userRequests = lenderIds.map(lenderId =>
+      this.userService.getUserById(lenderId).pipe(
+        map(user => ({ id: lenderId, name: user.name })),
+        catchError(err => {
+          console.error(`Fehler beim Laden von User ${lenderId}:`, err);
+          return of({ id: lenderId, name: `ID: ${lenderId}` });
+        })
+      )
+    );
+
+    forkJoin(userRequests).subscribe({
+      next: (users) => {
+        const newMap = new Map(this.userIdToNameMap());
+        users.forEach(user => {
+          newMap.set(user.id, user.name);
+        });
+        this.userIdToNameMap.set(newMap);
+      },
+      error: (err) => {
+        console.error('Fehler beim Laden der Verleiher-Namen:', err);
       }
     });
   }

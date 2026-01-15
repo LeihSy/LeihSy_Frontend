@@ -154,7 +154,6 @@
                 <th>Ausgeliehen</th>
                 <th>Rückgabe fällig</th>
                 <th>Campus</th>
-                <th>Aktion</th>
               </tr>
             </ng-template>
 
@@ -204,16 +203,7 @@
                   </span>
                 </td>
 
-                <td>
-                  <button
-                    pButton
-                    type="button"
-                    class="bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
-                    (click)="processReturn(loan.id)"
-                  >
-                    Rückgabe
-                  </button>
-                </td>
+
               </tr>
             </ng-template>
 
@@ -284,14 +274,6 @@
                 </div>
               </div>
 
-              <button
-                pButton
-                type="button"
-                class="w-full bg-[#2c3e7a] border-[#2c3e7a] hover:bg-[#1f2d56] hover:border-[#1f2d56]"
-                (click)="processReturn(loan.id)"
-              >
-                Rückgabe verarbeiten
-              </button>
             </div>
           }
         </div>
@@ -319,7 +301,6 @@
                 <th>Inventar-Nr.</th>
                 <th>Abholtermin</th>
                 <th>Campus</th>
-                <th>Aktion</th>
               </tr>
             </ng-template>
 

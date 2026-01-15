@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { OnInit } from '@angular/core';
 import { BookingService } from '../../services/booking.service';
 import { LocationService } from '../../services/location.service'; 
 import { LocationDTO } from '../../models/location.model';
@@ -241,24 +240,7 @@ campusOptions: any[] = [
         const diff = now.getTime() - due.getTime();
         return Math.floor(diff / (1000 * 60 * 60 * 24));
       }
-    
-      processReturn(id: string) {
-        this.bookingService.recordReturn(Number(id)).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Rückgabe verbucht',
-              detail: 'Das Gerät ist nun wieder verfügbar.',
-            });
-            this.loadData();
-          },
-          error: (err: any) => {
-            console.error('Fehler bei Rückgabe:', err);
-            this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Rückgabe fehlgeschlagen' });
-          }
-        });
-      }
-    
+        
       processPickup(id: string) {
         this.bookingService.recordPickup(Number(id)).subscribe({
           next: () => {

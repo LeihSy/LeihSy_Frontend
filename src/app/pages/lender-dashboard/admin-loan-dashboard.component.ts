@@ -102,7 +102,7 @@ campusOptions: any[] = [
       }
     
       get pendingCount(): number {
-        return this.filteredAndSortedPickups.length;
+        return this.pendingPickups.length;
       }
     
       get dueTodayCount(): number {
@@ -209,7 +209,7 @@ campusOptions: any[] = [
               daysOverdue: this.calculateOverdueDays(b.endDate)
             }));
           },
-          error: (err: any) => {console.error('Fehler beim Laden der Ausleihen:', err)
+          error: (err: any) => {console.error('Fehler beim Laden der Ausleihen:', err);
           this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte Ausleihen nicht laden' });
       }
         });

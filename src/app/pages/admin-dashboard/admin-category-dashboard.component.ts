@@ -3,7 +3,10 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
-import { LocationDTO } from '../../models/location.model'; //
+import { ProductService } from '../../services/product.service';
+import { Product, ProductCreateDTO } from '../../models/product.model'; 
+import { LocationDTO } from '../../models/location.model';
+import { forkJoin } from 'rxjs';
 
 // PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -36,23 +39,29 @@ export class AdminCategoryDashboardComponent implements OnInit {
   isEditDialogOpen = false;
   isDeleteDialogOpen = false;
 
+  categories: Category[] = [];
+  allProducts: Product[] = [];       
+  availableProducts: Product[] = []; 
+
   selectedCategory: Category | null = null;
   newCategoryName = '';
   newCategoryIcon = '📦';
-  categories: Category[] = [];
-
   
-  categoryLocations: string[] = []; 
 
+  selectedProductIds: number[] = [];
+  categoryLocations: string[] = []; 
   commonIconOptions: string[] = ['📦', '📸', '🎧', '💻', '🎮', '🚁', '🔌'];
 
   constructor(
     private messageService: MessageService,
-    private categoryService: CategoryService 
+    private categoryService: CategoryService, 
+    private productService: ProductService
   ) {}
   ngOnInit() {
     this.loadCategories();
+    this.loadProducts();
   }
+
   loadCategories() {
     this.categoryService.getAllCategories().subscribe({
       next: (data) => {
@@ -65,7 +74,17 @@ export class AdminCategoryDashboardComponent implements OnInit {
     });
   }
 
-    get filteredCategories(): Category[] {
+  loadProducts() {
+    this.productService.getAllProducts().subscribe({
+      next: (data) => {
+        this.allProducts = data;
+        this.availableProducts = data; 
+      },
+      error: (err) => console.error('Fehler beim Laden der Produkte', err)
+    });
+  }
+
+  get filteredCategories(): Category[] {
     const query = this.searchQuery.toLowerCase().trim();
     if (!query) return this.categories;
     return this.categories.filter(cat =>
@@ -79,7 +98,19 @@ export class AdminCategoryDashboardComponent implements OnInit {
     this.newCategoryName = '';
     this.newCategoryIcon = '📦';
     this.selectedCategory = null;
+    this.selectedProductIds = [];
     this.isAddDialogOpen = true;
+
+    this.loadProducts();
+  }
+
+  // Produkt auswählen/abwählen
+  toggleProductSelection(productId: number) {
+    if (this.selectedProductIds.includes(productId)) {
+      this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
+    } else {
+      this.selectedProductIds.push(productId);
+    }
   }
 
   openEditDialog(category: Category) {
@@ -110,14 +141,66 @@ export class AdminCategoryDashboardComponent implements OnInit {
     this.categoryService.createCategory(newCategoryPayload).subscribe({
       next: (createdCategory) => {
         this.categories = [...this.categories, createdCategory];
-        this.isAddDialogOpen = false;
-        this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Kategorie erstellt' });
+        
+        // Logik für Gerätezuordnung
+        if (this.selectedProductIds.length > 0) {
+          this.assignProductsToCategory(createdCategory.id);
+        } else {
+          // Keine Geräte ausgewählt
+          this.finishAddProcess('Kategorie erstellt');
+        }
       },
       error: (err: any) => {
         console.error(err);
         this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Erstellen fehlgeschlagen' });
       }
     });
+  }
+
+
+  assignProductsToCategory(newCategoryId: number) {
+    const updateRequests = this.selectedProductIds.map(prodId => {
+      const originalProduct = this.allProducts.find(p => p.id === prodId);
+      if (!originalProduct) return null;
+
+      const updatePayload: ProductCreateDTO = {
+        name: originalProduct.name,
+        description: originalProduct.description || '',
+        price: originalProduct.price,
+        expiryDate: originalProduct.expiryDate,
+        accessories: originalProduct.accessories || '',
+        
+        locationId: originalProduct.locationId!, 
+        lenderId: originalProduct.lenderId, 
+        
+        categoryId: newCategoryId 
+      };
+
+      return this.productService.updateProduct(prodId, updatePayload, null);
+    }).filter(req => req !== null); // Null-Werte rausfiltern
+
+    if (updateRequests.length === 0) {
+      this.finishAddProcess('Kategorie erstellt (keine gültigen Geräte gefunden)');
+      return;
+    }
+
+    forkJoin(updateRequests).subscribe({
+      next: () => {
+        this.finishAddProcess('Kategorie erstellt & Geräte zugeordnet');
+        this.loadCategories(); 
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'warn', summary: 'Warnung', detail: 'Kategorie erstellt, aber Fehler bei Gerätezuordnung' });
+        this.isAddDialogOpen = false;
+      }
+    });
+  }
+
+  finishAddProcess(msg: string) {
+    this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: msg });
+    this.isAddDialogOpen = false;
   }
 
   handleEditCategory() {
@@ -162,5 +245,4 @@ export class AdminCategoryDashboardComponent implements OnInit {
   isDeleteDisabled(): boolean {
     return !this.selectedCategory || (this.selectedCategory.deviceCount || 0) > 0;
   }
-
 }

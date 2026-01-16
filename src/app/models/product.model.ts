@@ -51,6 +51,9 @@ export interface Product {
   locationId?: number;
   locationRoomNr?: string;
 
+  lenderId?: number;            
+  categoryName?: string;        
+
   // Availability (Item Counts für Verfügbarkeitsanzeige)
   availableItemCount?: number;  // Anzahl verfügbarer Items
   totalItemCount?: number;      // Gesamtanzahl Items
@@ -84,6 +87,7 @@ export interface ProductCreateDTO {
   imageUrl?: string;
   accessories?: string;
   insyId?: number;
+  lenderId?: number;
 }
 
 // DTO für das Aktualisieren von Produkten
@@ -97,4 +101,5 @@ export interface ProductUpdateDTO {
   imageUrl?: string;
   accessories?: string;
   insyId?: number;
+  lenderId?: number;
 }

@@ -4,11 +4,13 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { BookingTransactionService } from '../../../services/booking-transaction.service';
+import { FilledButtonComponent } from '../../../components/buttons/filled-button/filled-button.component';
+import { SecondaryButtonComponent } from '../../../components/buttons/secondary-button/secondary-button.component';
 
 @Component({
   selector: 'app-booking-qr',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule, QRCodeComponent],
+  imports: [CommonModule, DialogModule, ButtonModule, QRCodeComponent, FilledButtonComponent, SecondaryButtonComponent],
   styles: `
     :host ::ng-deep qrcode img { margin: 0 auto; display: block; }
   `,
@@ -33,7 +35,13 @@ import { BookingTransactionService } from '../../../services/booking-transaction
           <div class="text-red-600 p-4 bg-red-50 rounded-lg w-full">
             <i class="pi pi-exclamation-triangle block text-2xl mb-2"></i>
             {{ error() }}
-            <button pButton label="Erneut versuchen" class="p-button-sm p-button-danger mt-4" (click)="generateToken()"></button>
+            <div class="mt-4">
+              <app-filled-button
+                label="Erneut versuchen"
+                color="red"
+                (buttonClick)="generateToken()">
+              </app-filled-button>
+            </div>
           </div>
         }
 
@@ -56,7 +64,11 @@ import { BookingTransactionService } from '../../../services/booking-transaction
             </p>
 
             @if (isExpired()) {
-              <button pButton label="Neuen Code generieren" class="p-button-sm p-button-outlined p-button-secondary mt-2" (click)="generateToken()"></button>
+              <app-secondary-button
+                label="Neuen Code generieren"
+                color="gray"
+                (buttonClick)="generateToken()">
+              </app-secondary-button>
             }
           </div>
 
@@ -67,8 +79,12 @@ import { BookingTransactionService } from '../../../services/booking-transaction
           </p>
         }
 
-        <div class="w-full flex justify-end mt-4 pt-4 border-t border-gray-100">
-          <button pButton label="Schließen" class="p-button-outlined" (click)="close()"></button>
+        <div class="w-full flex justify-center mt-4 pt-4 border-t border-gray-100">
+          <app-filled-button
+            label="Schließen"
+            color="primary"
+            (buttonClick)="close()">
+          </app-filled-button>
         </div>
       </div>
     </p-dialog>

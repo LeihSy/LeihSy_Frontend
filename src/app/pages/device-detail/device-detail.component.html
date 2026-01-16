@@ -1,12 +1,9 @@
 @if (device) {
 <main class="flex-1 container mx-auto px-4 py-4 sm:py-6 bg-[#f8f8f9]">
-  <button
-    (click)="onBack()"
-    class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 sm:mb-6"
-  >
-    <i class="pi pi-arrow-left w-4 h-4"></i>
-    Zurück zur Suche
-  </button>
+  <app-back-button
+    (backClick)="onBack()"
+    class="mb-4 sm:mb-6">
+  </app-back-button>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
     <!-- linke Spalte ---------------------------------------------------------->
@@ -55,36 +52,6 @@
             </p>
           </div>
 
-          <!-- Technical Specs -->
-          <div class="mt-4 sm:mt-6">
-            <h2 class="mb-2 sm:mb-3 text-base text-[#253359] sm:text-lg">
-              Technische Spezifikationen
-            </h2>
-            <div
-              class="bg-gray-100 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm"
-            >
-              @if (device.technicalSpecs?.storage) {
-              <div class="flex">
-                <span class="w-32 text-muted-foreground text-slate-800">
-                  Speicher:
-                </span>
-                <span class="text-slate-800">
-                  {{ device.technicalSpecs?.storage }}
-                </span>
-              </div>
-              }
-              @if (device.technicalSpecs?.sensor) {
-              <div class="flex">
-                <span class="w-32 text-muted-foreground text-slate-800">
-                  Sensor:
-                </span>
-                <span class="text-slate-800">
-                  {{ device.technicalSpecs?.sensor }}
-                </span>
-              </div>
-              }
-            </div>
-          </div>
 
           <!-- Zubehör -->
           <div class="mt-4 sm:mt-6">
@@ -119,29 +86,18 @@
               }
             </div>
           </div>
-          <div class="flex items-start gap-2 text-xs sm:text-sm">
-              <span class="shrink-0">📋</span>
-              <p class="text-muted-foreground text-[#253359]">
-                <strong>Nummer:</strong> {{ device.inventoryNumber }}
-                <strong>Nummer:</strong> {{ device.inventoryNumber }}
-              </p>
-            </div>
-          </div>
         </div>
+      </div>
 
       <!-- Ausleihbedingungen Card -->
       <div class="bg-white border border-gray-200 rounded-lg">
-        <div class="p-4 sm:p-6">
+        <div class="p-2 sm:p-3">
           <h3 class="text-base sm:text-lg text-[#253359]">Ausleihbedingungen</h3>
         </div>
-        <div class="space-y-3 text-xs sm:text-sm p-4 sm:p-6 text-slate-800">
+        <div class="space-y-3 text-xs sm:text-sm p-2 sm:p-4 text-slate-800">
           <div>
             <p class="text-muted-foreground text-[#253359]">Ausleihzeit:</p>
             <p>{{ device.loanConditions.maxLendingDays }}</p>
-          </div>
-          <div>
-            <p class="text-muted-foreground text-[#253359]">Verlängerungen:</p>
-            <p>{{ device.loanConditions.extensions }}</p>
           </div>
           <div>
             <p class="text-muted-foreground text-[#253359]">Hinweis:</p>
@@ -174,21 +130,6 @@
               </span>
             </div>
           </div>
-
-          <div>
-            <label class="text-xs sm:text-sm mb-2 block text-slate-800">
-              Campus:
-            </label>
-            <p class="text-sm font-medium text-slate-800">
-              Campus Esslingen Flandernstraße
-            </p>
-          </div>
-
-          @if (flandernstrasseData) {
-          <app-campus-info
-            [campusData]="flandernstrasseData"
-          ></app-campus-info>
-          }
         </div>
 
         <!-- Date + Button -->
@@ -240,18 +181,27 @@
     </div>
   </div>
 </main>
-} @else {
+} @else if (isLoading()) {
+  <div class="flex-1 container mx-auto px-4 py-16 flex items-center justify-center">
+    <div class="text-center">
+      <i class="pi pi-spin pi-spinner text-4xl text-[#253359]"></i>
+      <p class="mt-3 text-gray-600 text-sm">Lade Gerätedaten...</p>
+    </div>
+  </div>
+} @else if (showNotFound()) {
   <div class="flex-1 container mx-auto px-4 py-8 text-center">
     <i class="pi pi-exclamation-triangle text-6xl text-gray-400"></i>
     <h1 class="mt-4 text-2xl font-semibold">Gerät nicht gefunden</h1>
     <p class="text-muted-foreground">
       Das angeforderte Gerät konnte nicht gefunden werden.
     </p>
-    <button
-      pButton
-      (click)="onBack()"
-      label="Zurück zur Suche"
-      class="mt-6"
-    ></button>
+    <div class="mt-6 flex justify-center">
+      <app-secondary-button
+        label="Zurück zur Suche"
+        color="custom"
+        (buttonClick)="onBack()">
+      </app-secondary-button>
+    </div>
   </div>
 }
+

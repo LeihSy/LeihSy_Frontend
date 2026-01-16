@@ -28,9 +28,11 @@ interface CardData {
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @for (card of cards; track card.h) {
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-full">
-            <app-info-card [header]="card.h" [items]="card.items"></app-info-card>
-          </div>
+          <app-info-card
+            [header]="card.h"
+            [items]="card.items"
+            class="h-full">
+          </app-info-card>
         }
       </div>
 

@@ -15,6 +15,8 @@ import { CartService } from '../../services/cart.service';
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
 import { FilledButtonComponent } from '../../components/buttons/filled-button/filled-button.component';
+import { BackButtonComponent } from '../../components/buttons/back-button/back-button.component';
+import { SecondaryButtonComponent } from '../../components/buttons/secondary-button/secondary-button.component';
 
 // Import PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -49,7 +51,6 @@ interface Device {
   };
   loanConditions: {
     maxLendingDays: string;
-    extensions: string;
     notes: string;
   };
   keywords: string[];
@@ -64,13 +65,14 @@ interface Device {
     CommonModule,
     FormsModule,
     FilledButtonComponent,
+    BackButtonComponent,
+    SecondaryButtonComponent,
     ButtonModule,
     CardModule,
     TagModule,
     SelectModule,
     DatePickerModule,
     DeviceIconPipe,
-    CampusInfoComponent,
   ],
   templateUrl: './device-detail.component.html',
 })
@@ -87,6 +89,7 @@ export class DeviceDetailPageComponent implements OnInit {
   // --- State ---
   public device: Device | undefined;
   public isLoading = signal(true);
+  public showNotFound = signal(false);
   public errorMessage = signal<string | null>(null);
 
   public flandernstrasseData: Device['campusAvailability'][0] | undefined;
@@ -189,6 +192,7 @@ export class DeviceDetailPageComponent implements OnInit {
       );
     }
     this.isLoading.set(false);
+    this.showNotFound.set(false);
   }
 
   // Konvertiere Backend Product zu Frontend Device
@@ -228,7 +232,6 @@ export class DeviceDetailPageComponent implements OnInit {
       // Ausleihbedingungen
       loanConditions: {
         maxLendingDays: `${product.expiryDate} Tage`,
-        extensions: 'Maximal 2 Verlängerungen möglich',
         notes: 'Rechtzeitige Rückgabe erforderlich'
       },
 

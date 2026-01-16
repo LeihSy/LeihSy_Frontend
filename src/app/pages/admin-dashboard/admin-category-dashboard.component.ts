@@ -205,6 +205,7 @@ export class AdminCategoryDashboardComponent implements OnInit {
 
   handleEditCategory() {
     if (!this.selectedCategory || !this.newCategoryName.trim()) return;
+    const oldDeviceCount = this.selectedCategory.deviceCount;
 
     this.categoryService.updateCategory(this.selectedCategory.id, {
       name: this.newCategoryName.trim(),
@@ -212,7 +213,9 @@ export class AdminCategoryDashboardComponent implements OnInit {
     }).subscribe({
       next: (updatedCategory) => {
         this.categories = this.categories.map(c => 
-          c.id === updatedCategory.id ? updatedCategory : c
+          c.id === updatedCategory.id 
+            ? { ...updatedCategory, deviceCount: oldDeviceCount } //Count behalten
+            : c
         );
         this.isEditDialogOpen = false;
         this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Kategorie aktualisiert' });

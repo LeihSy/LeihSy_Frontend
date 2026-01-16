@@ -17,6 +17,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { BookingService } from '../../services/booking.service';
 import { LocationService } from '../../services/location.service'; 
 import { Location } from '../../models/location.model'; 
+import { UserService } from '../../services/user.service';
 import { PickupSelectionDialogComponent } from './pickup-selection-dialogs.component';
 
 interface LenderRequest {
@@ -50,6 +51,7 @@ export class LenderRequestsComponent implements OnInit {
   private bookingService = inject(BookingService);
   private messageService = inject(MessageService);
   private locationService = inject(LocationService); 
+  private userService = inject(UserService);
 
   isPickupDialogOpen = false;
   selectedRequestForPickup: LenderRequest | null = null;
@@ -118,7 +120,7 @@ export class LenderRequestsComponent implements OnInit {
             parsedPickups = [];
           }
   
-          const roomNrFromDb = b.roomNr || b.location?.roomNr || b.item?.location?.roomNr;
+          const realCampus = b.roomNr || b.item?.location?.roomNr || 'Unbekannt';
   
           return {
             id: b.id,
@@ -126,7 +128,7 @@ export class LenderRequestsComponent implements OnInit {
             studentId: b.user?.uniqueId || b.userId?.toString() || '', 
             productName: b.productName || b.item?.product?.name,
             inventoryNumber: b.invNumber || b.item?.invNumber,
-            campus: roomNrFromDb || '-', 
+            campus: realCampus || '-', 
             fromDate: b.startDate,
             toDate: b.endDate,
             status: b.status || 'PENDING',

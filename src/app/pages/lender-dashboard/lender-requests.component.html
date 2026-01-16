@@ -136,7 +136,7 @@
                     type="button" 
                     label="Annehmen" 
                     class="p-button-success p-button-sm"
-                    (click)="accept(req)"
+                    (click)="openAcceptDialog(req)"
                   ></button>
                 </div>
               </td>
@@ -263,4 +263,12 @@
     ></button>
   </ng-template>
 </p-dialog>
+<app-pickup-selection-dialog
+    [(visible)]="isPickupDialogOpen"
+    [proposedPickups]="selectedRequestForPickup?.proposedPickups || []"
+    [canSelectProposed]="true"
+    (pickupSelected)="onPickupSelected($event)"
+    (newPickupsProposed)="onNewPickupsProposed($event)"
+    (cancelled)="isPickupDialogOpen = false"
+  ></app-pickup-selection-dialog>
 </div>

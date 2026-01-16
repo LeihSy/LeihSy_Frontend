@@ -17,6 +17,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { BookingService } from '../../services/booking.service';
 import { LocationService } from '../../services/location.service'; 
 import { Location } from '../../models/location.model'; 
+import { PickupSelectionDialogComponent } from './pickup-selection-dialogs.component';
 
 interface LenderRequest {
   id: number;
@@ -30,6 +31,7 @@ interface LenderRequest {
   status: string; 
   message?: string;
   declineReason?: string;
+  proposedPickups?: string[];
 }
 
 @Component({
@@ -37,7 +39,7 @@ interface LenderRequest {
   standalone: true,
   imports: [
     CommonModule, FormsModule, ToastModule, ButtonModule, DialogModule,
-    TagModule, InputTextModule, SelectModule, TableModule, TooltipModule
+    TagModule, InputTextModule, SelectModule, TableModule, TooltipModule,PickupSelectionDialogComponent
   ],
   providers: [MessageService],
   templateUrl: './lender-requests.component.html'
@@ -48,6 +50,9 @@ export class LenderRequestsComponent implements OnInit {
   private bookingService = inject(BookingService);
   private messageService = inject(MessageService);
   private locationService = inject(LocationService); 
+
+  isPickupDialogOpen = false;
+  selectedRequestForPickup: LenderRequest | null = null;
 
   // UI State
   searchQuery = '';
@@ -96,30 +101,43 @@ export class LenderRequestsComponent implements OnInit {
   }
 
   // --- DATEN LADEN ---
-loadData() {
-  this.bookingService.getPendingBookings().subscribe({
-    next: (data: any[]) => {
-      this.requests = data.map(b => {
+  loadData() {
+    this.bookingService.getPendingBookings().subscribe({
+      next: (data: any[]) => {
+        this.requests = data.map(b => {
+        
+          let parsedPickups: string[] = [];
+          try {
+            if (b.proposedPickups) {
+              parsedPickups = Array.isArray(b.proposedPickups) 
+                ? b.proposedPickups 
+                : JSON.parse(b.proposedPickups);
+            }
+          } catch (e) {
+            console.error('Fehler beim Parsen der Termine:', e);
+            parsedPickups = [];
+          }
   
-        const roomNrFromDb = b.roomNr || b.location?.roomNr || b.item?.location?.roomNr;
-
-        return {
-          id: b.id,
-          studentName: b.userName || b.user?.name || 'Unbekannt',
-          studentId: b.user?.uniqueId || b.userId?.toString() || '', 
-          productName: b.productName || b.item?.product?.name,
-          inventoryNumber: b.invNumber || b.item?.invNumber,
-          campus: roomNrFromDb || '-', 
-          fromDate: b.startDate,
-          toDate: b.endDate,
-          status: b.status || 'PENDING',
-          message: b.message
-        };
-      });
-    },
-    error: (err: any) => console.error('Fehler beim Laden', err)
-  });
-}
+          const roomNrFromDb = b.roomNr || b.location?.roomNr || b.item?.location?.roomNr;
+  
+          return {
+            id: b.id,
+            studentName: b.userName || b.user?.name || 'Unbekannt',
+            studentId: b.user?.uniqueId || b.userId?.toString() || '', 
+            productName: b.productName || b.item?.product?.name,
+            inventoryNumber: b.invNumber || b.item?.invNumber,
+            campus: roomNrFromDb || '-', 
+            fromDate: b.startDate,
+            toDate: b.endDate,
+            status: b.status || 'PENDING',
+            message: b.message,
+            proposedPickups: parsedPickups 
+          };
+        });
+      },
+      error: (err: any) => console.error('Fehler beim Laden', err)
+    });
+  }
   pendingCount(): number {
     return this.requests.filter(r => r.status === 'PENDING').length;
   }
@@ -180,6 +198,56 @@ loadData() {
       }
     });
   }
+  //Termin Vorschläge
+  openAcceptDialog(req: LenderRequest): void {
+    if (req.status !== 'PENDING') return;
+    this.selectedRequestForPickup = req;
+    this.isPickupDialogOpen = true;
+  }
+
+  // Verleiher wählt einen Termin des Studenten 
+  onPickupSelected(event: { selectedPickup: string; message: string }) {
+    if (!this.selectedRequestForPickup) return;
+  
+    const dateList = [event.selectedPickup];
+  
+    this.bookingService.confirmBooking(
+      this.selectedRequestForPickup.id, 
+      dateList, 
+      event.message
+    ).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Erfolgreich', detail: 'Terminvorschlag gesendet.' });
+        this.isPickupDialogOpen = false;
+        this.loadData();
+      },
+      error: (err) => {
+        console.error('Fehler beim Bestätigen:', err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht gespeichert werden.' });
+      }
+    });
+  }
+
+  //Verleiher macht Gegenvorschläge 
+  onNewPickupsProposed(event: { newPickups: string[]; message: string }) {
+    if (!this.selectedRequestForPickup) return;
+
+    const updateData = {
+      action: 'propose',
+      proposedPickups: event.newPickups,
+      message: event.message
+    } as any;
+
+    this.bookingService.updateStatus(this.selectedRequestForPickup.id, updateData).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'Vorschlag gesendet', detail: 'Gegenvorschläge wurden an den Studenten gesendet.' });
+        this.isPickupDialogOpen = false;
+        this.loadData();
+      },
+      error: () => this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte nicht gesendet werden.' })
+    });
+  }
+
 
   openDecline(req: LenderRequest): void {
     if (req.status !== 'PENDING') return;

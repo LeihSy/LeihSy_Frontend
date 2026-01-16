@@ -97,12 +97,12 @@ export class BookingService {
   // ========================================
   // PATCH ENDPOINTS (Status-Updates)
   // ========================================
-
+    
   // Verleiher bestätigt Buchung und schlägt Abholtermine vor
   confirmBooking(id: number, proposedPickups: string[] = [], message?: string): Observable<Booking> {
     const body: any = {
       action: 'confirm',
-      proposedPickups
+      proposedPickups : proposedPickups
     };
 
     if (message?.trim()) {
@@ -116,7 +116,7 @@ export class BookingService {
   selectPickup(id: number, selectedPickup: string, message?: string): Observable<Booking> {
     const body: any = {
       action: 'select_pickup',
-      selectedPickup
+      selectedPickup : selectedPickup
     };
 
     if (message?.trim()) {
@@ -130,7 +130,7 @@ export class BookingService {
   proposePickups(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
     const body: any = {
       action: 'propose',
-      proposedPickups
+      proposedPickups : proposedPickups
     };
 
     if (message?.trim()) {
@@ -153,9 +153,9 @@ export class BookingService {
       action: 'return'
     });
   }
-  updateStatus(id: number, data: { action: string, message?: string }): Observable<Booking> {
+  updateStatus(id: number, data: any): Observable<Booking> {
     return this.http.patch<Booking>(`${this.apiUrl}/${id}`, data);
-  } 
+  }
   // Generische Methode für alle Status-Updates (falls benötigt)
   updateBookingStatus(id: number, action: string, data?: {
     proposedPickups?: string[],

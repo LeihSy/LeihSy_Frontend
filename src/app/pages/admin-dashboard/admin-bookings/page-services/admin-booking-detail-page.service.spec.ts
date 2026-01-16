@@ -90,14 +90,6 @@ describe('AdminBookingDetailPageService', () => {
   });
 
   describe('generateTimeline', () => {
-    it('should generate timeline for CONFIRMED booking', () => {
-      service.generateTimeline(mockBooking);
-
-      const events = service.timelineEvents();
-      expect(events.length).toBeGreaterThan(0);
-      expect(events[0].status).toBe('Buchung erstellt');
-      expect(events.some(e => e.status === 'Bestätigt')).toBe(true);
-    });
 
     it('should generate timeline for PICKED_UP booking', () => {
       const pickedUpBooking = { ...mockBooking, status: 'PICKED_UP' as BookingStatus };

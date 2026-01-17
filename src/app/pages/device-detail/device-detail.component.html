@@ -132,44 +132,49 @@
           </div>
         </div>
 
-        <!-- Date + Button -->
-        <div class="border-t border-gray-100 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-5 space-y-3">
-          <div>
-            <label for="Count" class="text-xs sm:text-sm mb-2 block text-slate-800">Anzahl der Gegenstände</label>
-              <p-inputNumber
-                [(ngModel)]="quantity"
-                [ngModelOptions]="{ standalone: true }"
-                [min]="1"
-                buttonLayout="horizontal"
-                decrementButtonIcon="pi pi-minus"
-                incrementButtonIcon="pi pi-plus"
-                inputStyleClass="w-24 text-center"
-                (ngModelChange)="onQuantityChange()"
-              ></p-inputNumber>
+        <!-- Auswahlfelder -->
+        <div class="border-gray-100 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 sm:pt-5">
+          <!-- Date + Button -->
+          <div class="flex items-end gap-6">
+            <div>
+              <label for="Count" class="text-xs sm:text-sm mb-2 block text-slate-800">Anzahl der Gegenstände</label>
+                <p-inputNumber
+                  [(ngModel)]="quantity"
+                  [ngModelOptions]="{ standalone: true }"
+                  [min]="1"
+                  buttonLayout="horizontal"
+                  decrementButtonIcon="pi pi-minus"
+                  incrementButtonIcon="pi pi-plus"
+                  inputStyleClass="w-24 text-center"
+                  (ngModelChange)="onQuantityChange()"
+                ></p-inputNumber>
+            </div>
+            <div>
+              <label for="pickupDate" class="text-xs sm:text-sm mb-2 block text-slate-800">Ausleihzeitraum</label>
+              <p-datepicker
+                [ngModel]="rentalPeriod"
+                (ngModelChange)="onRentalPeriodChange($event, device)"
+                selectionMode="range"
+                [showIcon]="true"
+                [dateFormat]="'dd.mm.yy'"
+                [minDate]="today"
+                [disabledDates]="disabledDates">
+              </p-datepicker>
+            </div>
           </div>
-          <div>
-            <label for="pickupDate" class="text-xs sm:text-sm mb-2 block text-slate-800">Ausleihzeitraum</label>
-            <p-datepicker
-              [ngModel]="rentalPeriod"
-              (ngModelChange)="onRentalPeriodChange($event, device)"
-              selectionMode="range"
-              [showIcon]="true"
-              [dateFormat]="'dd.mm.yy'"
-              [minDate]="today"
-              [disabledDates]="disabledDates">
-            </p-datepicker>
-            @if(datePickerErrorMessage) {
-              <p class="mt-4 mb-2 text-sm text-red-600 flex items-center gap-1">
-                <i class="pi pi-exclamation-circle"></i>
-                {{ datePickerErrorMessage }}
-              </p>
-            }
-          </div>
+          @if(datePickerErrorMessage) {
+            <p class="mt-4 mb-2 text-sm text-red-600 flex items-center gap-1">
+              <i class="pi pi-exclamation-circle"></i>
+              {{ datePickerErrorMessage }}
+            </p>
+          }
+        </div>
+        <div class="px-4 sm:px-6 pb-4 sm:pb-6">
           @if(addedToCart) {
             <app-filled-button
               icon="pi pi-check"
               label="Zum Warenkorb hinzugefügt"
-              class="w-full text-xs sm:text-sm mt-4">
+              class="w-full text-xs sm:text-sm">
           </app-filled-button>
           }
           @if(!addedToCart && canPutToCart) {
@@ -184,7 +189,7 @@
             <app-filled-button
               icon="pi pi-exclamation-circle"
               label="Ungültige Eingaben"
-              class="w-full text-xs sm:text-sm mt-4">
+              class="w-full text-xs sm:text-sm">
             </app-filled-button>
           }
         </div>

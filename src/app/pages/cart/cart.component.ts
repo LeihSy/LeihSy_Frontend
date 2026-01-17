@@ -11,6 +11,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { forkJoin } from 'rxjs';
 
+import { environment } from '../../environments/environment';
 import { CartService, TimePeriod } from '../../services/cart.service';
 
 
@@ -107,7 +108,7 @@ export class CartPageComponent {
       quantity: item.quantity,
     }))
     .map(body =>
-      this.http.post('http://localhost:8080/api/bookings', body, { observe: 'response' , headers: { 'Content-Type': 'application/json' }})
+      this.http.post(`${environment.apiBaseURL}/api/bookings`, body, { observe: 'response' , headers: { 'Content-Type': 'application/json' }})
     );
 
     console.log("bookingsToCreate erstellt: ", bookingsToCreate);

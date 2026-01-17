@@ -9,12 +9,13 @@ import {
   ImportAction,
   ImportType
 } from '../models/insy-import.model';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InsyImportService {
-  private readonly apiUrl = 'http://localhost:8080/api/insy';
+  private readonly apiUrl = `${environment.apiBaseURL}/api/insy`;
 
   constructor(private readonly http: HttpClient) {}
 

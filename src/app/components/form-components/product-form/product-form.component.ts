@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
+import { environment } from '../../../environments/environment';
 
 import { Product } from '../../../models/product.model';
 import { Category } from '../../../models/category.model';
@@ -128,7 +129,7 @@ export class ProductFormComponent implements OnInit, OnChanges {
     }
 
     if (this.product.imageUrl) {
-      this.imagePreview.set('http://localhost:8080' + this.product.imageUrl);
+      this.imagePreview.set(environment.apiBaseURL + this.product.imageUrl);
     }
     //Zusatzgegenstände aus Produkt laden (falls vorhanden)
     const related = (this.product as any)?.relatedItems as RelatedItem[] | undefined;

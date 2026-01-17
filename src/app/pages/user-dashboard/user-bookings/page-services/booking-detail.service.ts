@@ -81,7 +81,7 @@ export class BookingDetailService {
 
     if (booking.proposedPickups) {
       const pickups = this.parseProposedPickups(booking.proposedPickups);
-      const formattedPickups = pickups.map(p => this.formatDate(p)).join(', ');
+      const formattedPickups = pickups.map(p => this.formatDate(p)).join('\n');
       items.push({ icon: 'pi-calendar', label: 'Vorgeschlagene Abholtermine', value: formattedPickups });
     }
     if (booking.confirmedPickup) {
@@ -349,7 +349,9 @@ export class BookingDetailService {
       });
     }
 
-    this.timelineEvents.set(events);
+    // Reverse array to show newest events first
+    const reversedEvents = [...events].reverse();
+    this.timelineEvents.set(reversedEvents);
   }
 
   getStatusSeverity(status: BookingStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {

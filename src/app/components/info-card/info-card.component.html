@@ -1,4 +1,4 @@
-<p-card [header]="header" class="shadow-sm mt-3 mb-2">
+<p-card [header]="header" class="h-full bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
   <div class="grid gap-4">
     @for (item of items; track item.label) {
       <div class="flex items-start gap-3">
@@ -7,7 +7,7 @@
         <div>
           <p class="text-xs text-gray-500 mb-1">{{ item.label }}</p>
 
-          <p class="text-sm font-semibold text-gray-800">{{ item.value }}</p>
+          <p class="text-sm font-semibold text-gray-800 whitespace-pre-line">{{ item.value }}</p>
         </div>
       </div>
     }

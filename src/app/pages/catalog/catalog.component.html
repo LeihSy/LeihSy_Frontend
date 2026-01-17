@@ -26,22 +26,31 @@
     (applyFilters)="applyFilters()">
   </app-catalog-search-filters>
 
-  <div class="space-y-4">
-    @for (device of filteredDevices(); track device.id) {
-      <app-device-card
-        [device]="device"
-        [imageUrl]="getImageUrl(device.id)"
-        (viewDevice)="onViewDevice($event)"
-        (imageError)="onImageError($event.event, $event.device)">
-      </app-device-card>
-    }
-  </div>
-
-  @if (filteredDevices().length === 0 && !isLoading()) {
-    <div class="text-center py-16 bg-white border border-gray-200 rounded-lg">
-      <i class="pi pi-inbox text-5xl text-gray-400"></i>
-      <h3 class="text-xl font-semibold mt-4">Keine Geräte gefunden</h3>
-      <p class="text-gray-500 mt-2">Passen Sie Ihre Such- oder Filterkriterien an.</p>
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-16">
+      <div class="text-center">
+        <i class="pi pi-spin pi-spinner text-6xl text-[#253359]"></i>
+        <p class="mt-4 text-gray-600">Lade Geräte...</p>
+      </div>
     </div>
+  } @else {
+    <div class="space-y-4">
+      @for (device of filteredDevices(); track device.id) {
+        <app-device-card
+          [device]="device"
+          [imageUrl]="getImageUrl(device.id)"
+          (viewDevice)="onViewDevice($event)"
+          (imageError)="onImageError($event.event, $event.device)">
+        </app-device-card>
+      }
+    </div>
+
+    @if (filteredDevices().length === 0) {
+      <div class="text-center py-16 bg-white border border-gray-200 rounded-lg">
+        <i class="pi pi-inbox text-5xl text-gray-400"></i>
+        <h3 class="text-xl font-semibold mt-4">Keine Geräte gefunden</h3>
+        <p class="text-gray-500 mt-2">Passen Sie Ihre Such- oder Filterkriterien an.</p>
+      </div>
+    }
   }
 </div>

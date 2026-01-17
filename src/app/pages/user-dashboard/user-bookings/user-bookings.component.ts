@@ -43,7 +43,6 @@ import { Booking } from '../../../models/booking.model';
 export class UserBookingsComponent implements OnInit {
   private userBookingsService = inject(UserBookingsService);
 
-  // Spalten-Definition für die Tabelle
   columns: ColumnDef[] = [
     { field: 'productName', header: 'Produkt', sortable: true },
     { field: 'itemInvNumber', header: 'Inventarnummer', sortable: true, width: '150px' },
@@ -54,11 +53,9 @@ export class UserBookingsComponent implements OnInit {
     { field: 'createdAt', header: 'Erstellt am', type: 'datetime', sortable: true, width: '160px' }
   ];
 
-  // Use page-page-page-page-services signals
   isLoading = this.userBookingsService.isLoading;
   filteredBookings = this.userBookingsService.filteredBookings;
 
-  // Computed stats cards
   statsCards = computed<UserStatCard[]>(() => [
     {
       label: 'Gesamt Buchungen',

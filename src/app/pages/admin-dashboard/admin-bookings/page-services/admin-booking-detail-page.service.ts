@@ -113,7 +113,8 @@ export class AdminBookingDetailPageService {
       });
     }
 
-    this.timelineEvents.set(events);
+    const reversedEvents = [...events].reverse();
+    this.timelineEvents.set(reversedEvents);
   }
 
   getStatusSeverity(status: BookingStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {

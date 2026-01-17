@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import Keycloak from 'keycloak-js';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../environments/environment';
 
 export interface CurrentUser {
   id: number;
@@ -15,7 +16,7 @@ export interface CurrentUser {
 export class AuthService {
   private readonly keycloak = inject(Keycloak);
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = `${environment.apiBaseURL}/api`;
 
   // Signals fuer reaktive UI
   isLoggedIn = signal(false);

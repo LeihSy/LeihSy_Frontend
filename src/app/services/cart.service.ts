@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject, ɵcreateOrReusePlatformInjector }
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ProductService } from './product.service';
 import { forkJoin, max } from 'rxjs';
+import { environment } from '../environments/environment';
 
 export interface TimePeriod {
   startDate: string;
@@ -304,7 +305,7 @@ export class CartService {
       forkJoin({
         product: this.productService.getProductById(Number(item.productId)),
         unavailablePeriods: this.http.get<TimePeriod[]>(  // Hole nicht verfügbare Zeiträume
-          `http://localhost:8080/api/products/${item.productId}/periods?requiredQuantity=${item.quantity}&type=unavailable`
+          `${environment.apiBaseURL}/api/products/${item.productId}/periods?requiredQuantity=${item.quantity}&type=unavailable`
         )
       })
     );

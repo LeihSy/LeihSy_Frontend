@@ -12,6 +12,7 @@ import { CategoryService } from '../../services/category.service';
 import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
 import { CartService, TimePeriod } from '../../services/cart.service';
+import { environment } from '../../environments/environment';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
@@ -283,7 +284,7 @@ export class DeviceDetailPageComponent implements OnInit {
   public getUnavailablePeriods(productId: string, quantity: number) {
     this.http
     .get<TimePeriod[]>(
-      `http://localhost:8080/api/products/${productId}/periods`,
+      `${environment.apiBaseURL}/api/products/${productId}/periods`,
       {
         params: {
           requiredQuantity: quantity,

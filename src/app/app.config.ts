@@ -14,12 +14,13 @@ import Keycloak from 'keycloak-js';
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { AuthService } from './services/auth.service';
+import { environment } from './environments/environment';
 
 // Keycloak Instance erstellen
 const keycloak = new Keycloak({
-  url: 'https://auth.insy.hs-esslingen.com',
-  realm: 'insy',
-  clientId: 'leihsy-frontend-dev'
+  url: environment.keycloakURL,
+  realm: environment.keycloakRealm,
+  clientId: environment.keycloakCLientId
 });
 
 export const appConfig: ApplicationConfig = {

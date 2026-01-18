@@ -88,6 +88,11 @@ export class ProductFormComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Wenn sich der mode ändert, aktualisiere die Validatoren
+    if (changes['mode'] && this.itemForm) {
+      this.updateValidators();
+    }
+
     if (changes['product'] && changes['product'].currentValue && this.itemForm) {
       this.loadProductData();
     }
@@ -105,6 +110,22 @@ export class ProductFormComponent implements OnInit, OnChanges {
       locationId: [null, this.mode === 'admin' ? Validators.required : []],
       locationRoomNr: ['', this.mode === 'admin' ? Validators.required : []]
     });
+  }
+
+  private updateValidators(): void {
+    const locationIdControl = this.itemForm.get('locationId');
+    const locationRoomNrControl = this.itemForm.get('locationRoomNr');
+
+    if (this.mode === 'admin') {
+      locationIdControl?.setValidators([Validators.required]);
+      locationRoomNrControl?.setValidators([Validators.required]);
+    } else {
+      locationIdControl?.clearValidators();
+      locationRoomNrControl?.clearValidators();
+    }
+
+    locationIdControl?.updateValueAndValidity();
+    locationRoomNrControl?.updateValueAndValidity();
   }
 
   private loadProductData(): void {
@@ -139,7 +160,14 @@ export class ProductFormComponent implements OnInit, OnChanges {
   }
 
   submitForm(): void {
-    if (!this.itemForm.valid) return;
+    if (!this.itemForm.valid) {
+      console.warn('Form is invalid. Please check all required fields.');
+      // Markiere alle Felder als touched, damit Validierungsfehler angezeigt werden
+      Object.keys(this.itemForm.controls).forEach(key => {
+        this.itemForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
 
     this.formSubmit.emit({
       formValue: {
@@ -213,15 +241,19 @@ export class ProductFormComponent implements OnInit, OnChanges {
         this.locationDisplayValue.set(`${selected.roomNr}`);
         this.locationExists.set(true);
         this.setLocationId(selected.id);
+        // Setze auch locationRoomNr, damit die Validierung funktioniert
+        this.itemForm.patchValue({ locationRoomNr: selected.roomNr }, { emitEvent: false });
       } else {
         this.locationDisplayValue.set('');
         this.locationExists.set(false);
         this.setLocationId(null);
+        this.itemForm.patchValue({ locationRoomNr: '' }, { emitEvent: false });
       }
     } else {
       this.locationDisplayValue.set('');
       this.locationExists.set(false);
       this.setLocationId(null);
+      this.itemForm.patchValue({ locationRoomNr: '' }, { emitEvent: false });
     }
   }
 

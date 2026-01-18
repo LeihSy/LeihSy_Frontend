@@ -1,7 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { BookingService } from '../../services/booking.service';
+import { LocationService } from '../../services/location.service'; 
+import { UserService } from '../../services/user.service';
+import { LocationDTO } from '../../models/location.model';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -59,9 +63,19 @@ interface PendingPickup {
     providers: [MessageService],
     templateUrl: './admin-loan-dashboard.component.html',
   })
-  export class AdminLoanDashboardComponent {
+  export class AdminLoanDashboardComponent implements OnInit {
     private readonly messageService = inject(MessageService);
+    private readonly bookingService = inject(BookingService);
+    private readonly locationService = inject(LocationService);
+    private readonly userService = inject(UserService);
 
+    activeLoans: ActiveLoan[] = [];
+    pendingPickups: PendingPickup[] = [];
+
+    ngOnInit(){
+      this.loadData();
+      this.loadLocations();
+    }
 // UI state
 tab: ViewTab = 'active';
 searchQuery = '';
@@ -69,47 +83,16 @@ campusFilter = 'all';
 sortBy: SortBy= 'date';
 
 // Options (p-select)
-  campusOptions = [
-    { label: 'Alle Campus', value: 'all' },
-    { label: 'Flandernstraße', value: 'Campus Esslingen Flandernstraße' },
-    { label: 'Stadtmitte', value: 'Campus Esslingen Stadtmitte' },
-    { label: 'Göppingen', value: 'Campus Göppingen' },
-  ];
+campusOptions: any[] = [
+  { label: 'Alle Standorte', value: 'all' }
+];
 
   sortOptions = [
     { label: 'Nach Datum', value: 'date' },
     { label: 'Nach Student', value: 'student' },
     { label: 'Nach Gerät', value: 'device' },
   ];
-  //Mock-daten
-  activeLoans: ActiveLoan[] = [];
 
-  pendingPickups: PendingPickup[] = [
-    {
-      id: 'PP-001',
-      studentName: 'Tim Hoffmann',
-      studentId: 'ST-901234',
-      studentEmail: 'tim.hoffmann@hs-esslingen.de',
-      deviceName: 'HTC Vive Pro 2',
-      inventoryNumber: 'VR-102',
-      pickupDate: '2024-10-17',
-      pickupTime: '10:00-14:00',
-      campus: 'Campus Esslingen Flandernstraße',
-      confirmedDate: '2024-10-15'
-    },
-    {
-      id: 'PP-002',
-      studentName: 'Nina Hoffmann',
-      studentId: 'ST-012345',
-      studentEmail: 'nina.hoffmann@hs-esslingen.de',
-      deviceName: 'Sony ZV-E10',
-      inventoryNumber: 'K-678',
-      pickupDate: '2024-10-18',
-      pickupTime: '14:00-18:00',
-      campus: 'Campus Esslingen Stadtmitte',
-      confirmedDate: '2024-10-16'
-    }
-  ];
 
 //Stats
     get overdueCount(): number {
@@ -193,35 +176,95 @@ sortBy: SortBy= 'date';
           year: 'numeric'
         });
       }
-    
+      loadLocations() {
+        this.locationService.getAllLocations().subscribe({
+          next: (locations: LocationDTO[]) => {
+       
+            const dbOptions = locations.map(loc => ({
+              label: loc.roomNr, 
+              value: loc.roomNr  
+            }));
+            this.campusOptions = [{ label: 'Alle Standorte', value: 'all' }, ...dbOptions];
+          },
+          error: (err) => console.error('Konnte Locations nicht laden', err)
+        });
+      }
       campusShort(campus: string): string {
+        if (!campus) return '-';
         return campus.replace('Campus Esslingen ', '').replace('Campus ', '');
       }
-      //Actions (Mock)
-  processReturn(id: string) {
-    const loan = this.activeLoans.find(l => l.id === id);
-    if (!loan) return;
+      
+      loadData() {
+        this.userService.getCurrentUser().subscribe({
+          next: (user: any) => {
+            if (!user || !user.id) return;
+    
+            this.bookingService.getBookingsByLenderId(user.id, true).subscribe({
+              next: (allBookings: any[]) => {
+              
+                this.activeLoans = allBookings
+                  .filter(b => b.status === 'PICKED_UP')
+                  .map(b => ({
+                    id: b.id.toString(),
+                    studentName: b.userName || b.user?.name || 'Unbekannt',
+                    studentId: b.userId?.toString() || b.user?.matrikelNr || '',
+                    studentEmail: b.user?.email || '',
+                    deviceName: b.productName || b.item?.product?.name || 'Gerät',
+                    inventoryNumber: b.invNumber || b.item?.invNumber || b.itemInvNumber || '-',
+                    borrowedDate: b.distributionDate,
+                    dueDate: b.endDate,
+                    campus: b.roomNr || 'Unbekannt', 
+                    status: (!b.returnDate && new Date(b.endDate) < new Date()) ? 'overdue' : 'active',
+                    daysOverdue: this.calculateOverdueDays(b.endDate)
+                  }));
 
-    this.activeLoans = this.activeLoans.filter(l => l.id !== id);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Rückgabe verbucht',
-      detail: `${loan.deviceName} (${loan.inventoryNumber})`,
-    });
-  }
-
-  processPickup(id: string) {
-    const pickup = this.pendingPickups.find(p => p.id === id);
-    if (!pickup) return;
-
-    this.pendingPickups = this.pendingPickups.filter(p => p.id !== id);
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Ausgabe bestätigt',
-      detail: `${pickup.deviceName} (${pickup.inventoryNumber})`,
-    });
-  }
-
-} 
+                this.pendingPickups = allBookings
+                  .filter(b => b.status === 'CONFIRMED')
+                  .map(p => ({
+                    id: p.id.toString(),
+                    studentName: p.userName || p.user?.name || 'Unbekannt',
+                    studentId: p.userId?.toString() || p.user?.matrikelNr || '',
+                    studentEmail: p.user?.email || '',
+                    deviceName: p.productName || p.item?.product?.name || 'Gerät',
+                    inventoryNumber: p.invNumber || p.item?.invNumber || p.itemInvNumber || '-',
+                    pickupDate: p.confirmedPickup ? p.confirmedPickup.split('T')[0] : '',
+                    pickupTime: p.confirmedPickup ? p.confirmedPickup.split('T')[1]?.substring(0, 5) : '',
+                    campus: p.roomNr || 'Unbekannt',
+                    confirmedDate: p.createdAt
+                  }));
+              },
+              error: (err: any) => {
+                console.error('Fehler beim Laden:', err);
+                this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Daten konnten nicht geladen werden' });
+              }
+            });
+          },
+          error: (err) => console.error('User nicht gefunden', err)
+        });
+      }
+    
+      private calculateOverdueDays(dueDate: string): number {
+        const due = new Date(dueDate);
+        const now = new Date();
+        if (due >= now) return 0;
+        const diff = now.getTime() - due.getTime();
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+      }
+        
+      processPickup(id: string) {
+        this.bookingService.recordPickup(Number(id)).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Ausgabe bestätigt',
+              detail: 'Der Status wurde auf Ausgeliehen gesetzt.',
+            });
+            this.loadData();
+          },
+          error: (err: any) => {
+            console.error('Fehler bei Ausgabe:', err);
+            this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Ausgabe fehlgeschlagen' });
+          }
+        });
+      }
+    } 

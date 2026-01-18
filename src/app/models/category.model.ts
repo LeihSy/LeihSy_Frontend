@@ -4,13 +4,15 @@ export interface CategoryDTO {
   name: string;
   createdAt: string;            // date-time
   updatedAt: string;            // date-time
+  deviceCount?: number;
 }
 
 // Category (vollständiges Schema mit expandierten Objekten)
 export interface Category {
   id: number;
   name: string;
-
+  icon?: string;
+  deviceCount?: number;
   // Expandierte Relations (vollständige Objekte)
   products?: any[];             // Product[]
 
@@ -28,11 +30,13 @@ export interface Category {
 export interface CategoryCreateDTO {
   name: string;
   description?: string;
+  icon?: string;
 }
 
 // CategoryUpdateDTO (für das Aktualisieren von Kategorien)
 export interface CategoryUpdateDTO {
   name?: string;
   description?: string;
+  icon?: string;
 }
 

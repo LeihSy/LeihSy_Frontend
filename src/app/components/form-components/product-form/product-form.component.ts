@@ -51,7 +51,7 @@ interface RelatedItem {
   templateUrl: './product-form.component.html',
   styleUrls: ['./product-form.component.scss']
 })
-export class ProductFormComponent implements OnInit, OnChanges {
+export class ProductFormComponent implements OnChanges {
   @Input() product: Product | null = null;
   @Input() mode: 'admin' | 'private' = 'admin';
   @Input() categories: Category[] = [];
@@ -70,21 +70,11 @@ export class ProductFormComponent implements OnInit, OnChanges {
   locationExists = signal<boolean>(false);
   selectedRelatedItems = signal<RelatedItem[]>([]);
   relatedItemsSearch = signal('');
+  searchTerm: string = '';
+  selectedRelations: any[] = [];
 
-  constructor(private readonly fb: FormBuilder, private readonly router: Router) {}
-
-  ngOnInit(): void {
+  constructor(private readonly fb: FormBuilder, private readonly router: Router) {
     this.initForm();
-    // Mock nur wenn keine Produkte vom Parent kommen
-  if (!this.products || this.products.length === 0) {
-    this.products = [
-      { id: 101, name: 'Stativ', categoryId: this.categories?.[0]?.id ?? 1 } as any,
-      { id: 102, name: 'Akkupack', categoryId: this.categories?.[0]?.id ?? 1 } as any,
-      { id: 103, name: 'SD-Karte 128GB', categoryId: this.categories?.[0]?.id ?? 1 } as any,
-      { id: 104, name: 'Ladekabel USB-C', categoryId: this.categories?.[0]?.id ?? 1 } as any
-    ];
-  }
-
   }
 
   ngOnChanges(changes: SimpleChanges): void {

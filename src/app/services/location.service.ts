@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Location } from '../models/location.model';
 import { environment } from '../environments/environment';
+import { LocationDTO } from '../models/location.model';
 
 @Injectable({
   providedIn: 'root'

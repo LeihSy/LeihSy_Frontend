@@ -1,20 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CategoryService } from '../../services/category.service';
+import { Category } from '../../models/category.model';
+import { ProductService } from '../../services/product.service';
+import { Product, ProductCreateDTO } from '../../models/product.model'; 
+import { LocationDTO } from '../../models/location.model';
+import { forkJoin } from 'rxjs';
 
+// PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  deviceCount: number;
-}
 
 @Component({
   selector: 'app-admin-category-dashboard',
@@ -32,35 +32,58 @@ interface Category {
   templateUrl: './admin-category-dashboard.component.html',
   providers: [MessageService]
 })
-export class AdminCategoryDashboardComponent {
+export class AdminCategoryDashboardComponent implements OnInit {
 
-  // Suchfeld
   searchQuery = '';
-
-  // Dialog-States
   isAddDialogOpen = false;
   isEditDialogOpen = false;
   isDeleteDialogOpen = false;
 
-  // Ausgewählte Kategorie für Bearbeiten / Löschen
-  selectedCategory: Category | null = null;
+  categories: Category[] = [];
+  allProducts: Product[] = [];       
+  availableProducts: Product[] = []; 
 
-  // Formularfelder für Neu/Bearbeiten
+  selectedCategory: Category | null = null;
   newCategoryName = '';
   newCategoryIcon = '📦';
+  
 
-  // Mock-Daten
-  categories: Category[] = [
-  ];
+  selectedProductIds: number[] = [];
+  categoryLocations: string[] = []; 
+  commonIconOptions: string[] = ['📦', '📸', '🎧', '💻', '🎮', '🚁', '🔌'];
 
-  // Icon-Auswahl
-  commonIconOptions: string[] = [
-    
-  ];
+  constructor(
+    private messageService: MessageService,
+    private categoryService: CategoryService, 
+    private productService: ProductService
+  ) {}
+  ngOnInit() {
+    this.loadCategories();
+    this.loadProducts();
+  }
 
-  constructor(private messageService: MessageService) {}
+  loadCategories() {
+    this.categoryService.getAllCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+      },
+      error: (err: any) => { 
+        console.error('Fehler beim Laden der Kategorien', err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Kategorien konnten nicht geladen werden.' });
+      }
+    });
+  }
 
-  // Gefilterte Kategorien für *ngFor
+  loadProducts() {
+    this.productService.getAllProducts().subscribe({
+      next: (data) => {
+        this.allProducts = data;
+        this.availableProducts = data; 
+      },
+      error: (err) => console.error('Fehler beim Laden der Produkte', err)
+    });
+  }
+
   get filteredCategories(): Category[] {
     const query = this.searchQuery.toLowerCase().trim();
     if (!query) return this.categories;
@@ -69,19 +92,31 @@ export class AdminCategoryDashboardComponent {
     );
   }
 
-  // --- Dialog-Öffner --------------------------------------
+  // --- Dialog-Öffner ---
 
   openAddDialog() {
     this.newCategoryName = '';
     this.newCategoryIcon = '📦';
     this.selectedCategory = null;
+    this.selectedProductIds = [];
     this.isAddDialogOpen = true;
+
+    this.loadProducts();
+  }
+
+  // Produkt auswählen/abwählen
+  toggleProductSelection(productId: number) {
+    if (this.selectedProductIds.includes(productId)) {
+      this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
+    } else {
+      this.selectedProductIds.push(productId);
+    }
   }
 
   openEditDialog(category: Category) {
     this.selectedCategory = category;
     this.newCategoryName = category.name;
-    this.newCategoryIcon = category.icon;
+    this.newCategoryIcon = category.icon || '📦';
     this.isEditDialogOpen = true;
   }
 
@@ -90,97 +125,127 @@ export class AdminCategoryDashboardComponent {
     this.isDeleteDialogOpen = true;
   }
 
-  // --- Aktionen -------------------------------------------
+  // --- Aktionen (CRUD) ---
 
   handleAddCategory() {
     if (!this.newCategoryName.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Bitte geben Sie einen Kategorienamen ein'
-      });
+      this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Bitte geben Sie einen Namen ein' });
       return;
     }
 
-    const newCategory: Category = {
-      id: Date.now().toString(),
+    const newCategoryPayload: any = {
       name: this.newCategoryName.trim(),
-      icon: this.newCategoryIcon || '📦',
-      deviceCount: 0
+      icon: this.newCategoryIcon || '📦'
     };
 
-    this.categories = [...this.categories, newCategory];
-
-    this.isAddDialogOpen = false;
-    this.newCategoryName = '';
-    this.newCategoryIcon = '📦';
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich hinzugefügt'
+    this.categoryService.createCategory(newCategoryPayload).subscribe({
+      next: (createdCategory) => {
+        this.categories = [...this.categories, createdCategory];
+        
+        // Logik für Gerätezuordnung
+        if (this.selectedProductIds.length > 0) {
+          this.assignProductsToCategory(createdCategory.id);
+        } else {
+          // Keine Geräte ausgewählt
+          this.finishAddProcess('Kategorie erstellt');
+        }
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Erstellen fehlgeschlagen' });
+      }
     });
   }
 
-  handleEditCategory() {
-    if (!this.selectedCategory || !this.newCategoryName.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Fehler',
-        detail: 'Bitte geben Sie einen Kategorienamen ein'
-      });
+
+  assignProductsToCategory(newCategoryId: number) {
+    const updateRequests = this.selectedProductIds.map(prodId => {
+      const originalProduct = this.allProducts.find(p => p.id === prodId);
+      if (!originalProduct) return null;
+
+      const updatePayload: ProductCreateDTO = {
+        name: originalProduct.name,
+        description: originalProduct.description || '',
+        price: originalProduct.price,
+        expiryDate: originalProduct.expiryDate,
+        accessories: originalProduct.accessories || '',
+        
+        locationId: originalProduct.locationId!, 
+        lenderId: originalProduct.lenderId, 
+        
+        categoryId: newCategoryId 
+      };
+
+      return this.productService.updateProduct(prodId, updatePayload, null);
+    }).filter(req => req !== null); // Null-Werte rausfiltern
+
+    if (updateRequests.length === 0) {
+      this.finishAddProcess('Kategorie erstellt (keine gültigen Geräte gefunden)');
       return;
     }
 
-    this.categories = this.categories.map(cat =>
-      cat.id === this.selectedCategory!.id
-        ? {
-            ...cat,
-            name: this.newCategoryName.trim(),
-            icon: this.newCategoryIcon || '📦'
-          }
-        : cat
-    );
+    forkJoin(updateRequests).subscribe({
+      next: () => {
+        this.finishAddProcess('Kategorie erstellt & Geräte zugeordnet');
+        this.loadCategories(); 
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        this.messageService.add({ severity: 'warn', summary: 'Warnung', detail: 'Kategorie erstellt, aber Fehler bei Gerätezuordnung' });
+        this.isAddDialogOpen = false;
+      }
+    });
+  }
 
-    this.isEditDialogOpen = false;
-    this.selectedCategory = null;
-    this.newCategoryName = '';
-    this.newCategoryIcon = '📦';
+  finishAddProcess(msg: string) {
+    this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: msg });
+    this.isAddDialogOpen = false;
+  }
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich aktualisiert'
+  handleEditCategory() {
+    if (!this.selectedCategory || !this.newCategoryName.trim()) return;
+    const oldDeviceCount = this.selectedCategory.deviceCount;
+
+    this.categoryService.updateCategory(this.selectedCategory.id, {
+      name: this.newCategoryName.trim(),
+      icon: this.newCategoryIcon || '📦'
+    }).subscribe({
+      next: (updatedCategory) => {
+        this.categories = this.categories.map(c => 
+          c.id === updatedCategory.id 
+            ? { ...updatedCategory, deviceCount: oldDeviceCount } //Count behalten
+            : c
+        );
+        this.isEditDialogOpen = false;
+        this.messageService.add({ severity: 'success', summary: 'Erfolg', detail: 'Kategorie aktualisiert' });
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Update fehlgeschlagen' });
+      }
     });
   }
 
   handleDeleteCategory() {
     if (!this.selectedCategory) return;
 
-    if (this.selectedCategory.deviceCount > 0) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Löschen nicht möglich',
-        detail: `Kategorie kann nicht gelöscht werden, sie enthält noch ${this.selectedCategory.deviceCount} Geräte.`
-      });
-      return;
-    }
+    const idToDelete = this.selectedCategory.id;
 
-    this.categories = this.categories.filter(
-      cat => cat.id !== this.selectedCategory!.id
-    );
-
-    this.isDeleteDialogOpen = false;
-    this.selectedCategory = null;
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Erfolg',
-      detail: 'Kategorie wurde erfolgreich gelöscht'
+    this.categoryService.deleteCategory(idToDelete).subscribe({
+      next: () => {
+        this.categories = this.categories.filter(cat => cat.id !== idToDelete);
+        this.isDeleteDialogOpen = false;
+        this.messageService.add({ severity: 'success', summary: 'Gelöscht', detail: 'Kategorie entfernt' });
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Löschen fehlgeschlagen' });
+      }
     });
   }
 
   isDeleteDisabled(): boolean {
-    return !this.selectedCategory || this.selectedCategory.deviceCount !== 0;
+    return !this.selectedCategory || (this.selectedCategory.deviceCount || 0) > 0;
   }
 }

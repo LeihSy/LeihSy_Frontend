@@ -13,6 +13,13 @@ export class UserService {
 
   constructor(private readonly http: HttpClient) {}
 
+  // GET /api/users?name={name}
+  searchUsers(query: string): Observable<User[]> {
+    // Falls dein Backend eine Liste zurückgibt:
+    return this.http.get<User[]>(`${this.apiUrl}/users`, { 
+      params: new HttpParams().set('name', query) 
+    });
+  }
   // GET /api/users/{id} (User per ID abrufen)
   getUserById(id: number): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/${id}`);

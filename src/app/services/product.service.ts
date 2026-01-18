@@ -57,7 +57,10 @@ export class ProductService {
     }
     return this.http.get<Product[]>(this.apiUrl, { params });
   }
-
+// GET
+  getAllProducts(): Observable<Product[]> {
+    return this.getProducts();
+  }
   // POST /api/products (Create a new product)
   createProduct(product: ProductCreateDTO, image: File | null = null): Observable<Product> {
     const formData = new FormData();

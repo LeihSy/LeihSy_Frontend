@@ -3,6 +3,7 @@ export interface User {
   uniqueId: string;             // Keycloak ID
   name: string;
   budget: number;
+  email?: string;
 }
 
 export interface UserCreateDTO {

@@ -10,9 +10,7 @@
       Erstellen, bearbeiten und löschen Sie Gerätekategorien
     </p>
 
-    <!-- Suche + Button -->
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <!-- Suche -->
       <div class="flex-1 relative">
         <i
           class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -26,7 +24,6 @@
         />
       </div>
 
-      <!-- Neue Kategorie -->
       <button
         pButton
         type="button"
@@ -133,7 +130,6 @@
   </p>
 
   <div class="space-y-4 py-2">
-    <!-- Name -->
     <div class="space-y-2">
       <label for="category-name" class="block text-sm font-medium"
         >Kategoriename</label
@@ -148,7 +144,6 @@
       />
     </div>
 
-    <!-- Icon Auswahl -->
     <div class="space-y-2">
       <label class="block text-sm font-medium">Icon auswählen</label>
       <div class="flex items-center gap-3">
@@ -186,6 +181,58 @@
         maxlength="2"
         class="bg-white border border-gray-300 w-full"
       />
+    </div>
+
+    <div class="space-y-2 pt-4 border-t border-gray-100 mt-4">
+      <label class="block text-sm font-medium mb-2 text-[#253359]">
+        Geräte zuordnen (optional)
+      </label>
+      
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs text-gray-500">
+          {{ selectedProductIds.length }} ausgewählt
+        </span>
+      </div>
+
+      <div class="h-48 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 p-2 space-y-2">
+        
+        <div *ngIf="availableProducts.length === 0" class="text-center text-gray-400 py-4 text-sm">
+          Keine Geräte verfügbar.
+        </div>
+
+        <div 
+          *ngFor="let product of availableProducts"
+          (click)="toggleProductSelection(product.id)"
+          class="flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all duration-200"
+          [ngClass]="{
+            'bg-green-50 border-green-500 ring-1 ring-green-500': selectedProductIds.includes(product.id),
+            'bg-white border-gray-200 hover:border-blue-300': !selectedProductIds.includes(product.id)
+          }"
+        >
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-800">{{ product.name }}</span>
+            <span class="text-xs text-gray-500" *ngIf="product.categoryName">
+              Aktuell in: {{ product.categoryName }}
+            </span>
+            <span class="text-xs text-gray-400" *ngIf="!product.categoryName">
+              Keine Kategorie
+            </span>
+          </div>
+          
+          <div *ngIf="selectedProductIds.includes(product.id)" 
+               class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white">
+            <i class="pi pi-check text-xs"></i>
+          </div>
+          
+          <div *ngIf="!selectedProductIds.includes(product.id)" 
+               class="w-6 h-6 border-2 border-gray-300 rounded-full">
+          </div>
+        </div>
+
+      </div>
+      <p class="text-xs text-gray-400 mt-1">
+        Wählen Sie Geräte aus, die in diese neue Kategorie verschoben werden sollen.
+      </p>
     </div>
   </div>
 
@@ -335,7 +382,7 @@
     </div>
 
     <div
-      *ngIf="selectedCategory.deviceCount > 0"
+     *ngIf="selectedCategory?.deviceCount && selectedCategory!.deviceCount! > 0"
       class="bg-red-50 border border-red-200 rounded-lg p-3 mt-4"
     >
       <p class="text-sm text-red-800">
@@ -346,7 +393,7 @@
             ? 'Gerät enthält'
             : 'Geräte enthält'
         }}.
-        Bitte verschieben oder löschen Sie zuerst alle Geräte.
+        
       </p>
     </div>
   </div>

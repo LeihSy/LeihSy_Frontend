@@ -18,13 +18,18 @@ export class ItemService {
   }
 
   // PUT /api/items/{id} (Update an item)
-  updateItem(id: number, item: ItemCreate): Observable<Item> {
+  updateItem(id: number, item: any): Observable<Item> {
     return this.http.put<Item>(`${this.apiUrl}/${id}`, item);
   }
 
   // DELETE /api/items/{id} (Delete an item)
   deleteItem(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // PUT /api/items/{id}/related (Update related items/accessories)
+  updateRelatedItems(id: number, relatedItems: { deviceId: number; type: 'required' | 'recommended' }[]): Observable<Item> {
+    return this.http.put<Item>(`${this.apiUrl}/${id}/related`, relatedItems);
   }
 
   // GET /api/items (Get all items)

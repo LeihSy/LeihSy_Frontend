@@ -41,6 +41,7 @@ import { Location } from '../../../models/location.model';
         [product]="product()"
         [categories]="allCategories()"
         [locations]="allLocations()"
+        [products]="availableProducts()"
         [isEditMode]="isEditMode()"
         [mode]="isPrivateMode() ? 'private' : 'admin'"
         (formSubmit)="handleFormSubmit($event)"
@@ -57,6 +58,7 @@ export class AdminProductFormPageComponent implements OnInit {
   allLocations = signal<Location[]>([]);
   isEditMode = signal(false);
   productId: number | null = null;
+  availableProducts = signal<Product[]>([]);
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -76,6 +78,21 @@ export class AdminProductFormPageComponent implements OnInit {
 
     this.loadCategories();
     this.loadLocations();
+    this.loadAllProducts();
+  }
+  loadAllProducts(): void {
+    this.productService.getAllProducts().subscribe({
+      next: (products) => {
+
+        if (this.productId) {
+          const filtered = products.filter(p => p.id !== this.productId);
+          this.availableProducts.set(filtered);
+        } else {
+          this.availableProducts.set(products);
+        }
+      },
+      error: (err) => console.error('Fehler beim Laden der Produkte für Relationen', err)
+    });
   }
 
 
@@ -102,6 +119,7 @@ export class AdminProductFormPageComponent implements OnInit {
             };
 
             this.product.set(enrichedProduct);
+            this.loadAllProducts();
           },
           error: (err) => {
             console.error('Fehler beim Laden zusätzlicher Produktdaten:', err);

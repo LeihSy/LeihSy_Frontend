@@ -8,20 +8,36 @@ import { Booking, BookingCreate } from '../models/booking.model';
   providedIn: 'root'
 })
 export class BookingService {
-  private readonly apiUrl = '/api/bookings';
+  private readonly apiUrl = 'http://localhost:8080/api/bookings';
 
   constructor(private readonly http: HttpClient) {}
 
   // ========================================
   // GET ENDPOINTS
   // ========================================
-
+  //Holt Buchungen eines Verleihers
+  getBookingsByLenderId(lenderId: number, includeDeleted: boolean = false): Observable<any[]> {
+    //let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
+    return this.http.get<any[]>(`http://localhost:8080/api/lenders/${lenderId}/bookings`);
+  }
+  returnBooking(id: number): Observable<Booking> {
+    return this.recordReturn(id);
+  }
+  // Verleiher lehnt Buchung ab (mit Begründung)
+  rejectBooking(id: number, reason?: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
   // GET /api/bookings (Alle Buchungen abrufen mit optionalen Filtern)
   getBookings(status?: 'overdue' | 'pending' | 'confirmed' | 'picked_up' | 'returned' | 'cancelled' | 'expired' | 'rejected'): Observable<Booking[]> {
     let params = new HttpParams();
     if (status) {
       params = params.set('status', status);
     }
+    return this.http.get<Booking[]>(this.apiUrl, { params });
+  }
+  // GET /api/bookings?status=pending
+  getPendingBookings(): Observable<Booking[]> {
+    const params = new HttpParams().set('status', 'PENDING');
     return this.http.get<Booking[]>(this.apiUrl, { params });
   }
 
@@ -83,12 +99,12 @@ export class BookingService {
   // ========================================
   // PATCH ENDPOINTS (Status-Updates)
   // ========================================
-
+    
   // Verleiher bestätigt Buchung und schlägt Abholtermine vor
-  confirmBooking(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
+  confirmBooking(id: number, proposedPickups: string[] = [], message?: string): Observable<Booking> {
     const body: any = {
       action: 'confirm',
-      proposedPickups
+      proposedPickups : proposedPickups
     };
 
     if (message?.trim()) {
@@ -102,7 +118,7 @@ export class BookingService {
   selectPickup(id: number, selectedPickup: string, message?: string): Observable<Booking> {
     const body: any = {
       action: 'select_pickup',
-      selectedPickup
+      selectedPickup : selectedPickup
     };
 
     if (message?.trim()) {
@@ -116,7 +132,7 @@ export class BookingService {
   proposePickups(id: number, proposedPickups: string[], message?: string): Observable<Booking> {
     const body: any = {
       action: 'propose',
-      proposedPickups
+      proposedPickups : proposedPickups
     };
 
     if (message?.trim()) {
@@ -139,7 +155,9 @@ export class BookingService {
       action: 'return'
     });
   }
-
+  updateStatus(id: number, data: any): Observable<Booking> {
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}`, data);
+  }
   // Generische Methode für alle Status-Updates (falls benötigt)
   updateBookingStatus(id: number, action: string, data?: {
     proposedPickups?: string[],

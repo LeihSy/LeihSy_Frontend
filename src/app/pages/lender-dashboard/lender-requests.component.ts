@@ -104,40 +104,54 @@ export class LenderRequestsComponent implements OnInit {
 
   // --- DATEN LADEN ---
   loadData() {
-    this.bookingService.getPendingBookings().subscribe({
-      next: (data: any[]) => {
-        this.requests = data.map(b => {
-        
-          let parsedPickups: string[] = [];
-          try {
-            if (b.proposedPickups) {
-              parsedPickups = Array.isArray(b.proposedPickups) 
-                ? b.proposedPickups 
-                : JSON.parse(b.proposedPickups);
-            }
-          } catch (e) {
-            console.error('Fehler beim Parsen der Termine:', e);
-            parsedPickups = [];
-          }
-  
-          const realCampus = b.roomNr || b.item?.location?.roomNr || 'Unbekannt';
-  
-          return {
-            id: b.id,
-            studentName: b.userName || b.user?.name || 'Unbekannt',
-            studentId: b.user?.uniqueId || b.userId?.toString() || '', 
-            productName: b.productName || b.item?.product?.name,
-            inventoryNumber: b.invNumber || b.item?.invNumber,
-            campus: realCampus || '-', 
-            fromDate: b.startDate,
-            toDate: b.endDate,
-            status: b.status || 'PENDING',
-            message: b.message,
-            proposedPickups: parsedPickups 
-          };
+    this.userService.getCurrentUser().subscribe({
+      next: (user: any) => {
+
+        if (!user || !user.id) {
+          console.error('Kein User eingeloggt oder keine ID gefunden.');
+          return;
+        }
+
+        const currentLenderId = user.id;
+        console.log('Lade Requests für Verleiher-ID:', currentLenderId);
+
+        this.bookingService.getBookingsByLenderId(currentLenderId, true).subscribe({
+          next: (data: any[]) => {
+
+            this.requests = data.map(b => {
+
+              let parsedPickups: string[] = [];
+              try {
+                if (b.proposedPickups) {
+                  parsedPickups = Array.isArray(b.proposedPickups) 
+                    ? b.proposedPickups 
+                    : JSON.parse(b.proposedPickups);
+                }
+              } catch (e) {
+                parsedPickups = [];
+              }
+
+              const realCampus = b.roomNr || b.item?.location?.roomNr || 'Unbekannt';
+      
+              return {
+                id: b.id,
+                studentName: b.userName || b.user?.name || 'Unbekannt',
+                studentId: b.user?.uniqueId || b.userId?.toString() || '', 
+                productName: b.productName || b.item?.product?.name,
+                inventoryNumber: b.itemInvNumber || b.item?.invNumber || '-', 
+                campus: realCampus, 
+                fromDate: b.startDate,
+                toDate: b.endDate,
+                status: b.status || 'PENDING',
+                message: b.message,
+                proposedPickups: parsedPickups 
+              };
+            });
+          },
+          error: (err: any) => console.error('Fehler beim Laden der Verleiher-Buchungen', err)
         });
       },
-      error: (err: any) => console.error('Fehler beim Laden', err)
+      error: (err: any) => console.error('Konnte User nicht laden', err)
     });
   }
   pendingCount(): number {

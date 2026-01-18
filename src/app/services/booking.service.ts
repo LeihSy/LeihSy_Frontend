@@ -15,11 +15,13 @@ export class BookingService {
   // ========================================
   // GET ENDPOINTS
   // ========================================
-
-  //  Holt Buchungen eines Verleihers
+  //Holt Buchungen eines Verleihers
   getBookingsByLenderId(lenderId: number, includeDeleted: boolean = false): Observable<any[]> {
     let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
     return this.http.get<any[]>(`${this.apiUrl}/lender/${lenderId}`, { params });
+  }
+  returnBooking(id: number): Observable<Booking> {
+    return this.recordReturn(id);
   }
   // Verleiher lehnt Buchung ab (mit Begründung)
   rejectBooking(id: number, reason?: string): Observable<void> {

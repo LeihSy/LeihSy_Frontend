@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { BookingService } from '../../services/booking.service';
 import { LocationService } from '../../services/location.service'; 
+import { UserService } from '../../services/user.service';
 import { LocationDTO } from '../../models/location.model';
 
 // PrimeNG
@@ -66,6 +67,7 @@ interface PendingPickup {
     private readonly messageService = inject(MessageService);
     private readonly bookingService = inject(BookingService);
     private readonly locationService = inject(LocationService);
+    private readonly userService = inject(UserService);
 
     activeLoans: ActiveLoan[] = [];
     pendingPickups: PendingPickup[] = [];
@@ -193,43 +195,51 @@ campusOptions: any[] = [
       }
       
       loadData() {
-        this.bookingService.getBookings('picked_up').subscribe({
-          next: (bookings: any[]) => {
-            this.activeLoans = bookings.map(b => ({
-              id: b.id.toString(),
-              studentName: b.userName || b.user?.name || 'Unbekannt',
-              studentId: b.userId?.toString() || b.user?.matrikelNr || '',
-              studentEmail: b.user?.email || '',
-              deviceName: b.productName || b.item?.product?.name || 'Gerät',
-              inventoryNumber: b.invNumber || b.item?.invNumber || b.itemInvNumber || '-',
-              borrowedDate: b.distributionDate,
-              dueDate: b.endDate,
-              campus: b.roomNr || 'Unbekannt', 
-              status: new Date(b.endDate) < new Date() ? 'overdue' : 'active',
-              daysOverdue: this.calculateOverdueDays(b.endDate)
-            }));
-          },
-          error: (err: any) => {console.error('Fehler beim Laden der Ausleihen:', err);
-          this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Konnte Ausleihen nicht laden' });
-      }
-        });
+        this.userService.getCurrentUser().subscribe({
+          next: (user: any) => {
+            if (!user || !user.id) return;
     
-        this.bookingService.getBookings('confirmed').subscribe({
-          next: (bookings: any[]) => {
-            this.pendingPickups = bookings.map(p => ({
-              id: p.id.toString(),
-              studentName: p.userName || p.user?.name || 'Unbekannt',
-              studentId: p.userId?.toString() || p.user?.matrikelNr || '',
-              studentEmail: p.user?.email || '',
-              deviceName: p.productName || p.item?.product?.name || 'Gerät',
-              inventoryNumber: p.invNumber || p.item?.invNumber || p.itemInvNumber || '-',
-              pickupDate: p.confirmedPickup?.split('T')[0],
-              pickupTime: p.confirmedPickup?.split('T')[1]?.substring(0, 5),
-              campus: p.roomNr || 'Unbekannt',
-              confirmedDate: p.createdAt
-            }));
+            this.bookingService.getBookingsByLenderId(user.id, true).subscribe({
+              next: (allBookings: any[]) => {
+              
+                this.activeLoans = allBookings
+                  .filter(b => b.status === 'PICKED_UP')
+                  .map(b => ({
+                    id: b.id.toString(),
+                    studentName: b.userName || b.user?.name || 'Unbekannt',
+                    studentId: b.userId?.toString() || b.user?.matrikelNr || '',
+                    studentEmail: b.user?.email || '',
+                    deviceName: b.productName || b.item?.product?.name || 'Gerät',
+                    inventoryNumber: b.invNumber || b.item?.invNumber || b.itemInvNumber || '-',
+                    borrowedDate: b.distributionDate,
+                    dueDate: b.endDate,
+                    campus: b.roomNr || 'Unbekannt', 
+                    status: (!b.returnDate && new Date(b.endDate) < new Date()) ? 'overdue' : 'active',
+                    daysOverdue: this.calculateOverdueDays(b.endDate)
+                  }));
+
+                this.pendingPickups = allBookings
+                  .filter(b => b.status === 'CONFIRMED')
+                  .map(p => ({
+                    id: p.id.toString(),
+                    studentName: p.userName || p.user?.name || 'Unbekannt',
+                    studentId: p.userId?.toString() || p.user?.matrikelNr || '',
+                    studentEmail: p.user?.email || '',
+                    deviceName: p.productName || p.item?.product?.name || 'Gerät',
+                    inventoryNumber: p.invNumber || p.item?.invNumber || p.itemInvNumber || '-',
+                    pickupDate: p.confirmedPickup ? p.confirmedPickup.split('T')[0] : '',
+                    pickupTime: p.confirmedPickup ? p.confirmedPickup.split('T')[1]?.substring(0, 5) : '',
+                    campus: p.roomNr || 'Unbekannt',
+                    confirmedDate: p.createdAt
+                  }));
+              },
+              error: (err: any) => {
+                console.error('Fehler beim Laden:', err);
+                this.messageService.add({ severity: 'error', summary: 'Fehler', detail: 'Daten konnten nicht geladen werden' });
+              }
+            });
           },
-          error: (err: any) => console.error('Fehler beim Laden der Abholungen:', err)
+          error: (err) => console.error('User nicht gefunden', err)
         });
       }
     

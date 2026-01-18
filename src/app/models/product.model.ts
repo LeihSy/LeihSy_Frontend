@@ -3,6 +3,11 @@ import { Category } from './category.model';
 import { Location } from './location.model';
 
 // Product DTO (vereinfachte Version für Listen/Übersichten)
+export interface ProductRelationDTO {
+  productId: number;
+  name?: string; 
+  type: 'required' | 'recommended';
+}
 export interface ProductDTO {
   id: number;
   name: string;
@@ -45,6 +50,7 @@ export interface Product {
   location?: Location;
   items?: any[];                // Item[]
   recommendedSets?: RecommendedSet[];
+  relatedItems?: ProductRelationDTO[];
 
   // IDs für Beziehungen (falls nicht expandiert)
   categoryId?: number;
@@ -88,6 +94,7 @@ export interface ProductCreateDTO {
   accessories?: string;
   insyId?: number;
   lenderId?: number;
+  relatedItems?: ProductRelationDTO[];
 }
 
 // DTO für das Aktualisieren von Produkten
@@ -102,4 +109,5 @@ export interface ProductUpdateDTO {
   accessories?: string;
   insyId?: number;
   lenderId?: number;
+  relatedItems?: ProductRelationDTO[];
 }

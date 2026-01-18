@@ -17,8 +17,8 @@ export class BookingService {
   // ========================================
   //Holt Buchungen eines Verleihers
   getBookingsByLenderId(lenderId: number, includeDeleted: boolean = false): Observable<any[]> {
-    let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
-    return this.http.get<any[]>(`${this.apiUrl}/lender/${lenderId}`, { params });
+    //let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
+    return this.http.get<any[]>(`http://localhost:8080/api/lenders/${lenderId}/bookings`);
   }
   returnBooking(id: number): Observable<Booking> {
     return this.recordReturn(id);

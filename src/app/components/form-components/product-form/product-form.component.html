@@ -16,6 +16,12 @@
               <app-form-input-field label="Name" [required]="true" [fullWidth]="true">
                 <input pInputText formControlName="name" class="w-full"
                        placeholder="z.B. Canon EOS R5" />
+                @if (itemForm.get('name')?.invalid && itemForm.get('name')?.touched) {
+                  <app-validation-message
+                    [message]="'Bitte geben Sie einen Produktnamen ein.'"
+                    [isError]="true">
+                  </app-validation-message>
+                }
               </app-form-input-field>
 
               <app-form-input-field label="Kategorie" [required]="true" [fullWidth]="true">
@@ -38,6 +44,12 @@
                 @if (categories.length === 0) {
                   <app-validation-message
                     [message]="'Keine Kategorien verfügbar. Bitte Backend überprüfen oder Kategorien in der Datenbank anlegen.'"
+                    [isError]="true">
+                  </app-validation-message>
+                }
+                @if (itemForm.get('categoryId')?.invalid && itemForm.get('categoryId')?.touched && categories.length > 0) {
+                  <app-validation-message
+                    [message]="'Bitte wählen Sie eine Kategorie aus.'"
                     [isError]="true">
                   </app-validation-message>
                 }
@@ -123,6 +135,7 @@
                       placeholder="Location wählen"
                       formControlName="locationId"
                       class="flex-1"
+                      [class.ng-invalid]="itemForm.get('locationId')?.invalid && itemForm.get('locationId')?.touched"
                       (onChange)="onLocationSelect($event)">
                     </p-select>
                     <app-icon-button
@@ -135,6 +148,12 @@
                   @if (locations.length === 0) {
                     <app-validation-message
                       [message]="'Keine Standorte verfügbar. Bitte Standorte im System anlegen.'"
+                      [isError]="true">
+                    </app-validation-message>
+                  }
+                  @if (itemForm.get('locationId')?.invalid && itemForm.get('locationId')?.touched && locations.length > 0) {
+                    <app-validation-message
+                      [message]="'Bitte wählen Sie eine Location aus.'"
                       [isError]="true">
                     </app-validation-message>
                   }

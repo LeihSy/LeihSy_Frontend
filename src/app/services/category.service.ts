@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Category } from '../models/category.model';
-import { LocationDTO } from '../models/location.model';
+import { environment } from '../environments/environment';
+import {LocationDTO} from '../models/location.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
-  private readonly apiUrl = 'http://localhost:8080/api/categories';
+  private readonly apiUrl = `${environment.apiBaseURL}/api/categories`;
 
   constructor(private readonly http: HttpClient) {}
 

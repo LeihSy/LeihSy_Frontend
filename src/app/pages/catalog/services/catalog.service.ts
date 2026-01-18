@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { ProductService } from '../../../services/product.service';
 import { Product } from '../../../models/product.model';
 import { Device } from '../../../components/device-card/device-card.component';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class CatalogService {
@@ -125,9 +126,9 @@ export class CatalogService {
     if (imageUrl.startsWith('http')) return imageUrl;
 
     // Pfad-Konstruktion (Anpassung an deine API-Struktur)
-    if (imageUrl.startsWith('/api/')) return `http://localhost:8080${imageUrl}`;
+    if (imageUrl.startsWith('/api/')) return `${environment.apiBaseURL}${imageUrl}`;
 
-    return `http://localhost:8080/api/images/${imageUrl}`;
+    return `${environment.apiBaseURL}/api/images/${imageUrl}`;
   }
 
   navigateToDevice(deviceId: number): void {

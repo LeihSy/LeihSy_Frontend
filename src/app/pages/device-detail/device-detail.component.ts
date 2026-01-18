@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, Location as AngularLocation } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -10,11 +11,14 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { LocationService } from '../../services/location.service';
 import { Product } from '../../models/product.model';
-import { CartService } from '../../services/cart.service';
+import { CartService, TimePeriod } from '../../services/cart.service';
+import { environment } from '../../environments/environment';
 
 import { DeviceIconPipe } from '../../pipes/device-icon.pipe';
 import { CampusInfoComponent } from '../../components/campus-info/campus-info.component';
 import { FilledButtonComponent } from '../../components/buttons/filled-button/filled-button.component';
+import { BackButtonComponent } from '../../components/buttons/back-button/back-button.component';
+import { SecondaryButtonComponent } from '../../components/buttons/secondary-button/secondary-button.component';
 
 // Import PrimeNG Modules
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +27,7 @@ import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { PrimeNG } from 'primeng/config';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 // Device Interface (für UI-Kompatibilität)
 interface Device {
@@ -49,7 +54,7 @@ interface Device {
   };
   loanConditions: {
     maxLendingDays: string;
-    extensions: string;
+    maxLendingDaysInt: number;
     notes: string;
   };
   keywords: string[];
@@ -61,16 +66,18 @@ interface Device {
   selector: 'app-device-detail-page',
   standalone: true,
   imports: [
+    InputNumberModule,
     CommonModule,
     FormsModule,
     FilledButtonComponent,
+    BackButtonComponent,
+    SecondaryButtonComponent,
     ButtonModule,
     CardModule,
     TagModule,
     SelectModule,
     DatePickerModule,
     DeviceIconPipe,
-    CampusInfoComponent,
   ],
   templateUrl: './device-detail.component.html',
 })
@@ -87,22 +94,25 @@ export class DeviceDetailPageComponent implements OnInit {
   // --- State ---
   public device: Device | undefined;
   public isLoading = signal(true);
+  public showNotFound = signal(false);
   public errorMessage = signal<string | null>(null);
 
   public flandernstrasseData: Device['campusAvailability'][0] | undefined;
 
   public selectedCampus: string = '';
 
-  public pickupDate: Date = new Date();
-  public returnDate: Date = new Date();
-  public pickupTime: string = '';
-  public addedToCart = false;
+  public disabledDates: Date[] = [];
+  public rentalPeriod: Date[] = [];
+  public quantity: number = 1;
+  public message: string = "";
+  public today: Date = this.setHoursToZero(new Date());
 
-  public earliestPickupDate: Date = new Date();
-  public latestPickupDate: Date = new Date();
+  public datePickerErrorMessage: string = "";
+  public addedToCart: boolean = false;
 
-  public earliestReturnDate: Date = new Date();
-  public latestReturnDate: Date = new Date;
+  public unavailablePeriods: TimePeriod[] = [];
+
+  private http = inject(HttpClient);
 
   ngOnInit(): void {
 
@@ -112,14 +122,7 @@ export class DeviceDetailPageComponent implements OnInit {
     if (deviceId) {
       this.loadDevice(Number(deviceId));
     }
-    // Daten auf heute setzen
-    const today = this.setHoursToZero(new Date());
 
-    this.earliestPickupDate = today;  // Abholung frühestens heute
-    this.earliestReturnDate = this.addDays(today, 1); // Rückgabe frühestens morgen
-
-    this.latestPickupDate = this.addDays(today, 180); // Maximal halbes Jahr im Voraus ausleihbar
-    this.latestReturnDate = this.addDays(today, 180);
      // Deutsche Lokalisierung für den DatePicker
     this.setupGermanLocale();
   }
@@ -187,8 +190,10 @@ export class DeviceDetailPageComponent implements OnInit {
       this.flandernstrasseData = this.device.campusAvailability.find(
         (ca) => ca.campus === 'Campus Esslingen Flandernstraße'
       );
+      this.getUnavailablePeriods(this.device.id, this.quantity);
     }
     this.isLoading.set(false);
+    this.showNotFound.set(false);
   }
 
   // Konvertiere Backend Product zu Frontend Device
@@ -228,7 +233,7 @@ export class DeviceDetailPageComponent implements OnInit {
       // Ausleihbedingungen
       loanConditions: {
         maxLendingDays: `${product.expiryDate} Tage`,
-        extensions: 'Maximal 2 Verlängerungen möglich',
+        maxLendingDaysInt: product.expiryDate,
         notes: 'Rechtzeitige Rückgabe erforderlich'
       },
 
@@ -248,13 +253,17 @@ export class DeviceDetailPageComponent implements OnInit {
   }
 
     onAddToCart(): void {
-    if (!this.device || !this.pickupDate || !this.returnDate) return;
+    if (!this.device || !this.rentalPeriod[0] || !this.rentalPeriod[1]) {
+      return;
+    }
 
     // Füge Item zu lokalem Warenkorb hinzu und überprüfe auf Erfolg
     if(this.cartService.addItem(
       this.device.id,
-      this.pickupDate,
-      this.returnDate
+      this.quantity,
+      this.message,
+      this.rentalPeriod[0],
+      this.rentalPeriod[1],
     )) {
       this.addedToCart = true;
     } else {
@@ -262,15 +271,139 @@ export class DeviceDetailPageComponent implements OnInit {
     }
   }
 
-  public onSelectPickupDate(date: Date, device: Device) {
-    if (!date) {
+  public onQuantityChange() {
+    if(this.quantity < 1) {
+      this.rentalPeriod = [];
       return;
+    } else if(this.device)
+    this.getUnavailablePeriods(this.device.id, this.quantity);
+    this.rentalPeriod = [];
+  }
+
+
+  public getUnavailablePeriods(productId: string, quantity: number) {
+    this.http
+    .get<TimePeriod[]>(
+      `${environment.apiBaseURL}/api/products/${productId}/periods`,
+      {
+        params: {
+          requiredQuantity: quantity,
+          type: 'unavailable'
+        }
+      }
+    )
+    .subscribe({
+      next: (periods) => {
+        this.unavailablePeriods = periods;
+        if(this.unavailablePeriods.length === 0) {
+          console.log("No unavailable Periods found");
+        } else {
+          console.log("UnavailablePeriods: ", this.unavailablePeriods);
+        }
+        this.getDisabledDates(periods);
+        console.log("DisabledDays: ", this.disabledDates);
+      },
+      error: (err) => {
+        console.error('Error loading unavailable periods:', err);
+        this.unavailablePeriods = [];
+      }
+    });
+  }
+
+  public onRentalPeriodChange(range: Date[], device: Device) {
+    if(!range || range.length !== 2) {
+      return;
+    } else {
+      const pickupDate = this.setHoursToZero(range[0]);
+      const returnDate = this.setHoursToZero(range[1]);
+
+      const maxDays = device.loanConditions.maxLendingDaysInt;
+
+      const maxReturnDate = this.addDays(pickupDate, maxDays);
+
+      if (returnDate > maxReturnDate) { // Falls zu langer Zeitraum gewählt wurde
+        this.datePickerErrorMessage = `Maximale Ausleihdauer beträgt ${device.loanConditions.maxLendingDays}!`;
+        this.rentalPeriod = [];
+        return;
+      } else if (this.rangeContainsDisabledDate(range)) { // Falls ein nicht verfügbares Datum mit ausgewählt wurde
+        this.datePickerErrorMessage = `Gewünschte Anzahl in diesem Zeitraum nicht verfügbar!`;
+        this.rentalPeriod = [];
+      }
+      else {
+        this.datePickerErrorMessage = "";
+        this.rentalPeriod[0] = range[0];
+        this.rentalPeriod[1] = range[1];
+        return;
+      }
+    }
+  }
+
+  // Prüft ob in einer Range von Dates disabled Dates enthalten sind
+  private rangeContainsDisabledDate(range: Date[]): boolean {
+    if (!range || range.length !== 2) {
+      return false;
     }
 
-    const pickupDate = this.setHoursToZero(date);
-    this.earliestReturnDate = this.addDays(pickupDate, 1); // Rückgabe muss frühestens einen Tag nach nach Ausleihe sein
-    this.latestReturnDate = this.addDays(pickupDate, parseInt(device.loanConditions.maxLendingDays));  // Rückgabe darf spätestens zum Ende des maximalen Ausleihzeitraums sein
-    this.returnDate = this.latestReturnDate; // In Auswahlfenster Rückgabezeitpunkt automatisch auf spätestmögliches Datum setzen
+    const start = this.setHoursToZero(range[0]);
+    const end = this.setHoursToZero(range[1]);
+
+    const disabledSet = new Set(
+      this.disabledDates.map(d => d.getTime())
+    );
+
+    let current = new Date(start);
+    while (current <= end) {
+      if (disabledSet.has(current.getTime())) {
+        return true;
+      }
+      current = this.addDays(current, 1);
+    }
+
+    return false;
+  }
+
+  // Wandle nicht verfügbare Zeiträume in Array von Dates um für Date Picker
+  getDisabledDates(unavailablePeriods: TimePeriod[]){
+    if (!unavailablePeriods) {  // Falls unavailablePeriods nicht definiert ist
+      this.disabledDates = [];
+    } else if (unavailablePeriods.length === 0){  // Falls keine nicht verfügbaren Zeiträume vorhanden sind
+      this.disabledDates = [];
+    } else {
+
+      console.log("getDisabledDates Logik");
+      const disabledDates: Date[] = [];
+
+      for (const period of unavailablePeriods) {
+        console.log("for schleife");
+        console.log("startdate" , period.startDate);
+        console.log("enddate" , period.endDate);
+        const start = new Date(period.startDate);
+        const end = new Date(period.endDate);
+
+
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        let current = new Date(start);
+        while (current <= end) {
+          disabledDates.push(new Date(current));
+          console.log("new Day added", current);
+          current = this.addDays(current, 1);
+
+        }
+      }
+
+      this.disabledDates = disabledDates;
+    }
+  }
+
+  // Prüft ob Item in den Warenkorb gelegt werden kann
+  get canPutToCart(): boolean {
+    if(this.rentalPeriod && this.rentalPeriod.length === 2 && this.quantity > 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private setHoursToZero(date: Date): Date {
@@ -279,7 +412,7 @@ export class DeviceDetailPageComponent implements OnInit {
     return d;
   }
 
-  private addDays(date: Date, days: number): Date {
+  public addDays(date: Date, days: number): Date {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
     return d;

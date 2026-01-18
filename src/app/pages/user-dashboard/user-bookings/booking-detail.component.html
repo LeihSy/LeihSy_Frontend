@@ -12,11 +12,14 @@
         (buttonClick)="exportToPdf()">
       </app-filled-button>
 
-      <app-filled-button
-        icon="pi pi-qrcode"
-        label="QR-Codes anzeigen"
-        (buttonClick)="openQrDialog()">
-      </app-filled-button>
+      @if (pageService.booking() && (pageService.booking()!.status === 'CONFIRMED' || pageService.booking()!.status === 'PICKED_UP')) {
+        <app-filled-button
+          icon="pi pi-qrcode"
+          label="QR-Codes anzeigen"
+          color="primary"
+          (buttonClick)="openQrDialog()">
+        </app-filled-button>
+      }
     </div>
   </div>
 

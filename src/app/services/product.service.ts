@@ -6,12 +6,13 @@ import { Product, ProductCreateDTO } from '../models/product.model';
 import { Item } from '../models/item.model';
 import { CategoryService } from './category.service';
 import { LocationService } from './location.service';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly apiUrl = 'http://localhost:8080/api/products';
+  private readonly apiUrl = `${environment.apiBaseURL}/api/products`;
   private categoryService = inject(CategoryService);
   private locationService = inject(LocationService);
 

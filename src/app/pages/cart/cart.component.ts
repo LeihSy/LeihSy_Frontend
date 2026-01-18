@@ -8,15 +8,18 @@ import { PrimeNG } from 'primeng/config';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { forkJoin } from 'rxjs';
 
-import { CartService } from '../../services/cart.service';
+import { environment } from '../../environments/environment';
+import { CartService, TimePeriod } from '../../services/cart.service';
 
 
 @Component({
   selector: 'app-cart-page',
   standalone: true,
   imports: [
+    InputNumberModule,
     CheckboxModule,
     DatePickerModule,
     FormsModule,
@@ -49,29 +52,71 @@ export class CartPageComponent {
     this.router.navigate(['/catalog']);
   }
 
-  public onRentalPeriodChange(cartItemId: string, productId: string, range: Date[] | null) {
+  getDisabledDates(unavailablePeriods: TimePeriod[]): Date[] {
+    if (!unavailablePeriods || unavailablePeriods.length === 0) {
+      return [];
+    }
+
+    const disabledDates: Date[] = [];
+
+    for (const period of unavailablePeriods) {
+      let current = new Date(period.startDate);
+      const end = new Date(period.endDate);
+
+      // sicherstellen, dass Uhrzeiten keinen Ärger machen
+      current.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+
+      while (current <= end) {
+        disabledDates.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+      }
+    }
+
+    return disabledDates;
+  }
+
+  public onQuantityChange(cartItemId: string, quantity: number) {
+    if(quantity < 1) {
+      return;
+    } else {
+      this.cartService.updateItemQuantity(cartItemId, quantity)
+    }
+  }
+
+  public onRentalPeriodChange(cartItemId: string, range: Date[] | null) {
     if(!range || range.length !== 2) {
       return;
     } else {
-      this.cartService.updateItem(cartItemId, productId, {pickupDate: range[0], returnDate: range[1]})
+      this.cartService.updateItemRentalPeriod(cartItemId, range[0], range[1])
     }
   }
+
+  public onMessageChange(cartItemId: string, message: string) {
+    this.cartService.updateItemMessage(cartItemId, message);
+  }
+
   public onConfirmLendingClick(): void {
     // Array von POST-Requests erstellen
-    const bookingsToCreate = this.cartService.getItems().map(item => {
-      const body = {
-        itemId: item.productId,
-        startDate: item.rentalPeriod.pickupDate,
-        endDate: item.rentalPeriod.returnDate,
-        message: ""
-      };
+    const bookingsToCreate = this.cartService.getItems()
+    .filter(item => item.rentalPeriod && item.rentalPeriod.length === 2)
+    .map(item => ({
+      productId: item.productId,
+      startDate: item.rentalPeriod![0],
+      endDate: item.rentalPeriod![1],
+      message: item.message,
+      quantity: item.quantity,
+    }))
+    .map(body =>
+      this.http.post(`${environment.apiBaseURL}/api/bookings`, body, { observe: 'response' , headers: { 'Content-Type': 'application/json' }})
+    );
 
-      return this.http.post('http://localhost:8080/api/bookings', body, {observe: 'response'});
-    });
+    console.log("bookingsToCreate erstellt: ", bookingsToCreate);
 
     // Alle Requests gleichzeitig ausführen
     forkJoin(bookingsToCreate).subscribe({
       next: (responses) => {
+        console.log("Response von Booking Backend: ", responses);
         // Falls alle Antworten vom Backend response code 201 enthalten
         if(responses.every((res: HttpResponse<any>) => res.status === 201)){
           console.log('Bookings erfolgreich erstellt:', responses);
@@ -83,6 +128,19 @@ export class CartPageComponent {
         console.error('Fehler beim Buchen:', err);
       }
     });
+  }
+
+  // Prüft ob für alle Items im Warenkorb Ausleihanfragen abgeschickt werden können
+  get canConfirmLending(): boolean {
+    // Prüft, ob die Nutzungsbedingungen akzeptiert wurden
+    if (!this.acceptedTerms) return false;
+
+    // Prüft jedes Item im Warenkorb
+    return this.cartService.getItems().every(item =>
+      item.rentalPeriod &&
+      item.rentalPeriod.length === 2 &&
+      !item.rentalError
+    );
   }
 
   // Setzt deutsche PrimeNG Locale-Einstellungen für DatePicker

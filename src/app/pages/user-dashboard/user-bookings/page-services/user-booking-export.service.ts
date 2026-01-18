@@ -20,11 +20,9 @@ export class UserBookingExportService {
     const margin = 15;
     let yPosition = margin;
 
-    // Hole aktuellen User
     const currentUser = this.authService.currentUser();
     const userRoles = this.authService.getRoles();
 
-    // Header
     pdf.setFillColor(59, 130, 246); // Blue-500
     pdf.rect(0, 0, pageWidth, 45, 'F');
     pdf.setTextColor(255, 255, 255);
@@ -40,7 +38,6 @@ export class UserBookingExportService {
     yPosition = 55;
     pdf.setTextColor(0, 0, 0);
 
-    // Entleiher-Informationen
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Entleiher-Informationen', margin, yPosition);
@@ -61,12 +58,10 @@ export class UserBookingExportService {
     this.drawInfoRow(pdf, margin, yPosition, 'Budget:', currentUser?.budget ? `${currentUser.budget.toFixed(2)} €` : 'N/A');
     yPosition += 12;
 
-    // Trennlinie
     pdf.setDrawColor(220, 220, 220);
     pdf.line(margin, yPosition, pageWidth - margin, yPosition);
     yPosition += 10;
 
-    // Buchungsinformationen
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Buchungsinformationen', margin, yPosition);
@@ -94,11 +89,9 @@ export class UserBookingExportService {
     this.drawInfoRow(pdf, margin, yPosition, 'Letztes Update:', this.formatDateTime(new Date(booking.updatedAt)));
     yPosition += 12;
 
-    // Trennlinie
     pdf.line(margin, yPosition, pageWidth - margin, yPosition);
     yPosition += 10;
 
-    // Produkt-/Gegenstandsinformationen
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Gegenstand', margin, yPosition);
@@ -116,11 +109,9 @@ export class UserBookingExportService {
     this.drawInfoRow(pdf, margin, yPosition, 'Verleiher:', booking.lenderName || 'N/A');
     yPosition += 12;
 
-    // Trennlinie
     pdf.line(margin, yPosition, pageWidth - margin, yPosition);
     yPosition += 10;
 
-    // Status-Historie / Timeline
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Status-Verlauf', margin, yPosition);
@@ -137,50 +128,40 @@ export class UserBookingExportService {
         yPosition = margin;
       }
 
-      // Icon/Punkt
       const color = this.hexToRgb(event.color);
       pdf.setFillColor(color.r, color.g, color.b);
       pdf.circle(margin + 3, yPosition - 1, 2, 'F');
 
-      // Status
       pdf.setFont('helvetica', 'bold');
       pdf.text(event.status, margin + 8, yPosition);
 
-      // Datum
       pdf.setFont('helvetica', 'normal');
       pdf.text(this.formatDateTime(new Date(event.date)), margin + 60, yPosition);
 
       yPosition += 5;
 
-      // Beschreibung
       pdf.setTextColor(100, 100, 100);
       pdf.text(event.description, margin + 8, yPosition);
       pdf.setTextColor(0, 0, 0);
 
       yPosition += 8;
 
-      // Verbindungslinie (außer beim letzten Element)
       if (index < timelineEvents.length - 1) {
         pdf.setDrawColor(220, 220, 220);
         pdf.line(margin + 3, yPosition - 5, margin + 3, yPosition);
       }
     });
 
-    // Footer
     const footerY = pageHeight - 10;
     pdf.setFontSize(8);
     pdf.setTextColor(128, 128, 128);
     pdf.text('Generiert von LeihSy - Ausleihsystem', pageWidth / 2, footerY, { align: 'center' });
     pdf.text(`Buchung #${booking.id}`, pageWidth - margin, footerY, { align: 'right' });
 
-    // Download
     const filename = `buchung_${booking.id}_${this.formatDateForFilename(new Date())}.pdf`;
     pdf.save(filename);
   }
 
-  /**
-   * Zeichnet eine Info-Zeile (Label: Wert)
-   */
   private drawInfoRow(pdf: jsPDF, x: number, y: number, label: string, value: string): void {
     pdf.setFont('helvetica', 'bold');
     pdf.text(label, x, y);
@@ -190,9 +171,6 @@ export class UserBookingExportService {
     pdf.text(value, x + labelWidth + 3, y);
   }
 
-  /**
-   * Generiert Timeline-Events aus einer Buchung
-   */
   private generateTimelineEvents(booking: Booking): Array<{status: string, date: string, color: string, description: string}> {
     const events: Array<{status: string, date: string, color: string, description: string}> = [];
 
@@ -263,12 +241,9 @@ export class UserBookingExportService {
       });
     }
 
-    return events;
+    return [...events].reverse();
   }
 
-  /**
-   * Gibt das Label für einen Status zurück
-   */
   private getStatusLabel(status: string): string {
     const labelMap: Record<string, string> = {
       'PENDING': 'Ausstehend',
@@ -282,21 +257,15 @@ export class UserBookingExportService {
     return labelMap[status] || status;
   }
 
-  /**
-   * Konvertiert Hex-Farbe zu RGB
-   */
   private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
+      r: Number.parseInt(result[1], 16),
+      g: Number.parseInt(result[2], 16),
+      b: Number.parseInt(result[3], 16)
     } : { r: 0, g: 0, b: 0 };
   }
 
-  /**
-   * Formatiert Datum und Zeit (DD.MM.YYYY HH:MM)
-   */
   private formatDateTime(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -307,9 +276,6 @@ export class UserBookingExportService {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
   }
 
-  /**
-   * Formatiert nur das Datum (DD.MM.YYYY)
-   */
   private formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -318,9 +284,7 @@ export class UserBookingExportService {
     return `${day}.${month}.${year}`;
   }
 
-  /**
-   * Formatiert Datum für Dateinamen (YYYYMMDD_HHMMSS)
-   */
+
   private formatDateForFilename(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');

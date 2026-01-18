@@ -32,38 +32,77 @@
       </button>
     </div>
     <p class="text-md text-gray-800 px-4">Inventarnummer {{ item.productId }}</p>
-    <span class="ml-4 mt-2 border border-gray-200 inline-flex items-center justify-center text-gray-800 rounded-xl px-1.5 py-0.5 text-md self-center">
-        Kategorie
-    </span>
     <div class="border-t border-gray-200 mt-10 mb-8"></div>
     <!-- Ausleihinfos -->
     <div class="mb-8 flex items-start gap-3 px-4">
       <i class="pi pi-map-marker text-[#253359] text-xl mt-1"></i>
       <div>
         <h3 class="text-xl font-semibold text-[#253359]">Abholort:</h3>
-        <p class="text-xl text-gray-800">Campus Esslingen Flandernstraße</p>
         <p class="text-md text-gray-800">{{ item.location }}</p>
       </div>
     </div>
-    <div class="mb-8 flex items-start gap-3 px-4">
-      <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
-      <div>
-        <h3 class="text-xl font-semibold text-[#253359] pb-2">Ausleihzeitraum:</h3>
-        <p-datepicker
-          [ngModel]="[item.rentalPeriod.pickupDate, item.rentalPeriod.returnDate]"
-          (ngModelChange)="onRentalPeriodChange(item.cartItemId, item.productId, $event)"
-          selectionMode="range"
-          [showIcon]="true"
-          [dateFormat]="'dd.mm.yy'"
-          [minDate]="today"
-        ></p-datepicker>
+    <!-- Quantity + Date Picker -->
+    <div class="flex items-center gap-8">
+      <div class="mb-4 flex items-start gap-3 px-4">
+        <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
+        <div>
+          <h3 class="text-xl font-semibold text-[#253359] pb-2">Anzahl:</h3>
+            <p-inputNumber
+              [ngModel]="item.quantity"
+              (ngModelChange)="onQuantityChange(item.cartItemId, $event)"
+              buttonLayout="horizontal"
+              [min]="1"
+              [step]="1"
+              decrementButtonClass="p-button-secondary"
+              incrementButtonClass="p-button-secondary"
+              incrementButtonIcon="pi pi-plus"
+              decrementButtonIcon="pi pi-minus"
+              inputStyleClass="w-24 text-center"
+          ></p-inputNumber>
+        </div>
+      </div>
+      <div class="mb-4 flex items-start gap-3 px-4">
+        <i class="pi pi-calendar text-[#253359] text-xl mt-1"></i>
+        <div>
+          <h3 class="text-xl font-semibold text-[#253359] pb-2">Ausleihzeitraum:</h3>
+          <p-datepicker
+            [ngModel]="item.rentalPeriod"
+            (ngModelChange)="onRentalPeriodChange(item.cartItemId, $event)"
+            selectionMode="range"
+            [showIcon]="true"
+            [dateFormat]="'dd.mm.yy'"
+            [minDate]="today"
+            [disabledDates]="item.disabledDates"
+          ></p-datepicker>
+        </div>
       </div>
     </div>
-
+    @if (item.rentalError) {
+      <p class="m-4 mt-1 text-sm text-red-600 flex items-center gap-1">
+        <i class="pi pi-exclamation-circle"></i>
+          {{ item.rentalError }}
+      </p>
+    }
+    <!-- Textarea -->
+    <div class="mb-8 flex items-start gap-3 px-4">
+      <i class="pi pi-comment text-[#253359] text-xl mt-1"></i>
+      <div class="w-full">
+        <h3 class="text-xl font-semibold text-[#253359] pb-2">
+          Nachricht (optional):
+        </h3>
+        <textarea
+          pInputTextarea
+          rows="3"
+          class="border border-gray-300 rounded-md w-full p-4 text-md text-gray-800"
+          placeholder="Nachricht zur Ausleihe (z. B. Verwendungszweck)"
+          [ngModel]="item.message"
+          (ngModelChange)="onMessageChange(item.cartItemId, $event)"
+        ></textarea>
+      </div>
+    </div>
     <div class="bg-blue-50 border border-gray-200 rounded-lg mx-4 mt-2 mb-6 px-4 pt-2 pb-3">
       <h3 class="text-xl font-semibold text-[#253359]">Ausleihbedingungen:</h3>
       <p class="text-l text-gray-800">Ausleihfrist: {{ item.maxLendingDays }} Tage</p>
-      <p class="text-l text-gray-800">Verlängerungen: Nach Verfügbarkeit</p>
     </div>
   </div>
   }
@@ -102,10 +141,10 @@
             'bg-[#253359] hover:bg-blue-900': true
           }"
           (click)="onConfirmLendingClick()"
-          [disabled]="!acceptedTerms"
+          [disabled]="!canConfirmLending"
         ></button>
       </div>
     </div>
   }
 
-</div> 
+</div>

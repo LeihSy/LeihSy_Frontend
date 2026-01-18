@@ -16,7 +16,9 @@ export interface InfoItem {
     CardModule
   ],
   templateUrl: './info-card.component.html',
-  styleUrls: ['./info-card.component.scss']
+  host: {
+    'class': 'block h-full'
+  }
 })
 export class InfoCardComponent {
   @Input() header = '';

@@ -68,6 +68,7 @@
             <i class="pi pi-calendar text-gray-400"></i>
             <p-datepicker
               [(ngModel)]="newPickupDates[i]"
+              (ngModelChange)="onNewPickupChange()"
               [showTime]="true"
               [showSeconds]="false"
               [hourFormat]="'24'"

@@ -42,9 +42,18 @@ export class PickupSelectionDialogComponent {
   message = ''; // Nachricht, die der User hinzufügen kann
 
   selectExistingPickup(pickup: string): void {
-    this.selectedPickup = pickup;
-    // Lösche neue Termine, wenn ein vorgeschlagener ausgewählt wird
-    this.newPickupDates = [null, null, null];
+    if (this.selectedPickup === pickup) {
+      this.selectedPickup = null;
+    } else {
+      this.selectedPickup = pickup;
+      this.newPickupDates = [null, null, null];
+    }
+  }
+
+  onNewPickupChange(): void {
+    if (this.newPickupDates.some(d => d !== null)) {
+      this.selectedPickup = null;
+    }
   }
 
   clearNewPickup(index: number): void {

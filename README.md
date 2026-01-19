@@ -1,7 +1,50 @@
 # LeihSy Frontend
 
 Dieses Repository enthält das Frontend der Anwendung **LeihSy**, einem Online-Portal zum Verleihen von Gegenständen der Hochschule Esslingen.
-Das Frontend wird mit **Docker** gebaut und über **NGINX** ausgeliefert.
+
+## Tech Stack
+
+- **Frontend Framework**
+	- Angular 20
+		- Standalone APIs
+		- Angular Router
+		- Reactive Forms
+		- HttpClient
+- **Authentifizierung & Sicherheit**
+	- Keycloak
+		- keycloak-js
+		- keycloak-angular
+		- OAuth2 / OpenID Connect
+- **UI & Styling**
+	- PrimeNG 20
+	- PrimeIcons
+	- PrimeUX Themes
+	- Tailwind CSS 4
+	- CSS Utility-first Styling
+- **Datenvisualisierung & Dokumente**
+	- Chart.js
+	- jsPDF
+	- html2canvas
+	- angularx-qrcode
+- **State & Utilities**
+	- RxJS 7
+	- date-fns
+- **Build & Tooling**
+	- Angular CLI
+	- TypeScript 5.9
+	- Zone.js
+	- PostCSS
+- **Testing**
+	- Jasmine
+	- Karma
+	- Chrome Headless
+	- Code Coverage Support
+- **Deployment & Betrieb**
+	- Docker
+	- Docker Compose
+	- NGINX
+
+
 
 ## Voraussetzungen
 

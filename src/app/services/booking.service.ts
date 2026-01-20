@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Booking, BookingCreate } from '../models/booking.model';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BookingService {
-  private readonly apiUrl = 'http://localhost:8080/api/bookings';
+  private readonly apiUrl = `${environment.apiBaseURL}/api/bookings`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -18,7 +19,7 @@ export class BookingService {
   //Holt Buchungen eines Verleihers
   getBookingsByLenderId(lenderId: number, includeDeleted: boolean = false): Observable<any[]> {
     //let params = new HttpParams().set('includeDeleted', includeDeleted.toString());
-    return this.http.get<any[]>(`http://localhost:8080/api/lenders/${lenderId}/bookings`);
+    return this.http.get<any[]>(`${environment.apiBaseURL}/api/lenders/${lenderId}/bookings`);
   }
   returnBooking(id: number): Observable<Booking> {
     return this.recordReturn(id);

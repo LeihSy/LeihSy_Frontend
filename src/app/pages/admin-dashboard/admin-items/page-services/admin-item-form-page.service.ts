@@ -11,6 +11,7 @@ import { CategoryService } from '../../../../services/category.service';
 import { Item } from '../../../../models/item.model';
 import { Product } from '../../../../models/product.model';
 import { User } from '../../../../models/user.model';
+import { environment } from '../../../../environments/environment';
 
 export interface ItemFormData {
   invNumber: string;
@@ -357,7 +358,7 @@ export class AdminItemFormPageService {
 
   // Show Permission Warning
   showPermissionWarning(): void {
-    const keycloakUrl = 'http://localhost:8081/admin/master/console/#/LeihSy/users';
+    const keycloakUrl = `${environment.apiBaseURL}/admin/master/console/#/LeihSy/users`;
 
     this.messageService.add({
       severity: 'warn',
